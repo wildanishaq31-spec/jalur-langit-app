@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbf9f5;
+  --foreground: #1c2e26;
+  --primary-emerald: #0f3d2e;
+  --primary-emerald-light: #1b5e48;
+  --accent-gold: #c9933b;
+  --accent-gold-light: #f5d68b;
+  --card-bg: #ffffff;
+  --border-subtle: #eae4d8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d1713;
+    --foreground: #f0f7f3;
+    --primary-emerald: #144937;
+    --primary-emerald-light: #1f6b52;
+    --accent-gold: #e5a93c;
+    --accent-gold-light: #443213;
+    --card-bg: #13221c;
+    --border-subtle: #1e332a;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 61, 46, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 61, 46, 0.4);
+}
+
+/* Arabic typography styling */
+.font-arabic {
+  font-family: 'Traditional Arabic', 'Scheherazade New', 'Amiri', 'Lateef', serif;
+  line-height: 1.8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

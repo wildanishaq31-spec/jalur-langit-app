@@ -1,0 +1,19 @@
+{
+  "name": "Jalur Langit - 30 Day Spiritual Journal",
+  "short_name": "Jalur Langit",
+  "description": "30-Day Spiritual & Manifesting Journal untuk ikhtiar langit, digital tasbih, checklist ibadah harian, dan pencatat doa mustajab.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f3d2e",
+  "theme_color": "#0f3d2e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

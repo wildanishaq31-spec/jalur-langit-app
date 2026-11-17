@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f3d2e"/>
+      <stop offset="100%" stop-color="#061c14"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe699"/>
+      <stop offset="50%" stop-color="#e5a93c"/>
+      <stop offset="100%" stop-color="#b87d1e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Glowing Ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#e5a93c" stroke-width="2" opacity="0.3"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#e5a93c" stroke-width="1" stroke-dasharray="8 8" opacity="0.4"/>
+  
+  <!-- Crescent Moon -->
+  <path d="M290 140 C 220 140, 160 195, 160 270 C 160 345, 220 400, 295 400 C 330 400, 360 388, 385 365 C 330 375, 260 340, 250 270 C 240 200, 290 155, 335 145 C 320 142, 305 140, 290 140 Z" fill="url(#goldGrad)"/>
+  
+  <!-- 8-pointed star / Sparkle -->
+  <g transform="translate(345, 195) scale(0.7)">
+    <path d="M0 -35 L8 -10 L33 -10 L13 5 L21 30 L0 15 L-21 30 L-13 5 L-33 -10 L-8 -10 Z" fill="url(#goldGrad)"/>
+  </g>
+</svg>
+
