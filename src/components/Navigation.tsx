@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   Home, 
   CheckCircle2, 
@@ -25,14 +26,32 @@ import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
 export type ActiveTab = 'home' | 'amalan' | 'tasbih' | 'glowup' | 'vision' | 'hajat' | 'quran';
 
 interface NavigationProps {
-  activeTab: ActiveTab;
-  onTabChange: (tab: ActiveTab) => void;
+  activeTab?: ActiveTab;
+  onTabChange?: (tab: ActiveTab) => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const { selectedDate, resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Deteksi tab aktif berdasarkan URL pathname atau fallback ke activeTab prop
+  const currentTab: ActiveTab = 
+    pathname === '/amalan' ? 'amalan' :
+    pathname === '/glowup' ? 'glowup' :
+    pathname === '/tasbih' ? 'tasbih' :
+    pathname === '/vision' ? 'vision' :
+    pathname === '/hajat' ? 'hajat' :
+    pathname === '/quran' ? 'quran' :
+    pathname === '/dashboard' ? 'home' : (activeTab || 'home');
+
+  const handleNavigate = (tab: ActiveTab) => {
+    if (onTabChange) onTabChange(tab);
+    const targetRoute = tab === 'home' ? '/dashboard' : `/${tab}`;
+    router.push(targetRoute);
+  };
 
   const handleReset = () => {
     if (confirm('Mulai ulang data amalan kalender? (Data impian & sedekah tetap aman)')) {
@@ -137,6 +156,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
         onConfirm={() => {
           setIsLogoutModalOpen(false);
           logout();
+          router.push('/login');
         }}
         userEmail={currentUser?.email}
       />
@@ -145,9 +165,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg border-t border-stone-200/80 dark:border-emerald-800/60 py-2 px-2 shadow-lg">
         <div className="max-w-xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => onTabChange('home')}
+            onClick={() => handleNavigate('home')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'home'
+              currentTab === 'home'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
@@ -157,9 +177,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           </button>
 
           <button
-            onClick={() => onTabChange('amalan')}
+            onClick={() => handleNavigate('amalan')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'amalan'
+              currentTab === 'amalan'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
@@ -169,9 +189,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           </button>
 
           <button
-            onClick={() => onTabChange('glowup')}
+            onClick={() => handleNavigate('glowup')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'glowup'
+              currentTab === 'glowup'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
@@ -182,19 +202,27 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
 
           {/* Center Tasbih */}
           <button
-            onClick={() => onTabChange('tasbih')}
+            onClick={() => handleNavigate('tasbih')}
             className="flex flex-col items-center py-1 px-2 transition-all relative"
           >
-            <div className="w-9 h-9 -mt-4 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-emerald-950 bg-gradient-to-tr from-emerald-800 to-teal-700 shadow-emerald-900/30">
+            <div className={`w-9 h-9 -mt-4 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-emerald-950 transition-all ${
+              currentTab === 'tasbih'
+                ? 'bg-gradient-to-tr from-amber-500 to-amber-600 scale-110 shadow-amber-900/40'
+                : 'bg-gradient-to-tr from-emerald-800 to-teal-700 shadow-emerald-900/30'
+            }`}>
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="text-[10px] mt-0.5 font-bold text-stone-700 dark:text-stone-300">Tasbih</span>
+            <span className={`text-[10px] mt-0.5 font-bold ${
+              currentTab === 'tasbih' ? 'text-amber-600 dark:text-amber-400 font-black' : 'text-stone-700 dark:text-stone-300'
+            }`}>
+              Tasbih
+            </span>
           </button>
 
           <button
-            onClick={() => onTabChange('vision')}
+            onClick={() => handleNavigate('vision')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'vision'
+              currentTab === 'vision'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
@@ -204,9 +232,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           </button>
 
           <button
-            onClick={() => onTabChange('hajat')}
+            onClick={() => handleNavigate('hajat')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'hajat'
+              currentTab === 'hajat'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
@@ -216,9 +244,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           </button>
 
           <button
-            onClick={() => onTabChange('quran')}
+            onClick={() => handleNavigate('quran')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
-              activeTab === 'quran'
+              currentTab === 'quran'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}

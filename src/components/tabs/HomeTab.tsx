@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { 
   Sparkles, 
   Flame, 
@@ -405,13 +406,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
               </p>
             </div>
 
-            <button
-              onClick={handleOpenRoadmap}
+            <Link
+              href="/roadmap"
               className="self-start sm:self-auto px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 active:scale-95 shrink-0"
             >
               <span>Buka Roadmap & Vote</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            </Link>
           </div>
 
           {/* Quick Preview Grid 4 items */}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   X, 
   Sparkles, 
@@ -26,7 +27,9 @@ import {
   ArrowRight,
   Flame,
   CheckCircle2,
-  LogOut
+  LogOut,
+  Smartphone,
+  KeyRound
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -555,7 +558,51 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
                   </div>
                 </div>
 
-                {/* 3. Info Aplikasi */}
+                {/* 3. Akses Halaman & Rute Aplikasi */}
+                <div className="space-y-2.5">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                    Navigasi Halaman Langsung
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link
+                      href="/download"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className="p-3 rounded-2xl bg-white dark:bg-emerald-950/60 border border-stone-200 dark:border-emerald-800 flex items-center justify-between text-xs font-bold text-stone-800 dark:text-stone-200 hover:border-emerald-500 transition-all shadow-xs group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Panduan Download & Pasang PWA</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+
+                    <Link
+                      href="/roadmap"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className="p-3 rounded-2xl bg-white dark:bg-emerald-950/60 border border-stone-200 dark:border-emerald-800 flex items-center justify-between text-xs font-bold text-stone-800 dark:text-stone-200 hover:border-emerald-500 transition-all shadow-xs group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Compass className="w-4 h-4 text-amber-500" />
+                        <span>Halaman Penuh Roadmap Lab</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+
+                    <Link
+                      href="/panel-admin"
+                      onClick={() => setIsDrawerOpen(false)}
+                      className="p-3 rounded-2xl bg-white dark:bg-emerald-950/60 border border-stone-200 dark:border-emerald-800 flex items-center justify-between text-xs font-bold text-stone-800 dark:text-stone-200 hover:border-emerald-500 transition-all shadow-xs group"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <KeyRound className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span>Panel Admin & Lisensi Lynk.id</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-400 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 4. Info Aplikasi */}
                 <div className="p-4 rounded-3xl bg-emerald-950 text-white space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-serif font-black text-xs text-amber-300">

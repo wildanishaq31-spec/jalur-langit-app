@@ -865,4 +865,35 @@ tags:
 
 ---
 
+### 🔹 Turn 38: Implementasi Arsitektur Routing Next.js App Router (11 Rute URL Mandiri)
+* **Pengguna**:
+  > *"nah sekarang kita buat route agar halaman bisa di akses, pertama login , karena sementara menggunakan domain dari vercel maka https://jalur-langit-app.vercel.app/login, https://jalur-langit-app.vercel.app/download, https://jalur-langit-app.vercel.app/dashboard, https://jalur-langit-app.vercel.app/amalan, https://jalur-langit-app.vercel.app/glowup, https://jalur-langit-app.vercel.app/tasbih, https://jalur-langit-app.vercel.app/vision, https://jalur-langit-app.vercel.app/hajat, https://jalur-langit-app.vercel.app/quran, https://jalur-langit-app.vercel.app/roadmap, https://jalur-langit-app.vercel.app/panel-admin. jadi sementara saya butuh route ini agar rapi"*
+* **Latar Belakang & Kebutuhan Arsitektur**:
+  - Untuk memfasilitasi integrasi penjualan di Lynk.id dan kemudahan akses bagi pembeli serta admin, aplikasi membutuhkan sistem perutean URL (*routing*) tingkat halaman yang bersih dan mandiri berbasis **Next.js 16 App Router**.
+  - Setiap modul aplikasi kini memiliki tautan langsung (*deep linking*) yang dapat dibagikan atau dibuka spesifik di browser.
+* **Solusi Rekayasa & Implementasi Rute**:
+  1. **Struktur Berkas App Router (`src/app/`)**:
+     - `src/app/page.tsx` (`/`): Gerbang utama, otomatis mengarahkan pengunjung unauthenticated ke `/login`, atau authenticated ke `/dashboard`.
+     - `src/app/login/page.tsx` (`/login`): Halaman login mobile responsif mandiri.
+     - `src/app/download/page.tsx` (`/download`): Halaman penting untuk email pasca-pembelian Lynk.id! Berisi tombol 1-klik pasang PWA, panduan manual 3 langkah bergambar untuk Android (Chrome) & iPhone (Safari), serta tombol lanjut login.
+     - `src/app/dashboard/page.tsx` (`/dashboard`): Tab Beranda interaktif.
+     - `src/app/amalan/page.tsx` (`/amalan`): Tab Amalan Langit 30 Hari.
+     - `src/app/glowup/page.tsx` (`/glowup`): Tab Habits Tracker.
+     - `src/app/tasbih/page.tsx` (`/tasbih`): Tab Tasbih Digital Haptik.
+     - `src/app/vision/page.tsx` (`/vision`): Tab Vision Board & Afirmasi.
+     - `src/app/hajat/page.tsx` (`/hajat`): Tab Hajat & Sedekah Subuh.
+     - `src/app/quran/page.tsx` (`/quran`): Tab Quran Journaling.
+     - `src/app/roadmap/page.tsx` (`/roadmap`): Halaman penuh Roadmap Fitur Lab Mendatang dengan sistem voting dan usulan ide.
+     - `src/app/panel-admin/page.tsx` (`/panel-admin`): Panel Kontrol Owner terlindungi PIN (`1409`), dilengkapi metrik omset penjualan Lynk.id, formulir tambah pembeli manual, tabel kelola tier pembeli (Starter/Ultimate/VIP), ekspor JSON, dan login 1-klik VIP sebagai Owner.
+  2. **Komponen Pembungkus (`src/components/layout/AppShell.tsx`)**:
+     - Memastikan seluruh rute internal terlindungi autentikasi secara konsisten, menangani status hidrasi, dan merender tata letak navigasi seragam.
+  3. **Pembaruan Navigasi URL-Aware ([Navigation.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/Navigation.tsx))**:
+     - Memanfaatkan `useRouter` dan `usePathname` dari `next/navigation` sehingga saat pengguna mengetuk tab bawah, URL di address bar browser langsung berubah sesuai rute aktif.
+     - Tautan langsung ditambahkan pada menu samping ([AppDrawerMenu.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AppDrawerMenu.tsx)) dan banner Roadmap ([HomeTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/HomeTab.tsx)).
+  4. **Hasil Verifikasi**:
+     - `npm run lint`: 0 error (exit code 0).
+     - `npm run build`: 100% sukses, menghasilkan 15 rute halaman statis yang siap dideploy.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

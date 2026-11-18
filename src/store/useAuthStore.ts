@@ -69,6 +69,9 @@ interface AuthState {
   logout: () => void;
   clearAuthError: () => void;
   addBuyerToWhitelist: (buyer: AuthUser) => void;
+  removeBuyerFromWhitelist: (email: string) => void;
+  updateBuyerTier: (email: string, tier: UserTier) => void;
+  loginAsAdmin: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -140,6 +143,47 @@ export const useAuthStore = create<AuthState>()(
             ...state.whitelist.filter((b) => b.email.toLowerCase() !== buyer.email.toLowerCase())
           ]
         }));
+      },
+
+      removeBuyerFromWhitelist: (email: string) => {
+        set((state) => ({
+          whitelist: state.whitelist.filter(
+            (b) => b.email.toLowerCase() !== email.toLowerCase()
+          )
+        }));
+      },
+
+      updateBuyerTier: (email: string, tier: UserTier) => {
+        set((state) => ({
+          whitelist: state.whitelist.map((b) => {
+            if (b.email.toLowerCase() === email.toLowerCase()) {
+              return {
+                ...b,
+                tier,
+                tierLabel: TIER_CONFIG[tier].name
+              };
+            }
+            return b;
+          })
+        }));
+      },
+
+      loginAsAdmin: () => {
+        const adminUser: AuthUser = {
+          email: 'agung.siswoyo14@gmail.com',
+          name: 'Agung Siswoyo (Owner)',
+          tier: 'vip',
+          tierLabel: TIER_CONFIG.vip.name,
+          purchasedAt: new Date().toISOString(),
+          orderId: 'LYNK-OWNER-VIP'
+        };
+        set({
+          currentUser: adminUser,
+          isAuthenticated: true,
+          isTransitioning: false,
+          authError: null,
+          deniedEmailAttempt: null
+        });
       }
     }),
     {

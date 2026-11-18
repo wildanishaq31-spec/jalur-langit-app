@@ -1,22 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Navigation, ActiveTab } from '@/components/Navigation';
-import { HomeTab } from '@/components/tabs/HomeTab';
-import { AmalanTab } from '@/components/tabs/AmalanTab';
-import { TasbihTab } from '@/components/tabs/TasbihTab';
-import { GlowUpTab } from '@/components/tabs/GlowUpTab';
-import { VisionBoardTab } from '@/components/tabs/VisionBoardTab';
-import { HajatTab } from '@/components/tabs/HajatTab';
-import { QuranJournalTab } from '@/components/tabs/QuranJournalTab';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
-import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 
-export default function Page() {
-  const { activeTab, setActiveTab, appTheme } = useJalurLangitStore();
+export default function RootPage() {
+  const router = useRouter();
   const { isAuthenticated, isTransitioning, completeTransition } = useAuthStore();
+  const { appTheme } = useJalurLangitStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,41 +25,34 @@ export default function Page() {
     }
   }, [appTheme]);
 
+  useEffect(() => {
+    if (mounted && isAuthenticated && !isTransitioning) {
+      router.replace('/dashboard');
+    }
+  }, [mounted, isAuthenticated, isTransitioning, router]);
+
   if (!mounted) {
+    return <div className="min-h-screen bg-[#fbf9f5] dark:bg-[#0a1410]" />;
+  }
+
+  if (isTransitioning) {
     return (
-      <div className="min-h-screen bg-[#fbf9f5] dark:bg-[#0a1410]" />
+      <LoginTransitionLoader
+        onComplete={() => {
+          completeTransition();
+          router.replace('/dashboard');
+        }}
+      />
     );
   }
 
-  // 1. Tampilkan animasi transisi loading saat berhasil login
-  if (isTransitioning) {
-    return <LoginTransitionLoader onComplete={completeTransition} />;
-  }
-
-  // 2. Tampilkan halaman login jika belum terautentikasi
   if (!isAuthenticated) {
     return <LoginPage />;
   }
 
-  // 3. Tampilkan aplikasi penuh saat pembeli terverifikasi
   return (
-    <div
-      className="min-h-screen transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]"
-    >
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-5">
-        {activeTab === 'home' && (
-          <HomeTab onNavigateToTab={(tab) => setActiveTab(tab)} />
-        )}
-        {activeTab === 'amalan' && <AmalanTab />}
-        {activeTab === 'glowup' && <GlowUpTab />}
-        {activeTab === 'tasbih' && <TasbihTab />}
-        {activeTab === 'vision' && <VisionBoardTab />}
-        {activeTab === 'hajat' && <HajatTab />}
-        {activeTab === 'quran' && <QuranJournalTab />}
-      </main>
+    <div className="min-h-screen flex items-center justify-center bg-[#fbf9f5] dark:bg-[#0a1410] text-stone-500 text-xs">
+      Membuka Jalur Langit...
     </div>
   );
 }
-
