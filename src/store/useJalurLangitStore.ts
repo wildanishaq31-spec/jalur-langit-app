@@ -127,6 +127,7 @@ interface JalurLangitState {
   // Vision Board
   visionBoardItems: VisionBoardItem[];
   addVisionItem: (item: Omit<VisionBoardItem, 'id' | 'isAchieved'>) => void;
+  updateVisionItem: (id: string, updated: Partial<Omit<VisionBoardItem, 'id'>>) => void;
   deleteVisionItem: (id: string) => void;
   toggleVisionItemAchieved: (id: string) => void;
 
@@ -332,6 +333,13 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           isAchieved: false,
         };
         set((state) => ({ visionBoardItems: [newItem, ...state.visionBoardItems] }));
+      },
+      updateVisionItem: (id, updated) => {
+        set((state) => ({
+          visionBoardItems: state.visionBoardItems.map((v) =>
+            v.id === id ? { ...v, ...updated } : v
+          ),
+        }));
       },
       deleteVisionItem: (id) => {
         set((state) => ({ visionBoardItems: state.visionBoardItems.filter(v => v.id !== id) }));

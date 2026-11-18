@@ -303,4 +303,31 @@ tags:
 
 ---
 
+### 🔹 Turn 18: Fitur Edit Vision Board & Pengambilan Foto (Kamera Belakang & Galeri HP)
+* **Pengguna**:
+  > *"nah sekarang vision kita juga tambah tombol edit , lalu untuk tambah vision baru gambar bisa ambil di galery atau foto dengan kamera belakang"*
+  > *(Mengunggah gambar kartu Vision Board yang hanya memiliki tombol hapus dan popup tambah impian yang lama)*
+* **Penyebab & Kebutuhan**:
+  - Kartu Vision Board sebelumnya belum memiliki tombol edit untuk memperbarui judul impian, kategori, foto impian, target waktu, atau deskripsi doa.
+  - Penambahan foto impian sebelumnya hanya menyediakan input teks URL (misal Unsplash), padahal pengguna ponsel ingin mengambil foto langsung menggunakan **kamera belakang** (misal foto tempat, brosur umrah, foto target) atau memilih langsung dari **galeri HP**.
+* **Solusi Rekayasa**:
+  1. **Zustand Store (`src/store/useJalurLangitStore.ts`)**:
+     - Menambahkan aksi `updateVisionItem(id: string, updated: Partial<Omit<VisionBoardItem, 'id'>>)` untuk memperbarui data impian secara reaktif.
+  2. **Modal Dedicated Vision Board (`src/components/modals/AddVisionModal.tsx`)**:
+     - Mendukung mode **Create** maupun **Edit** lewat prop `editingItem?: VisionBoardItem | null`.
+     - Mengintegrasikan dua input file tersembunyi:
+       - **Kamera Belakang**: `<input type="file" accept="image/*" capture="environment" />` yang otomatis membuka kamera belakang pada perangkat smartphone.
+       - **Galeri HP / File**: `<input type="file" accept="image/*" />` yang membuka galeri foto atau pengelola berkas perangkat.
+     - **Kompresi Gambar Otomatis (Canvas Client-Side Compression)**: Gambar yang diambil dari kamera atau galeri otomatis dikompres menjadi JPEG berkualitas tinggi dengan ukuran ringan (< 150KB) untuk mencegah crash batas kuota *localStorage*.
+     - Menyediakan preview foto impian interaktif dengan kontrol *Ulang Foto*, *Ganti Galeri*, dan *Hapus Foto*, serta opsi opsional untuk memasukkan tautan URL gambar.
+     - Menggunakan **React Portal** (`createPortal` ke `document.body`) dengan layer `z-35`, padding `pb-24`, serta *sticky header* dengan tombol Close `X`.
+  3. **Antarmuka Tab Vision Board (`src/components/tabs/VisionBoardTab.tsx`)**:
+     - Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Vision Board berdampingan dengan tombol hapus (*Trash2*).
+     - Mengintegrasikan modal `AddVisionModal` dan memastikan reset form bersih saat tombol *+ Tambah Impian* ditekan.
+     - Memperbaiki modal surat masa depan (*Future Letter*) dengan header terkunci (*sticky header*) dan penataan z-index yang konsisten.
+  4. **Verifikasi**:
+     - `npm run build` sukses 100% tanpa error TypeScript maupun Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
