@@ -663,4 +663,23 @@ tags:
 
 ---
 
+### 🔹 Turn 29: Penghapusan Mode Pengujian Cepat untuk Menjaga Eksklusivitas & Keamanan Produk
+* **Pengguna**:
+  > *"menurutku tidak usah kita kasih mode pengujian jadi biar orang penasaran"*
+* **Latar Belakang & Wawasan Bisnis**:
+  - Menampilkan chip demo uji coba di halaman login berpotensi membocorkan akses akun pembeli atau menghilangkan rasa penasaran pengunjung luar.
+  - Untuk menjaga citra aplikasi yang **eksklusif, privat, dan mendorong rasa penasaran calon pembeli** agar segera membeli lisensi di Lynk.id, seluruh chip demo dan daftar akun dihilangkan dari antarmuka login.
+* **Solusi Rekayasa & Pembersihan Kode**:
+  1. **Pembersihan Komponen `LoginPage.tsx`**:
+     - Menghapus kontainer elemen `🧪 Mode Pengujian (Klik untuk Coba Akses)` dan seluruh 4 chip tombol demo.
+     - Menghapus daftar akun terdaftar di dalam modal Google pop-up; kini modal Google menampilkan formulir input email Google asli yang bersih dan profesional bertuliskan *"Masuk dengan Google (Secured by Clerk Auth)"*.
+     - Membersihkan import dan variabel yang tidak lagi digunakan (`CheckCircle2`, `TIER_CONFIG`, `whitelist`).
+  2. **Alur Proteksi Tetap Berjalan di Balik Layar**:
+     - Pengguna yang sah (misal: akun Anda `agung@gmail.com` atau pembeli resmi) tetap dapat login dengan mengetikkan email mereka langsung di input Google maupun email Lynk.id.
+     - Pengunjung lain yang mencoba mengetikkan sembarang email akan langsung terhadang oleh modal *Access Denied* yang elegan dan diarahkan ke etalase Lynk.id.
+  3. **Verifikasi Build**:
+     - `npm run build` sukses 100% tanpa error (Turbopack 1.0s, TypeScript 0 error).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
