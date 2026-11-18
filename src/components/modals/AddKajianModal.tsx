@@ -67,36 +67,41 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md p-6 bg-white dark:bg-emerald-950/90 rounded-3xl shadow-2xl border border-emerald-100 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 rounded-full hover:bg-stone-100 dark:hover:bg-emerald-900/50 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-fade-in">
+      <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[85vh] flex flex-col overflow-hidden">
+        {/* Fixed Header with Title, Icon & Close Button (Always visible at top) */}
+        <div className="p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-2xl ${
+              isEditing
+                ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
+            }`}>
+              {isEditing ? <Edit3 className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold font-serif text-emerald-900 dark:text-emerald-100">
+                {isEditing ? 'Edit Resume Kajian' : 'Resume Kajian Ilmu'}
+              </h3>
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                {isEditing
+                  ? 'Perbarui ringkasan materi ceramah dan rencana aksi nyata.'
+                  : 'Ikat ilmu dengan mencatat dan menjadikannya aksi nyata.'}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3 mb-5">
-          <div className={`p-3 rounded-2xl ${
-            isEditing
-              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
-              : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
-          }`}>
-            {isEditing ? <Edit3 className="w-6 h-6" /> : <Video className="w-6 h-6" />}
-          </div>
-          <div>
-            <h3 className="text-xl font-bold font-serif text-emerald-900 dark:text-emerald-100">
-              {isEditing ? 'Edit Resume Kajian' : 'Resume Kajian Ilmu'}
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              {isEditing
-                ? 'Perbarui ringkasan materi ceramah dan rencana aksi nyata.'
-                : 'Ikat ilmu dengan mencatat dan menjadikannya aksi nyata.'}
-            </p>
-          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-full hover:bg-stone-100 dark:hover:bg-emerald-900/50 transition-colors"
+            title="Tutup Popup"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Scrollable Form Content */}
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1 scrollbar-thin">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
               Tema / Judul Kajian <span className="text-rose-500">*</span>

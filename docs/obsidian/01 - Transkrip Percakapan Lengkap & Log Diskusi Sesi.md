@@ -219,4 +219,20 @@ tags:
   3. Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Kajian pada `QuranJournalTab.tsx` berdampingan dengan tombol tautan video dan tombol hapus.
 
 ---
+
+### 🔹 Turn 14: Perbaikan Tata Letak Popup Modal (Center-Floating & Sticky Header)
+* **Pengguna**:
+  > *"popup editnya teralu ke atas jadi seperti di gambar tampilannya terpotong tombol closenya tidak terlihat biasanya kan mengambang di tengah"*
+  > *(Mengunggah gambar popup edit kajian yang terpotong di bagian atas layar sehingga header dan tombol close X hilang)*
+* **Penyebab Masalah**: 
+  - Penggunaan `overflow-y-auto` pada kontainer tunggal modal menyebabkan seluruh elemen termasuk tombol close `X` dan judul ikut tergulung ke atas saat form panjang.
+  - Penataan flexbox default pada layar dengan tinggi terbatas mendorong bagian atas modal ke luar viewport negatif (*flexbox alignment overflow*).
+* **Solusi Rekayasa**:
+  1. Merestrukturisasi seluruh modal (`AddKajianModal`, `AddTadabburModal`, `AddHajatModal`, `AddSedekahModal`, dan `AlarmNotificationModal`):
+     - **Outer Wrapper**: `fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center`.
+     - **Dialog Card**: `relative w-full max-w-lg my-auto max-h-[85vh] flex flex-col overflow-hidden` — `my-auto` menjamin modal selalu mengambang presisi di tengah layar tanpa pernah terpotong ke atas.
+     - **Header Terkunci (*Sticky Header*)**: Bagian judul, ikon, dan tombol Close `X` dipisahkan di header non-scrolling (`flex-shrink-0`) dengan border halus, sehingga **tombol Close selalu terlihat di pojok kanan atas** dalam posisi apa pun.
+     - **Scrollable Form Body**: Hanya bagian input form yang dapat digulirkan (`overflow-y-auto flex-1`), menjaga estetika dan kenyamanan pengguna di semua ukuran layar desktop maupun ponsel.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
