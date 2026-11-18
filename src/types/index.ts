@@ -69,7 +69,7 @@ export interface DailyTasbihProgress {
   completedPresetIds: string[];
 }
 
-// --- NEW TYPES BASED ON "THAT GIRL / MEGA BUNDLE" SPREADSHEET ---
+// --- SELF-IMPROVEMENT & HABITS TRACKER TYPES ---
 
 export interface VisionBoardItem {
   id: string;

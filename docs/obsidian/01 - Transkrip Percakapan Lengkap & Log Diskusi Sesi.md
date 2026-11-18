@@ -330,4 +330,28 @@ tags:
 
 ---
 
+### 🔹 Turn 19: Rebranding Inklusif Universal (Menghapus Label "Girl" & "Muslimah" untuk Laki-laki & Perempuan)
+* **Pengguna**:
+  > *"kita hapus semua girl karena targetnya lalki-laki dan perempun yang ingin memperbaiki diri dan punya target"*
+  > *(Mengunggah gambar header "THAT GIRL EDITION" dan banner "THAT GIRL & MUSLIMAH SELF-CARE")*
+* **Penyebab & Kebutuhan**:
+  - Aplikasi sebelumnya memuat label *That Girl Edition* dan *Muslimah Self-Care* yang terkesan eksklusif hanya untuk wanita/perempuan.
+  - Target audiens aplikasi adalah **universal (laki-laki maupun perempuan)** yang bertekad memperbaiki diri (*self-improvement*), disiplin membangun kebiasaan baik (*habit building*), mendekatkan diri kepada Allah (*spiritual*), dan memiliki target impian yang jelas.
+* **Solusi Rekayasa**:
+  1. **Header Navigasi Utama (`src/components/Navigation.tsx`)**:
+     - Mengubah badge edisi dari `That Girl Edition` menjadi **`Self Improvement Edition`**.
+     - Mengubah subjudul menjadi **`Spiritual, Self-Growth & Manifesting Journal`**.
+  2. **Banner Tab Habits / Glow Up (`src/components/tabs/GlowUpTab.tsx`)**:
+     - Mengubah tag sub-banner dari `That Girl & Muslimah Self-Care` menjadi **`Self Improvement & Daily Habits`**.
+     - Mengubah deskripsi menjadi inklusif: *"Menyeimbangkan kebugaran lahiriah dan kejernihan batiniah. Merawat tubuh dan pikiran adalah bentuk ikhtiar serta rasa syukur atas amanah yang Allah anugerahkan."*
+  3. **Preset Afirmasi Vision Board (`src/components/tabs/VisionBoardTab.tsx`)**:
+     - Mengubah kalimat afirmasi `...menjadi pribadi sholehah...` menjadi inklusif: *"Aku pantas bahagia, sukses, dan menjadi pribadi yang bertakwa, berkualitas, serta membawa manfaat bagi banyak orang."*
+  4. **Pembersihan Kode & Tipe (`src/types/index.ts`)**:
+     - Memperbarui komentar arsitektur menjadi *Self-Improvement & Habits Tracker Types*.
+     - Memverifikasi 0 kemunculan kata `girl` atau pembatasan gender lain di seluruh direktori `src`.
+  5. **Verifikasi**:
+     - `npm run build` sukses 100% (Turbopack, TypeScript 0 error).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

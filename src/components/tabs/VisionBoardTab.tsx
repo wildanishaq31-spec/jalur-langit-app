@@ -27,7 +27,7 @@ const AFFIRMATION_PRESETS = [
   'Rezekiku sudah dijamin oleh Allah Yang Maha Kaya. Tugasku adalah taat, berikhtiar, dan berbaik sangka.',
   'Aku melepaskan rasa cemas dan menyerahkan seluruh urusanku kepada sebaik-baiknya Perencana.',
   'Setiap kebaikan dan amalan yang kulakukan hari ini akan menjadi pembuka kemudahan di masa depan.',
-  'Aku pantas bahagia, sukses, dan menjadi pribadi sholehah yang membawa manfaat bagi banyak orang.'
+  'Aku pantas bahagia, sukses, dan menjadi pribadi yang bertakwa, berkualitas, serta membawa manfaat bagi banyak orang.'
 ];
 
 export const VisionBoardTab: React.FC = () => {

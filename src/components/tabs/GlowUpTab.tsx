@@ -72,7 +72,7 @@ export const GlowUpTab: React.FC = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
             <Sparkles className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">That Girl & Muslimah Self-Care</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Self Improvement & Daily Habits</span>
           </div>
 
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-black/30 text-xs font-bold text-stone-800 dark:text-stone-200">
@@ -85,7 +85,7 @@ export const GlowUpTab: React.FC = () => {
           Glow Up Habits Tracker
         </h1>
         <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 max-w-lg leading-relaxed">
-          Menyeimbangkan kecantikan lahiriah dan kesehatan batiniah. Merawat tubuh adalah bentuk syukur atas amanah fisik yang Allah anugerahkan.
+          Menyeimbangkan kebugaran lahiriah dan kejernihan batiniah. Merawat tubuh dan pikiran adalah bentuk ikhtiar serta rasa syukur atas amanah yang Allah anugerahkan.
         </p>
       </div>
 

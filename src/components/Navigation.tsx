@@ -60,11 +60,11 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
                     ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300'
                 }`}>
-                  That Girl Edition
+                  Self Improvement Edition
                 </span>
               </div>
               <p className="text-[10px] text-stone-500 dark:text-stone-400">
-                Spiritual, Glow Up & Manifesting Journal
+                Spiritual, Self-Growth & Manifesting Journal
               </p>
             </div>
           </div>
