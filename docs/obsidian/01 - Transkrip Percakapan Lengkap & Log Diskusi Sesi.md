@@ -539,4 +539,49 @@ tags:
 
 ---
 
+### 🔹 Turn 26: Implementasi Opsi 1 (Drawer Menu Slide-Over di Header) & Opsi 2 (Card Hub Teaser di Beranda) untuk Fitur Coming Soon
+* **Pengguna**:
+  > *"karena qw masih ada tambahan-tambahan lagi menurutmu taruh dimana ? karena sudah di luar menu bar yang ada ? kasih qw saran karena ini nanti akan kita buat sebagai projek update fitur comming soon"*
+  > *"betul saya setuju kita menggunakan opsi 1 dan opsi 2, sekarang kita terapkan"*
+* **Latar Belakang & Analisis Arsitektur**:
+  - Bottom bar aplikasi telah berisi 7 tab utama (*Beranda, Amalan, Glow Up, Tasbih, Vision, Hajat, Quran*) yang sudah sangat ideal dan ergonomis di layar ponsel.
+  - Pengguna ingin menampung ide-ide fitur tambahan masa depan (*Kiblat GPS, Rapor 30 Hari PDF, Kalkulator Zakat, Audio Murottal/Soundscape, dsb.*) sebagai proyek pembaruan (*Coming Soon* / *Roadmap Inovasi*).
+  - Solusi yang disetujui adalah memadukan **Opsi 1** (Drawer Menu di Header atas) dan **Opsi 2** (Card Hub Showcase di Beranda).
+* **Solusi Rekayasa & Implementasi**:
+  1. **Tipe Data & Roadmap Dataset (`src/types/index.ts` & `src/data/roadmapData.ts`)**:
+     - Menambahkan tipe `RoadmapFeatureItem`, `FeatureStatus`, `FeatureUserRequest`.
+     - Menyusun dataset 5 fitur unggulan tahap riset & pengembangan:
+       1. 🧭 **Kompas Kiblat Presisi & Jadwal Adzan GPS** (`85% Siap` • Target: Desember 2026).
+       2. 📊 **Rapor Istiqomah 30 Hari & Ekspor PDF** (`68% Dikerjakan` • Target: Januari 2027).
+       3. 💰 **Kalkulator Zakat Mal, Profesi & Fidyah** (`45% Riset Fiqih` • Target: Februari 2027).
+       4. 🎧 **Audio Murottal & Soundscape Dzikir Alami** (`30% Konsep` • Target: Maret 2027).
+       5. 💌 **Kapsul Waktu: Surat Harapan Masa Depan** (`20% Konsep` • Target: April 2027).
+  2. **Zustand State Management (`src/store/useJalurLangitStore.ts`)**:
+     - Menambahkan kontrol pembukaan drawer: `isDrawerOpen`, `setIsDrawerOpen`, `toggleDrawer`.
+     - Tab aktif internal drawer: `drawerActiveTab ('lab' | 'utilitas')`.
+     - Sistem voting interaktif: `featureVotes`, `userVotedFeatures`, `voteFeature(id)` (tersimpan otomatis di LocalStorage).
+     - Sistem aspirasi usulan ide pengguna: `userFeatureRequests`, `addFeatureRequest(text)`.
+  3. **Komponen Slide-Over Drawer Menu (`src/components/modals/AppDrawerMenu.tsx`)**:
+     - Desain panel geser modern dari sisi kanan dengan backdrop blur, penutup via keyboard `Escape` dan klik di luar area.
+     - **Tab 1: 🚀 Roadmap Fitur Lab**:
+       - Rincian 5 kartu fitur mendatang dengan badge status, persentase progres, daftar keunggulan (*highlights*), dan tombol **❤️ Vote (+1)** interaktif.
+       - Kotak aspirasi ide fitur baru dengan form submit yang mencatat usulan ke backlog.
+     - **Tab 2: 🛠️ Utilitas & Pengaturan**:
+       - Tombol switch tema Terang / Gelap.
+       - Toggle efek suara tasbih dan getaran haptik.
+       - Ekspor dan unduh cadangan data lokal dalam format `.json` beserta fitur salin clipboard.
+       - Tombol mulai ulang amalan kalender secara aman.
+       - Ringkasan versi PWA `v1.2.0 Stable`.
+  4. **Tombol Header Menu (`src/components/Navigation.tsx`)**:
+     - Menambahkan tombol `Menu & Lab 🚀` di header atas sebelah kanan dengan ikon `Compass` beranimasi halus.
+     - Membuka drawer secara instan dari tab navigasi mana saja.
+  5. **Card Hub Teaser di Beranda (`src/components/tabs/HomeTab.tsx`)**:
+     - Menambahkan banner estetik bernuansa gradien emerald & gold di tab Beranda: **"🚀 Roadmap Inovasi & Fitur Baru (Jalur Langit Lab • Coming Soon)"**.
+     - Menampilkan 4 kartu preview interaktif (Kiblat GPS, Rapor PDF, Kalkulator Zakat, Audio Murottal) dengan progres dan jumlah vote live.
+     - Tombol aksi `Buka Roadmap & Vote →` yang langsung meluncurkan Drawer Menu ke tab Roadmap Lab.
+  6. **Verifikasi Build**:
+     - Menjalankan `npm run build`: Kompilasi Turbopack selesai dalam 1.2s, TypeScript 0 error, static prerender sukses.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

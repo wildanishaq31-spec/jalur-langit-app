@@ -125,3 +125,25 @@ export interface QuranTadabburItem {
 }
 
 export type AppTheme = 'light' | 'dark';
+
+export type FeatureStatus = 'segera_rilis' | 'dalam_pengerjaan' | 'tahap_riset' | 'rencana';
+
+export interface RoadmapFeatureItem {
+  id: string;
+  title: string;
+  category: 'ibadah' | 'produktivitas' | 'audio' | 'finansial' | 'doa';
+  status: FeatureStatus;
+  statusLabel: string;
+  badgeColor: string;
+  progressPercent: number;
+  description: string;
+  highlights: string[];
+  estimatedRelease: string;
+  iconName: 'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail';
+}
+
+export interface FeatureUserRequest {
+  id: string;
+  text: string;
+  submittedAt: string;
+}

@@ -15,7 +15,8 @@ import {
   AppTheme,
   DailyTasbihProgress,
   TimeCategory,
-  ActiveTab
+  ActiveTab,
+  FeatureUserRequest
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
@@ -95,10 +96,30 @@ const INITIAL_TADABBUR: QuranTadabburItem[] = [
   }
 ];
 
+const INITIAL_FEATURE_VOTES: Record<string, number> = {
+  kiblat_adzan: 128,
+  rapor_pdf: 164,
+  kalkulator_zakat: 95,
+  soundscape_murottal: 142,
+  future_letters: 78,
+};
+
 interface JalurLangitState {
   appTheme: AppTheme;
   setAppTheme: (theme: AppTheme) => void;
   toggleTheme: () => void;
+
+  // Drawer Menu & Lab Roadmap
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: (open: boolean) => void;
+  toggleDrawer: () => void;
+  drawerActiveTab: 'lab' | 'utilitas';
+  setDrawerActiveTab: (tab: 'lab' | 'utilitas') => void;
+  featureVotes: Record<string, number>;
+  userVotedFeatures: string[];
+  voteFeature: (featureId: string) => void;
+  userFeatureRequests: FeatureUserRequest[];
+  addFeatureRequest: (text: string) => void;
 
   // Active Tab & Cross-menu Navigation
   activeTab: ActiveTab;
@@ -209,6 +230,58 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       appTheme: 'light',
       setAppTheme: (theme) => set({ appTheme: theme }),
       toggleTheme: () => set((state) => ({ appTheme: state.appTheme === 'dark' ? 'light' : 'dark' })),
+
+      // Drawer Menu & Lab Roadmap
+      isDrawerOpen: false,
+      setIsDrawerOpen: (open) => set({ isDrawerOpen: open }),
+      toggleDrawer: () => set((state) => ({ isDrawerOpen: !state.isDrawerOpen })),
+      drawerActiveTab: 'lab',
+      setDrawerActiveTab: (tab) => set({ drawerActiveTab: tab }),
+      featureVotes: INITIAL_FEATURE_VOTES,
+      userVotedFeatures: [],
+      voteFeature: (featureId) => set((state) => {
+        const isVoted = state.userVotedFeatures.includes(featureId);
+        const currentCount = state.featureVotes[featureId] || 0;
+        if (isVoted) {
+          return {
+            userVotedFeatures: state.userVotedFeatures.filter((id) => id !== featureId),
+            featureVotes: {
+              ...state.featureVotes,
+              [featureId]: Math.max(0, currentCount - 1),
+            },
+          };
+        } else {
+          return {
+            userVotedFeatures: [...state.userVotedFeatures, featureId],
+            featureVotes: {
+              ...state.featureVotes,
+              [featureId]: currentCount + 1,
+            },
+          };
+        }
+      }),
+      userFeatureRequests: [
+        {
+          id: 'req-1',
+          text: 'Fitur reminder adzan otomatis dengan suara adzan merdu dan notifikasi GPS sesuai kota saya.',
+          submittedAt: '2026-11-15T08:30:00.000Z',
+        },
+        {
+          id: 'req-2',
+          text: 'Kalkulator fidyah puasa dan zakat penghasilan bulanan langsung dalam rupiah.',
+          submittedAt: '2026-11-16T14:10:00.000Z',
+        }
+      ],
+      addFeatureRequest: (text) => set((state) => ({
+        userFeatureRequests: [
+          {
+            id: `req-${Date.now()}`,
+            text,
+            submittedAt: new Date().toISOString(),
+          },
+          ...state.userFeatureRequests,
+        ],
+      })),
 
       // Navigation & Cross-menu integration
       activeTab: 'home',
