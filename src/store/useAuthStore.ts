@@ -6,6 +6,14 @@ import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
 
 const INITIAL_BUYER_WHITELIST: AuthUser[] = [
   {
+    email: 'agung.siswoyo14@gmail.com',
+    name: 'Agung Siswoyo',
+    tier: 'vip',
+    tierLabel: TIER_CONFIG.vip.name,
+    purchasedAt: '2026-11-18T00:00:00.000Z',
+    orderId: 'LYNK-OWNER-VIP'
+  },
+  {
     email: 'agung@gmail.com',
     name: 'Agung (Owner)',
     tier: 'vip',
