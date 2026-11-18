@@ -482,4 +482,34 @@ tags:
 
 ---
 
+### 🔹 Turn 24: Garis Outline Kedap-Kedip Hari Ini & Indikator Love Animasi Progres Kalender
+* **Pengguna**:
+  > *"untuk notif di tanggal 18 ada titik warna kuning kedap kedip kita buat garis outlinenya saja yang kedap kedip dan jika target terpenuhi kasih logo animasi love dan tetap tulisan 100%, jika target tidak terpenihi berarti animasi logo love tapi warnanya tidak penuh,"*
+  > *(Mengunggah 2 gambar: Gambar 1 tanggal 18 dengan titik kuning kedap-kedip di pojok, Gambar 2 tanggal 18 berlatar hijau 100%)*
+* **Penyebab & Kebutuhan**:
+  - Pada komponen `src/components/CalendarMonthView.tsx`, indikator tanggal hari ini (`isToday`) sebelumnya menggunakan titik kuning berkedip (`w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping`) di pojok atas sel tanggal.
+  - Pengguna ingin mengubah indikator ini: menghilangkan titik kuning di pojok, dan menggantinya dengan **garis outline sel yang berkedip (*pulsing border*)**.
+  - Pada indikator capaian target amalan di setiap sel tanggal:
+    - Jika target amalan **100% terpenuhi**: menampilkan logo animasi love dengan **warna penuh** (solid) disertai teks **100%**.
+    - Jika target amalan **belum terpenuhi** (< 100%): menampilkan logo animasi love dengan **warna tidak penuh** (terisi proporsional sesuai persentase progres, atau outline transparan berdenyut jika 0%).
+* **Solusi Rekayasa**:
+  1. **Outline Border Kedap-Kedip Hari Ini (`src/components/CalendarMonthView.tsx`)**:
+     - Menghapus elemen titik kuning `animate-ping` di header tanggal.
+     - Menambahkan lapisan outline berdenyut khusus untuk tanggal hari ini:
+       `<span className="absolute -inset-[2px] rounded-2xl border-2 border-amber-400 dark:border-amber-300 animate-pulse pointer-events-none shadow-[0_0_8px_rgba(251,191,36,0.4)] z-20" />`.
+     - Garis tepi sel tanggal aktif kini berkedip/berdenyut lembut berwarna emas/amber tanpa menggeser tata letak angka di dalamnya.
+  2. **Logo Animasi Love Progresif**:
+     - **Saat Target 100% Terpenuhi**:
+       Menampilkan ikon love solid yang berdenyut bersama teks 100%:
+       `<Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-300 animate-pulse shrink-0 drop-shadow-xs" /> <span>100%</span>`.
+     - **Saat Target Sedang Berjalan (1% - 99%)**:
+       Menampilkan love dengan sistem *liquid progress fill* bertingkat (`overflow-hidden` dengan `height: ${completion}%`): bagian bawah love terisi warna solid sesuai persentase yang sudah dicapai, sementara bagian atasnya tetap berupa garis outline lembut (warna tidak penuh) + teks `${completion}%`.
+     - **Saat Belum Ada Amalan (0%)**:
+       Menampilkan love outline tanpa isian (`fill-none stroke-[1.8] animate-pulse`) + tanda strip `—`.
+  3. **Verifikasi**:
+     - `npm run build` sukses 100% (Turbopack, TypeScript 0 error).
+     - Seluruh sel kalender kini memiliki tampilan visual cinta (*love meter*) yang hidup dan outline hari ini berkedip dengan indah.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

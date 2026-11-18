@@ -8,7 +8,8 @@ import {
   Sparkles, 
   Check, 
   Flame,
-  ArrowRight
+  ArrowRight,
+  Heart
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { 
@@ -173,33 +174,44 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
                 onClick={() => setSelectedDate(dateStr)}
                 className={`relative min-h-[58px] sm:min-h-[68px] p-1.5 sm:p-2 rounded-2xl border transition-all flex flex-col items-center justify-between hover:scale-[1.03] active:scale-95 ${badgeStyle}`}
               >
-                {/* Date Header with Today Dot */}
+                {/* Today Animated Pulsing Outline (Menggantikan titik kuning kedap-kedip) */}
+                {isToday && (
+                  <span className="absolute -inset-[2px] rounded-2xl border-2 border-amber-400 dark:border-amber-300 animate-pulse pointer-events-none shadow-[0_0_8px_rgba(251,191,36,0.4)] z-20" />
+                )}
+
+                {/* Date Header */}
                 <div className="w-full flex items-center justify-between">
                   <span className="text-xs sm:text-sm font-extrabold">{dayNum}</span>
-                  {isToday && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 ring-2 ring-white animate-ping" />
-                  )}
                 </div>
 
-                {/* Progress Mini Gauge or Check */}
+                {/* Animated Love Progress Logo & Percentage */}
                 <div className="w-full text-center">
                   {isFull ? (
-                    <span className="text-[10px] font-bold flex items-center justify-center gap-0.5">
-                      <Check className="w-3 h-3 stroke-[3]" />
+                    <span className="text-[10px] font-bold flex items-center justify-center gap-1 text-white">
+                      <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-300 animate-pulse shrink-0 drop-shadow-xs" />
                       <span>100%</span>
                     </span>
                   ) : hasStarted ? (
-                    <div className="w-full">
-                      <div className="w-full bg-black/10 rounded-full h-1 overflow-hidden my-0.5">
-                        <div
-                          className="bg-current h-full rounded-full"
-                          style={{ width: `${completion}%` }}
-                        />
-                      </div>
-                      <span className="text-[9px] font-semibold opacity-90">{completion}%</span>
-                    </div>
+                    <span className="text-[9.5px] sm:text-[10px] font-bold flex items-center justify-center gap-1 text-amber-900 dark:text-amber-200">
+                      {/* Love icon dengan warna tidak penuh (partially filled according to completion %) */}
+                      <span className="relative inline-flex items-center justify-center w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 animate-pulse">
+                        <Heart className="w-full h-full text-rose-500 dark:text-rose-400 stroke-2 fill-rose-500/20" />
+                        <span
+                          className="absolute bottom-0 left-0 w-full overflow-hidden"
+                          style={{ height: `${completion}%` }}
+                        >
+                          <span className="absolute bottom-0 left-0 w-3 h-3 sm:w-3.5 sm:h-3.5">
+                            <Heart className="w-full h-full fill-rose-500 text-rose-500" />
+                          </span>
+                        </span>
+                      </span>
+                      <span>{completion}%</span>
+                    </span>
                   ) : (
-                    <span className="text-[9px] opacity-40">—</span>
+                    <span className="text-[9px] font-medium flex items-center justify-center gap-0.5 text-stone-400 dark:text-stone-500 opacity-60">
+                      <Heart className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-stone-400 dark:text-stone-500 stroke-[1.8] fill-none animate-pulse shrink-0" />
+                      <span>—</span>
+                    </span>
                   )}
                 </div>
               </button>
