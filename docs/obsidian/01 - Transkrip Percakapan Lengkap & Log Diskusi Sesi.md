@@ -512,4 +512,31 @@ tags:
 
 ---
 
+### 🔹 Turn 25: Peningkatan Ukuran Logo Love (Di Tengah) & Penempatan Persentase di Bawahnya
+* **Pengguna**:
+  > *"logo lovenya kurang besar jadi logo love di tengah dan 100% di bawahnya jadi lovenya terlihat jelas"*
+  > *(Mengunggah tangkapan layar sel tanggal 18 kalender di mana ikon love sebelumnya berada di samping kiri teks persentase secara horizontal)*
+* **Penyebab & Kebutuhan**:
+  - Pada implementasi sebelumnya, logo love dan teks persentase diletakkan berdampingan secara horizontal (`flex items-center justify-center gap-1`).
+  - Karena ruang lebar sel terbatas, ukuran ikon love sebelumnya kecil (`w-3.5 h-3.5` atau 14px), sehingga kurang terlihat menonjol.
+  - Pengguna meminta agar **logo love dibuat lebih besar**, diposisikan tepat di **tengah sel (*center*)**, dan teks `100%` (atau persentase progres) diletakkan tepat **di bawahnya** agar visual love tampak jelas, dominan, dan proporsional.
+* **Solusi Rekayasa**:
+  1. **Layout Vertikal di Pusat Sel (`src/components/CalendarMonthView.tsx`)**:
+     - Mengubah kontainer progres di dalam sel menjadi layout vertikal terpusat:
+       `<div className="w-full flex flex-col items-center justify-center my-auto pb-0.5">`.
+     - Angka tanggal (`dayNum`) tetap berada di pojok kiri atas secara rapi (`w-full flex items-center justify-start`).
+     - Menyesuaikan tinggi sel minimum menjadi `min-h-[62px] sm:min-h-[72px]` (termasuk pada *empty cell offset*) agar seluruh sel kalender memiliki ruang vertikal yang luas dan simetris.
+  2. **Peningkatan Ukuran Ikon Love**:
+     - Memperbesar ukuran ikon love dari `w-3.5 h-3.5` (14px) menjadi `w-5 h-5 sm:w-5.5 sm:h-5.5` (20px - 22px).
+     - **Saat Target 100% Terpenuhi**: Ikon love solid berdenyut besar di tengah, dengan tulisan `100%` tebal di bawahnya:
+       `<Heart className="w-5 h-5 sm:w-5.5 sm:h-5.5 fill-rose-400 text-rose-300 animate-pulse shrink-0 drop-shadow-sm" />`
+       `<span className="text-[9px] sm:text-[10px] font-extrabold tracking-tight text-white mt-0.5">100%</span>`.
+     - **Saat Target Sedang Berjalan (1% - 99%)**: Ikon love besar dengan animasi progres isi (*liquid fill*) proporsional di tengah, dengan teks `${completion}%` di bawahnya.
+     - **Saat Belum Ada Amalan (0%)**: Ikon love outline berdenyut besar (`w-4 h-4 sm:w-4.5 sm:h-4.5`) di tengah, dengan tanda strip `—` di bawahnya.
+  3. **Verifikasi**:
+     - `npm run build` sukses 100% (Turbopack, TypeScript 0 error).
+     - Ikon love kini tampak sangat jelas, berukuran mantap di tengah sel, dengan teks persentase terpusat di bawahnya.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
