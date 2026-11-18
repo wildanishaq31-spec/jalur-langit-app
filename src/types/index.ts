@@ -114,4 +114,4 @@ export interface QuranTadabburItem {
   createdAt: string;
 }
 
-export type AppTheme = 'emerald' | 'blush';
+export type AppTheme = 'light' | 'dark';

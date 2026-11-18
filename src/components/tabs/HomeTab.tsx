@@ -79,9 +79,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     <div className="space-y-6 pb-24 animate-fade-in">
       {/* 1. HERO WELCOME CARD */}
       <div className={`relative overflow-hidden rounded-3xl text-white p-6 md:p-8 shadow-xl transition-all ${
-        appTheme === 'blush'
-          ? 'bg-gradient-to-br from-rose-600 via-rose-700 to-amber-700 shadow-rose-950/20'
-          : 'bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-950 shadow-emerald-950/20'
+        appTheme === 'dark'
+          ? 'bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-950 shadow-emerald-950/20 border border-emerald-800/40'
+          : 'bg-gradient-to-br from-emerald-800 via-teal-700 to-emerald-900 shadow-emerald-800/15'
       }`}>
         <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-amber-400/10 blur-2xl pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/10 blur-xl pointer-events-none" />
@@ -114,7 +114,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
                 onClick={() => onNavigateToTab('glowup')}
                 className="px-3.5 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-medium text-xs backdrop-blur-md transition-all active:scale-95"
               >
-                Glow Up 🌸
+                Glow Up 🌿
               </button>
 
               <button

@@ -8,9 +8,9 @@ import {
   HeartHandshake, 
   BookOpen, 
   Moon,
+  Sun,
   Flame,
   RotateCcw,
-  Palette,
   Droplets,
   Image as ImageIcon
 } from 'lucide-react';
@@ -25,16 +25,12 @@ interface NavigationProps {
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
-  const { selectedDate, resetAllData, appTheme, setAppTheme } = useJalurLangitStore();
+  const { selectedDate, resetAllData, appTheme, toggleTheme } = useJalurLangitStore();
 
   const handleReset = () => {
     if (confirm('Mulai ulang data amalan kalender? (Data impian & sedekah tetap aman)')) {
       resetAllData();
     }
-  };
-
-  const toggleTheme = () => {
-    setAppTheme(appTheme === 'blush' ? 'emerald' : 'blush');
   };
 
   return (
@@ -43,11 +39,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
       <header className="sticky top-0 z-40 w-full bg-white/85 dark:bg-emerald-950/85 backdrop-blur-md border-b border-stone-200/80 dark:border-emerald-800/60 px-4 sm:px-6 py-3 transition-colors shadow-xs">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center shadow-md transition-all ${
-              appTheme === 'blush'
-                ? 'bg-gradient-to-tr from-rose-500 to-pink-400 text-white shadow-rose-500/20'
-                : 'bg-gradient-to-tr from-emerald-800 to-teal-700 text-amber-300 shadow-emerald-900/20'
-            }`}>
+            <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-md transition-all bg-gradient-to-tr from-emerald-800 to-teal-700 text-amber-300 shadow-emerald-900/20">
               <Moon className="w-5 h-5 fill-current" />
             </div>
             <div>
@@ -55,11 +47,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
                 <span className="font-extrabold font-serif text-base tracking-tight text-stone-900 dark:text-stone-100">
                   Jalur Langit
                 </span>
-                <span className={`text-[10px] uppercase font-black px-1.5 py-0.5 rounded-md ${
-                  appTheme === 'blush'
-                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300'
-                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300'
-                }`}>
+                <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
                   Self Improvement Edition
                 </span>
               </div>
@@ -70,18 +58,29 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Theme Switcher Button */}
+            {/* Theme Switcher Button (Terang / Gelap) */}
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                appTheme === 'blush'
-                  ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
-                  : 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 ${
+                appTheme === 'dark'
+                  ? 'bg-emerald-950/80 border-emerald-800 text-amber-300 hover:bg-emerald-900 shadow-xs'
+                  : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100 shadow-xs'
               }`}
-              title="Ganti Tema Warna (Blush / Emerald)"
+              title="Ganti Tema (Terang / Gelap)"
             >
-              <Palette className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{appTheme === 'blush' ? 'Tema Blush 🌸' : 'Tema Emerald 🌿'}</span>
+              {appTheme === 'dark' ? (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span className="hidden sm:inline">Tema Gelap 🌙</span>
+                  <span className="sm:hidden">Gelap</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span className="hidden sm:inline">Tema Terang ☀️</span>
+                  <span className="sm:hidden">Terang</span>
+                </>
+              )}
             </button>
 
             {/* Date Badge */}
@@ -93,7 +92,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             <button
               onClick={handleReset}
               title="Reset Tantangan 30 Hari"
-              className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-xl hover:bg-stone-100 transition-colors"
+              className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -108,8 +107,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('home')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'home'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <Home className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -120,8 +119,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('amalan')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'amalan'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -132,8 +131,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('glowup')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'glowup'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <Droplets className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -145,11 +144,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('tasbih')}
             className="flex flex-col items-center py-1 px-2 transition-all relative"
           >
-            <div className={`w-9 h-9 -mt-4 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-emerald-950 ${
-              appTheme === 'blush'
-                ? 'bg-gradient-to-tr from-rose-500 to-amber-400 shadow-rose-500/30'
-                : 'bg-gradient-to-tr from-emerald-800 to-teal-700 shadow-emerald-900/30'
-            }`}>
+            <div className="w-9 h-9 -mt-4 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-emerald-950 bg-gradient-to-tr from-emerald-800 to-teal-700 shadow-emerald-900/30">
               <Sparkles className="w-4 h-4" />
             </div>
             <span className="text-[10px] mt-0.5 font-bold text-stone-700 dark:text-stone-300">Tasbih</span>
@@ -159,8 +154,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('vision')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'vision'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -171,8 +166,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('hajat')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'hajat'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
@@ -183,8 +178,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             onClick={() => onTabChange('quran')}
             className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
               activeTab === 'quran'
-                ? appTheme === 'blush' ? 'text-rose-600 font-bold scale-105' : 'text-emerald-700 font-bold scale-105'
-                : 'text-stone-400 hover:text-stone-600'
+                ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
+                : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
             <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />

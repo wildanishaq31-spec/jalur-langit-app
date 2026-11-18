@@ -75,7 +75,7 @@ export const AddVisionModal: React.FC<AddVisionModalProps> = ({
   onClose,
   editingItem,
 }) => {
-  const { addVisionItem, updateVisionItem, appTheme } = useJalurLangitStore();
+  const { addVisionItem, updateVisionItem } = useJalurLangitStore();
   const [mounted, setMounted] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -182,14 +182,8 @@ export const AddVisionModal: React.FC<AddVisionModalProps> = ({
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div
-              className={`p-2.5 rounded-2xl ${
-                appTheme === 'blush'
-                  ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-              }`}
-            >
-              {editingItem ? <Pencil className="w-5 h-5" /> : <Sparkles className="w-5 h-5 text-rose-500" />}
+            <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+              {editingItem ? <Pencil className="w-5 h-5" /> : <Sparkles className="w-5 h-5 text-amber-500" />}
             </div>
             <div>
               <h3 className="text-lg font-bold font-serif text-emerald-900 dark:text-emerald-100">
@@ -386,11 +380,7 @@ export const AddVisionModal: React.FC<AddVisionModalProps> = ({
             <button
               type="submit"
               disabled={isProcessingImage}
-              className={`w-full py-3 px-4 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
-                  : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
-              }`}
+              className="w-full py-3 px-4 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25"
             >
               <CheckCircle className="w-4 h-4" />
               <span>{editingItem ? 'Simpan Perubahan Impian' : 'Simpan ke Vision Board'}</span>

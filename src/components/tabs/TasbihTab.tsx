@@ -88,7 +88,6 @@ export const TasbihTab: React.FC = () => {
     setCustomTarget,
     toggleSound,
     toggleVibration,
-    appTheme,
   } = useJalurLangitStore();
 
   const [isPressing, setIsPressing] = useState(false);
@@ -294,11 +293,7 @@ export const TasbihTab: React.FC = () => {
 
           <button
             onClick={() => setIsPresetModalOpen(true)}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold text-white shadow-xs flex items-center gap-1.5 transition-all active:scale-95 flex-shrink-0 ${
-              appTheme === 'blush'
-                ? 'bg-rose-600 hover:bg-rose-700'
-                : 'bg-emerald-700 hover:bg-emerald-800'
-            }`}
+            className="px-3.5 py-2 rounded-2xl text-xs font-bold text-white shadow-xs flex items-center gap-1.5 transition-all active:scale-95 flex-shrink-0 bg-emerald-700 hover:bg-emerald-800"
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Pilih Dzikir</span>
@@ -319,9 +314,7 @@ export const TasbihTab: React.FC = () => {
                   key={st.stage}
                   className={`px-3 py-1.5 rounded-2xl text-[11px] font-bold flex items-center gap-1 transition-all ${
                     isCurrent
-                      ? appTheme === 'blush'
-                        ? 'bg-rose-600 text-white shadow-xs scale-105'
-                        : 'bg-emerald-700 text-white shadow-xs scale-105'
+                      ? 'bg-emerald-700 text-white shadow-xs scale-105'
                       : isPast
                       ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300'
                       : 'bg-stone-100 dark:bg-emerald-900/20 text-stone-400'
@@ -384,8 +377,6 @@ export const TasbihTab: React.FC = () => {
           className={`relative w-56 h-56 sm:w-64 sm:h-64 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all duration-100 active:scale-95 select-none ${
             isPressing
               ? 'bg-gradient-to-br from-emerald-800 to-teal-900 text-amber-200 scale-95 shadow-inner'
-              : appTheme === 'blush'
-              ? 'bg-gradient-to-br from-rose-600 via-rose-700 to-amber-700 text-white shadow-rose-900/30 hover:brightness-105'
               : 'bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-950 text-white shadow-emerald-900/40 hover:brightness-105'
           }`}
           style={{ touchAction: 'manipulation' }}

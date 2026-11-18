@@ -39,7 +39,6 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
     jumpToToday,
     getDateCompletionPercentage,
     completedAmalan,
-    appTheme,
   } = useJalurLangitStore();
 
   const totalAmalan = DEFAULT_AMALAN_LIST.length;
@@ -60,11 +59,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
       {/* Month & Year Navigator */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className={`p-2.5 rounded-2xl ${
-            appTheme === 'blush'
-              ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
-          }`}>
+          <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
             <CalendarIcon className="w-5 h-5" />
           </div>
 
@@ -117,9 +112,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
               onClick={() => setCalendarMonth(idx)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 isSelectedMonth
-                  ? appTheme === 'blush'
-                    ? 'bg-rose-500 text-white shadow-xs'
-                    : 'bg-emerald-800 text-amber-300 shadow-xs'
+                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
                   : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-emerald-900/20'
               }`}
             >
@@ -167,9 +160,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
             if (isFull) {
               badgeStyle = 'bg-emerald-600 text-white border-emerald-700 font-bold shadow-xs';
             } else if (hasStarted) {
-              badgeStyle = appTheme === 'blush'
-                ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-200 border-rose-300'
-                : 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 border-amber-300';
+              badgeStyle = 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-200 border-amber-300';
             }
 
             if (isSelected) {
@@ -234,11 +225,7 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
         {onOpenDateDetails && (
           <button
             onClick={() => onOpenDateDetails(selectedDate)}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold text-white shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              appTheme === 'blush'
-                ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/25'
-                : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
-            }`}
+            className="px-4 py-2.5 rounded-2xl text-xs font-bold text-white shadow-sm flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25"
           >
             <span>Buka Amalan Tanggal Ini</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -68,15 +68,15 @@ export const GlowUpTab: React.FC = () => {
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
       {/* Hero Header with Active Real Date */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-rose-100 via-pink-100 to-amber-100 dark:from-rose-950/40 dark:via-pink-950/30 dark:to-amber-950/30 border border-rose-200/80 dark:border-rose-900/40 shadow-xs">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-100 via-teal-50 to-amber-50 dark:from-emerald-950/50 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-900/40 shadow-xs">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
             <Sparkles className="w-5 h-5" />
             <span className="text-xs font-bold uppercase tracking-wider">Self Improvement & Daily Habits</span>
           </div>
 
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-black/30 text-xs font-bold text-stone-800 dark:text-stone-200">
-            <Calendar className="w-3.5 h-3.5 text-rose-500" />
+            <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>{formatDateIndonesian(selectedDate)}</span>
           </div>
         </div>
@@ -140,8 +140,8 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'morningSkincare')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.morningSkincare
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export const GlowUpTab: React.FC = () => {
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.morningSkincare ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.morningSkincare ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.morningSkincare && <Check className="w-4 h-4" />}
             </div>
@@ -162,8 +162,8 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'nightSkincare')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.nightSkincare
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -174,7 +174,7 @@ export const GlowUpTab: React.FC = () => {
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.nightSkincare ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.nightSkincare ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.nightSkincare && <Check className="w-4 h-4" />}
             </div>
@@ -184,19 +184,19 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'workout30Min')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.workout30Min
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
               <Activity className="w-5 h-5 text-emerald-500" />
               <div>
                 <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Olahraga / Stretching 30 Menit</div>
-                <div className="text-xs text-stone-500">Jalan pagi, senam ringan, atau yoga</div>
+                <div className="text-xs text-stone-500">Jalan pagi, senam ringan, atau workout</div>
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.workout30Min ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.workout30Min ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.workout30Min && <Check className="w-4 h-4" />}
             </div>
@@ -206,8 +206,8 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'reading15Min')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.reading15Min
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ export const GlowUpTab: React.FC = () => {
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.reading15Min ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.reading15Min ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.reading15Min && <Check className="w-4 h-4" />}
             </div>
@@ -228,8 +228,8 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'sleep7Hours')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.sleep7Hours
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -240,7 +240,7 @@ export const GlowUpTab: React.FC = () => {
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.sleep7Hours ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.sleep7Hours ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.sleep7Hours && <Check className="w-4 h-4" />}
             </div>
@@ -250,8 +250,8 @@ export const GlowUpTab: React.FC = () => {
             onClick={() => toggleGlowUpHabit(selectedDate, 'healthyFood')}
             className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
               currentGlowUp.healthyFood
-                ? 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800'
-                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-rose-200'
+                ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
+                : 'bg-stone-50/60 dark:bg-emerald-900/20 border-stone-200 dark:border-emerald-800/40 hover:border-emerald-200'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ export const GlowUpTab: React.FC = () => {
               </div>
             </div>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
-              currentGlowUp.healthyFood ? 'bg-rose-500 border-rose-600 text-white' : 'border-stone-300'
+              currentGlowUp.healthyFood ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.healthyFood && <Check className="w-4 h-4" />}
             </div>

@@ -50,7 +50,6 @@ export const AmalanTab: React.FC = () => {
     getDateCompletionPercentage,
     notificationsEnabled,
     notificationTimes,
-    appTheme
   } = useJalurLangitStore();
 
   const [selectedCategory, setSelectedCategory] = useState<TimeCategory | 'semua'>('semua');
@@ -139,11 +138,7 @@ export const AmalanTab: React.FC = () => {
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
       {/* 1. REAL-TIME HP CLOCK & ACTIVE SCHEDULE BANNER */}
-      <div className={`p-5 rounded-3xl border shadow-xs transition-all ${
-        appTheme === 'blush'
-          ? 'bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 dark:from-rose-950/40 dark:via-pink-950/20 dark:to-amber-950/20 border-rose-200/80 dark:border-rose-900/40'
-          : 'bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-amber-950/20 border-emerald-200/80 dark:border-emerald-900/40'
-      }`}>
+      <div className="p-5 rounded-3xl border shadow-xs transition-all bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-amber-950/20 border-emerald-200/80 dark:border-emerald-900/40">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -201,9 +196,7 @@ export const AmalanTab: React.FC = () => {
 
         <div className="text-center px-2">
           <div className="flex items-center justify-center gap-2">
-            <span className={`text-xs font-semibold uppercase tracking-wider ${
-              appTheme === 'blush' ? 'text-rose-600' : 'text-amber-600 dark:text-amber-400'
-            }`}>
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-amber-400">
               Checklist Amalan Harian
             </span>
             {selectedDate !== todayStr && (
@@ -237,11 +230,7 @@ export const AmalanTab: React.FC = () => {
       {/* Progress Bar of the Day */}
       <div className="w-full bg-stone-200 dark:bg-emerald-950/60 rounded-full h-3 overflow-hidden p-0.5">
         <div
-          className={`h-full rounded-full transition-all duration-500 ease-out ${
-            appTheme === 'blush'
-              ? 'bg-gradient-to-r from-rose-500 to-amber-400'
-              : 'bg-gradient-to-r from-emerald-600 to-amber-400'
-          }`}
+          className="h-full rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-emerald-600 to-amber-400"
           style={{ width: `${currentCompletion}%` }}
         />
       </div>
@@ -258,9 +247,7 @@ export const AmalanTab: React.FC = () => {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-4 py-2.5 rounded-2xl text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all relative ${
                 isActive
-                  ? appTheme === 'blush'
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'bg-emerald-800 text-amber-300 shadow-xs'
+                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
                   : 'bg-white dark:bg-emerald-950/40 border border-stone-200/80 dark:border-emerald-800/60 text-stone-600 dark:text-stone-300 hover:bg-stone-50'
               }`}
             >

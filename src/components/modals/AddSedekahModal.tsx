@@ -17,7 +17,7 @@ export const AddSedekahModal: React.FC<AddSedekahModalProps> = ({
   onClose,
   editingItem,
 }) => {
-  const { addSedekah, updateSedekah, appTheme } = useJalurLangitStore();
+  const { addSedekah, updateSedekah } = useJalurLangitStore();
   const [mounted, setMounted] = useState(false);
 
   const [amount, setAmount] = useState('');
@@ -73,13 +73,7 @@ export const AddSedekahModal: React.FC<AddSedekahModalProps> = ({
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div
-              className={`p-2.5 rounded-2xl ${
-                appTheme === 'blush'
-                  ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
-              }`}
-            >
+            <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">
               {editingItem ? <Pencil className="w-5 h-5" /> : <HandCoins className="w-5 h-5" />}
             </div>
             <div>
@@ -149,11 +143,7 @@ export const AddSedekahModal: React.FC<AddSedekahModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 px-4 font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
-                  : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
-              }`}
+              className="w-full py-3 px-4 font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25"
             >
               {editingItem ? <CheckCircle className="w-4 h-4" /> : <Heart className="w-4 h-4 text-rose-300" />}
               <span>{editingItem ? 'Simpan Perubahan Sedekah' : 'Simpan Sedekah Subuh'}</span>

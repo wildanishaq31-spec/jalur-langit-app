@@ -13,7 +13,7 @@ interface AddTadabburModalProps {
 }
 
 export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onClose, editingItem }) => {
-  const { addQuranTadabbur, updateQuranTadabbur, appTheme } = useJalurLangitStore();
+  const { addQuranTadabbur, updateQuranTadabbur } = useJalurLangitStore();
 
   const [surahName, setSurahName] = useState('');
   const [ayahRange, setAyahRange] = useState('');
@@ -199,11 +199,7 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 px-4 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700'
-                  : 'bg-emerald-800 hover:bg-emerald-900'
-              }`}
+              className="w-full py-3 px-4 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 bg-emerald-800 hover:bg-emerald-900"
             >
               <CheckCircle className="w-4 h-4" />
               <span>{isEditing ? 'Simpan Perubahan Tadabbur' : 'Simpan Lembar Tadabbur'}</span>

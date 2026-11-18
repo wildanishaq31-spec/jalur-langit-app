@@ -97,6 +97,7 @@ const INITIAL_TADABBUR: QuranTadabburItem[] = [
 interface JalurLangitState {
   appTheme: AppTheme;
   setAppTheme: (theme: AppTheme) => void;
+  toggleTheme: () => void;
 
   // Real Calendar Navigation (Januari s/d Desember)
   calendarYear: number;
@@ -193,8 +194,9 @@ interface JalurLangitState {
 export const useJalurLangitStore = create<JalurLangitState>()(
   persist(
     (set, get) => ({
-      appTheme: 'blush',
+      appTheme: 'light',
       setAppTheme: (theme) => set({ appTheme: theme }),
+      toggleTheme: () => set((state) => ({ appTheme: state.appTheme === 'dark' ? 'light' : 'dark' })),
 
       calendarYear: 2026,
       calendarMonth: 10,
@@ -612,6 +614,16 @@ export const useJalurLangitStore = create<JalurLangitState>()(
     {
       name: 'jalur-langit-calendar-storage-v3',
       storage: createJSONStorage(() => localStorage),
+      version: 2,
+      migrate: (persistedState: any) => {
+        if (persistedState && (persistedState.appTheme === 'blush' || persistedState.appTheme === 'emerald')) {
+          return {
+            ...persistedState,
+            appTheme: 'light',
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

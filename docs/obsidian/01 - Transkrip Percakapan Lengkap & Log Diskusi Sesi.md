@@ -354,4 +354,32 @@ tags:
 
 ---
 
+### 🔹 Turn 20: Transisi Tema Terang (Light Mode) & Tema Gelap (Dark Mode) Mobile-Ready
+* **Pengguna**:
+  > *"sekarang kita buat tema terang dan gelap saja karena ini aplikasi di mobile"*
+  > *(Mengunggah gambar beranda aplikasi dengan tombol lama "Tema Blush")*
+* **Penyebab & Kebutuhan**:
+  - Sebelumnya sistem tema memakai pemilih palet warna custom (*Tema Blush* vs *Tema Emerald*) tanpa saklar mode Terang dan Gelap yang independen.
+  - Untuk kenyamanan penggunaan di smartphone (*mobile app*), pengguna membutuhkan saklar **Tema Terang (Light Mode)** dan **Tema Gelap (Dark Mode)** standar agar nyaman dibaca di bawah terik matahari maupun saat beribadah malam hari di tempat gelap.
+* **Solusi Rekayasa**:
+  1. **Konfigurasi Tailwind CSS v4 & Variabel Desain (`src/app/globals.css`)**:
+     - Menambahkan `@custom-variant dark (&:where(.dark, .dark *));` untuk kontrol dark mode berbasis kelas `.dark` pada elemen HTML.
+     - Memisahkan variabel CSS `:root` untuk Mode Terang (*ivory background* `#fbf9f5`, *card* `#ffffff`, *text* `#1c2e26`) dan `.dark` untuk Mode Gelap (*deep emerald* `#0a1410`, *dark card* `#11221b`, *text* `#f0f7f3`).
+  2. **Type Definition & State Store (`src/types/index.ts` & `src/store/useJalurLangitStore.ts`)**:
+     - Mengubah tipe `AppTheme` dari `'emerald' | 'blush'` menjadi `'light' | 'dark'`.
+     - Menambahkan fungsi `toggleTheme()` yang beralih antara `'light'` dan `'dark'`.
+     - Menyertakan migrasi otomatis *persistence* agar cache data lama yang masih menyimpan `'blush'` atau `'emerald'` secara otomatis ter-upgrade ke mode `'light'`.
+  3. **Root Page Controller (`src/app/page.tsx`)**:
+     - Menambahkan `useEffect` yang secara reaktif menyematkan atau melepas kelas `dark` pada `document.documentElement` (`<html class="dark">`).
+     - Mengatur kontainer utama menjadi `bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]`.
+  4. **Tombol Pengalih Tema di Header (`src/components/Navigation.tsx`)**:
+     - Mengganti tombol palet warna dengan tombol saklar **Tema Terang ☀️ / Tema Gelap 🌙** lengkap dengan ikon dinamis `Sun` dan `Moon`.
+  5. **Penyelarasan Warna Komponen & Modal**:
+     - Menghapus ketergantungan class pink/rose dari tema blush lama di seluruh tab dan modal (`AddHajatModal`, `AddKajianModal`, `AddSedekahModal`, `AddTadabburModal`, `AddVisionModal`, `AlarmNotificationModal`, `HomeTab`, `AmalanTab`, `CalendarMonthView`, `GlowUpTab`, `TasbihTab`, `QuranJournalTab`).
+     - Seluruh tombol aksi utama menggunakan warna khas hijau Islami dan emas yang elegan (`bg-emerald-700 hover:bg-emerald-800` dan aksen `amber-500`) yang serasi untuk mode Terang maupun Gelap.
+  6. **Verifikasi**:
+     - `npm run build` berhasil 100% (Turbopack, TypeScript 0 error).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

@@ -33,7 +33,6 @@ export const QuranJournalTab: React.FC = () => {
     deleteKajian,
     quranTadabburList,
     deleteQuranTadabbur,
-    appTheme
   } = useJalurLangitStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'tadabbur' | 'juz' | 'kajian' | 'syukur'>('tadabbur');
@@ -481,11 +480,7 @@ export const QuranJournalTab: React.FC = () => {
             <button
               type="button"
               onClick={handleAddGratitude}
-              className={`w-full py-2.5 px-4 rounded-2xl border-2 border-dashed text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-98 ${
-                appTheme === 'blush'
-                  ? 'border-rose-300 dark:border-rose-800/80 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30'
-                  : 'border-emerald-300 dark:border-emerald-700/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
-              }`}
+              className="w-full py-2.5 px-4 rounded-2xl border-2 border-dashed border-emerald-300 dark:border-emerald-700/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-98"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Tambah Poin Rasa Syukur (+ Baris Baru)</span>
@@ -494,11 +489,7 @@ export const QuranJournalTab: React.FC = () => {
             {/* BUTTON SIMPAN */}
             <button
               onClick={handleSaveGratitude}
-              className={`w-full py-3 px-4 text-white text-xs font-bold rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98 ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700'
-                  : 'bg-emerald-800 hover:bg-emerald-900'
-              }`}
+              className="w-full py-3 px-4 text-white text-xs font-bold rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98 bg-emerald-800 hover:bg-emerald-900"
             >
               {isSavedGratitude ? (
                 <>

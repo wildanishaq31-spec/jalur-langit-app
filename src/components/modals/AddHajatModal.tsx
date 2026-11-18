@@ -27,7 +27,7 @@ export const AddHajatModal: React.FC<AddHajatModalProps> = ({
   onClose,
   editingItem,
 }) => {
-  const { addHajat, updateHajat, appTheme } = useJalurLangitStore();
+  const { addHajat, updateHajat } = useJalurLangitStore();
   const [mounted, setMounted] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -85,13 +85,7 @@ export const AddHajatModal: React.FC<AddHajatModalProps> = ({
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div
-              className={`p-2.5 rounded-2xl ${
-                appTheme === 'blush'
-                  ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                  : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
-              }`}
-            >
+            <div className="p-2.5 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
               {editingItem ? <Pencil className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
             </div>
             <div>
@@ -180,11 +174,7 @@ export const AddHajatModal: React.FC<AddHajatModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 px-4 font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
-                  : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
-              }`}
+              className="w-full py-3 px-4 font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25"
             >
               <CheckCircle className="w-4 h-4" />
               <span>{editingItem ? 'Simpan Perubahan Hajat' : 'Simpan Hajat & Mulai Doakan'}</span>

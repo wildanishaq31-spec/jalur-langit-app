@@ -13,7 +13,7 @@ interface AddKajianModalProps {
 }
 
 export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose, editingItem }) => {
-  const { addKajian, updateKajian, appTheme } = useJalurLangitStore();
+  const { addKajian, updateKajian } = useJalurLangitStore();
 
   const [title, setTitle] = useState('');
   const [speaker, setSpeaker] = useState('');
@@ -179,11 +179,7 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3 px-4 font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 text-xs text-white ${
-                appTheme === 'blush'
-                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
-                  : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
-              }`}
+              className="w-full py-3 px-4 font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 text-xs text-white bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25"
             >
               <CheckCircle className="w-4 h-4" />
               <span>{isEditing ? 'Simpan Perubahan Kajian' : 'Simpan Catatan Kajian'}</span>

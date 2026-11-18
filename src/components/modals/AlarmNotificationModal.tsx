@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Bell, BellRing, Clock, CheckCircle2, AlertCircle, Sparkles, Volume2 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { TimeCategory } from '@/types';
@@ -50,11 +51,15 @@ export const AlarmNotificationModal: React.FC<AlarmNotificationModalProps> = ({ 
     notificationTimes,
     setNotificationsEnabled,
     setNotificationTime,
-    appTheme,
   } = useJalurLangitStore();
 
+  const [mounted, setMounted] = useState(false);
   const [permissionState, setPermissionState] = useState<NotificationPermission>('default');
   const [testSentMessage, setTestSentMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -103,24 +108,22 @@ export const AlarmNotificationModal: React.FC<AlarmNotificationModalProps> = ({ 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-fade-in">
+  if (!isOpen || !mounted) return null;
+
+  const modalContent = (
+    <div className="fixed inset-0 z-35 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 pb-24 flex items-center justify-center animate-fade-in">
       <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[85vh] flex flex-col overflow-hidden">
-        {/* Fixed Header */}
-        <div className="p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-10 p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-2xl ${
-              appTheme === 'blush'
-                ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400'
-                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
-            }`}>
+            <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
               <BellRing className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="text-lg font-bold font-serif">
+              <h3 className="text-lg font-bold font-serif text-emerald-900 dark:text-emerald-100">
                 Sinkronisasi & Alarm Waktu Amalan
               </h3>
-              <p className="text-[11px] text-stone-500">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Notifikasi otomatis di HP agar tidak melewatkan waktu mustajab.
               </p>
             </div>
@@ -235,4 +238,6 @@ export const AlarmNotificationModal: React.FC<AlarmNotificationModalProps> = ({ 
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

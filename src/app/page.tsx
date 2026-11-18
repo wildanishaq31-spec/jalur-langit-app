@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigation, ActiveTab } from '@/components/Navigation';
 import { HomeTab } from '@/components/tabs/HomeTab';
 import { AmalanTab } from '@/components/tabs/AmalanTab';
@@ -15,13 +15,17 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const appTheme = useJalurLangitStore((s) => s.appTheme);
 
+  useEffect(() => {
+    if (appTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [appTheme]);
+
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
-        appTheme === 'blush'
-          ? 'bg-[#fffaf9] dark:bg-[#150e12] text-[#2d1b22] dark:text-[#f8eff2]'
-          : 'bg-[#fbf9f5] dark:bg-[#0d1713] text-[#1c2e26] dark:text-[#f0f7f3]'
-      }`}
+      className="min-h-screen transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]"
     >
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
 
