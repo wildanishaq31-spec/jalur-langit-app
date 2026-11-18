@@ -11,9 +11,7 @@ import {
   HelpCircle, 
   Mail,
   ShoppingBag,
-  Check,
-  User,
-  UserPlus
+  User
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
@@ -31,12 +29,9 @@ export const LoginPage: React.FC = () => {
   const [googleEmailInput, setGoogleEmailInput] = useState('');
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [isUsingOtherAccount, setIsUsingOtherAccount] = useState(false);
-  const [turnstileState, setTurnstileState] = useState<'idle' | 'verifying' | 'verified'>('idle');
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputEmail.trim()) return;
-    if (turnstileState !== 'verified') return;
     loginWithEmail(inputEmail.trim());
   };
 
@@ -175,72 +170,9 @@ export const LoginPage: React.FC = () => {
               />
             </div>
 
-            {/* Cloudflare Turnstile Human Verification Widget */}
-            <div className="p-3 rounded-2xl border border-stone-200 dark:border-emerald-800/80 bg-stone-50/90 dark:bg-[#081510] flex items-center justify-between shadow-xs transition-all">
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (turnstileState === 'verified') return;
-                    setTurnstileState('verifying');
-                    setTimeout(() => {
-                      setTurnstileState('verified');
-                    }, 1200);
-                  }}
-                  className={`w-6 h-6 rounded-md border flex items-center justify-center transition-all ${
-                    turnstileState === 'verified'
-                      ? 'bg-emerald-600 border-emerald-600 text-white'
-                      : turnstileState === 'verifying'
-                      ? 'bg-amber-50 dark:bg-amber-950 border-amber-400'
-                      : 'bg-white dark:bg-emerald-950/80 border-stone-300 dark:border-emerald-700 hover:border-amber-500'
-                  }`}
-                  title="Klik untuk verifikasi keamanan"
-                >
-                  {turnstileState === 'verifying' && (
-                    <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {turnstileState === 'verified' && (
-                    <Check className="w-4 h-4 text-white stroke-[2.5]" />
-                  )}
-                </button>
-
-                <div className="text-left">
-                  <div className="text-xs font-bold text-stone-800 dark:text-stone-200">
-                    {turnstileState === 'verified'
-                      ? 'Verifikasi Berhasil'
-                      : turnstileState === 'verifying'
-                      ? 'Memverifikasi...'
-                      : 'Verifikasi bahwa Anda manusia'}
-                  </div>
-                  <div className="text-[10px] text-stone-400">
-                    {turnstileState === 'verified' ? 'Telah terverifikasi aman' : 'Klik kotak untuk melanjutkan'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Cloudflare Badge */}
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1">
-                  {/* Cloudflare Orange Cloud Icon */}
-                  <svg className="w-6 h-4" viewBox="0 0 48 32" fill="none">
-                    <path d="M37.5 14.5C37.5 14 37.4 13.5 37.3 13C36.1 7.8 31.5 4 26 4C21.4 4 17.5 6.7 15.6 10.6C14.7 10.2 13.6 10 12.5 10C8.4 10 5 13.4 5 17.5C5 17.8 5 18.2 5.1 18.5C2.2 19.8 0 22.7 0 26.2C0 30.5 3.5 34 7.8 34H37.5C41.6 34 45 30.6 45 26.5C45 20.8 40.5 15.8 37.5 14.5Z" fill="#F38020"/>
-                    <path d="M31.2 34H7.8C4.5 34 1.8 31.4 1.5 28.2C2.4 28.7 3.5 29 4.6 29H31.2C32.7 29 34 27.7 34 26.2C34 24.7 32.7 23.4 31.2 23.4H30.5C30.2 21.2 28.3 19.5 26 19.5C25.5 19.5 25 19.6 24.6 19.8C25.5 17.8 27.6 16.5 30 16.5C33.6 16.5 36.5 19.4 36.5 23C36.5 23.4 36.5 23.7 36.4 24.1C39.4 24.6 41.6 27.2 41.6 30.3C41.6 32.3 40.2 34 38.2 34H31.2Z" fill="#FAAE40"/>
-                  </svg>
-                  <span className="text-[10px] font-black tracking-wider text-stone-600 dark:text-stone-300">
-                    CLOUDFLARE
-                  </span>
-                </div>
-                <div className="flex gap-1 text-[8px] text-stone-400">
-                  <span>Privacy</span>
-                  <span>•</span>
-                  <span>Terms</span>
-                </div>
-              </div>
-            </div>
-
             <button
               type="submit"
-              disabled={!inputEmail.trim() || turnstileState !== 'verified'}
+              disabled={!inputEmail.trim()}
               className="w-full py-3 px-4 rounded-2xl bg-emerald-800 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
             >
               <span>Verifikasi Akses Pembeli</span>

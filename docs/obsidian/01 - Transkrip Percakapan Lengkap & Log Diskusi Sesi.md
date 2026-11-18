@@ -755,4 +755,28 @@ tags:
 
 ---
 
+### 🔹 Turn 33: Penyelarasan Proteksi Bot via Cloudflare Security Rules (WAF Edge Level) & Pembersihan Form Email
+* **Pengguna**:
+  > *"nah sekarang utuh verifikasinya bukan seperti itu, qw baca di google ternyata harus pasang security rule (WAF) seperti di gambar"*
+  > *(Mengunggah Gambar: Panduan resmi Cloudflare "Memasang Challenge via Security Rules (WAF)")*
+* **Latar Belakang & Wawasan Arsitektur Keamanan**:
+  - Pengguna menemukan panduan resmi bahwa proteksi tantangan bot (*Cloudflare Managed Challenge*) bekerja di level **Edge Proxy / DNS CDN (Cloudflare WAF)** sebelum permintaan trafik mencapai server aplikasi Next.js.
+  - Memasang simulasi widget checkbox manual di dalam formulir React lokal membuat proses login terkesan lambat dan tidak natural.
+  - Dengan memanfaatkan fitur **Cloudflare Security Rules (WAF)** pada saat domain kustom dipasang nanti, seluruh proteksi bot berbahaya, scraper, dan brute-force akan dihadang otomatis oleh Cloudflare di gerbang depan internet (*Edge Level*).
+  - Formulir input email manual di aplikasi ([LoginPage.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/auth/LoginPage.tsx)) dapat dibersihkan sehingga pengalaman pengguna (*UX*) menjadi sangat cepat, mulus, dan elegan: pembeli hanya perlu mengetikkan email pembelian Lynk.id lalu menekan tombol **"Verifikasi Akses Pembeli"**.
+* **Solusi Rekayasa & Pembersihan Kode**:
+  1. **Pembersihan Komponen [LoginPage.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/auth/LoginPage.tsx)**:
+     - Menghapus state `turnstileState` dan mock box widget Turnstile dari dalam formulir.
+     - Membersihkan import yang tidak diperlukan (`Check`, `UserPlus`).
+     - Menyederhanakan penanganan form (`handleSubmit`): tombol langsung aktif saat email telah diketik (`disabled={!inputEmail.trim()}`).
+     - Tombol langsung menguji email ke dalam `loginWithEmail(inputEmail.trim())`:
+       - Jika email cocok dengan whitelist pembeli ➔ Animasi splash loading bulan emas berdenyut ➔ Masuk aplikasi.
+       - Jika email belum terdaftar ➔ Muncul modal penolakan ramah *Access Denied* yang mengarahkan pembeli ke tautan checkout Lynk.id.
+  2. **Verifikasi Build**:
+     - `npm run build` sukses 100% (Turbopack compile 1.4s, TypeScript 0 error, Static prerender 4/4 selesai).
+  3. **Penyusunan Panduan Setup Cloudflare WAF**:
+     - Mendokumentasikan 4 langkah praktis aktivasi Cloudflare WAF Managed Challenge untuk domain aplikasi live.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
