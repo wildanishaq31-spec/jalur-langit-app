@@ -30,32 +30,58 @@ export const QuranJournalTab: React.FC = () => {
     kajianNotes, 
     deleteKajian,
     quranTadabburList,
-    deleteQuranTadabbur
+    deleteQuranTadabbur,
+    appTheme
   } = useJalurLangitStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'tadabbur' | 'juz' | 'kajian' | 'syukur'>('tadabbur');
   const [isKajianModalOpen, setIsKajianModalOpen] = useState(false);
   const [isTadabburModalOpen, setIsTadabburModalOpen] = useState(false);
 
-  // Gratitude for selectedDate
-  const currentGratitude = gratitudeMap[selectedDate] || ['', '', ''];
-  const [gratitude1, setGratitude1] = useState(currentGratitude[0] || '');
-  const [gratitude2, setGratitude2] = useState(currentGratitude[1] || '');
-  const [gratitude3, setGratitude3] = useState(currentGratitude[2] || '');
+  // Gratitude for selectedDate (dynamic list)
+  const [gratitudeItems, setGratitudeItems] = useState<string[]>(() => {
+    const list = gratitudeMap[selectedDate];
+    if (list && list.length > 0) {
+      return list;
+    }
+    return ['', '', ''];
+  });
   const [isSavedGratitude, setIsSavedGratitude] = useState(false);
 
   React.useEffect(() => {
-    const list = gratitudeMap[selectedDate] || ['', '', ''];
-    setGratitude1(list[0] || '');
-    setGratitude2(list[1] || '');
-    setGratitude3(list[2] || '');
+    const list = gratitudeMap[selectedDate];
+    if (list && list.length > 0) {
+      setGratitudeItems(list);
+    } else {
+      setGratitudeItems(['', '', '']);
+    }
     setIsSavedGratitude(false);
   }, [selectedDate, gratitudeMap]);
 
+  const handleUpdateGratitude = (index: number, val: string) => {
+    setGratitudeItems((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleAddGratitude = () => {
+    setGratitudeItems((prev) => [...prev, '']);
+  };
+
+  const handleRemoveGratitude = (index: number) => {
+    if (gratitudeItems.length <= 1) {
+      setGratitudeItems(['']);
+      return;
+    }
+    setGratitudeItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSaveGratitude = () => {
-    setGratitudeList(selectedDate, [gratitude1, gratitude2, gratitude3]);
+    setGratitudeList(selectedDate, gratitudeItems);
     setIsSavedGratitude(true);
-    setTimeout(() => setIsSavedGratitude(false), 2000);
+    setTimeout(() => setIsSavedGratitude(false), 2500);
   };
 
   const handleToggleJuzWithCelebration = (juz: number) => {
@@ -349,59 +375,90 @@ export const QuranJournalTab: React.FC = () => {
 
       {/* SUB-TAB 4: GRATITUDE & SYUKUR */}
       {activeSubTab === 'syukur' && (
-        <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-            <Heart className="w-5 h-5" />
-            <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100">
-              Gratitude Journal ({formatDateIndonesian(selectedDate)})
-            </h2>
+        <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+              <Heart className="w-5 h-5 fill-rose-500/20" />
+              <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100">
+                Gratitude Journal ({formatDateIndonesian(selectedDate)})
+              </h2>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+              {gratitudeItems.filter(t => t.trim().length > 0).length} Hal Disyukuri
+            </span>
           </div>
-          <p className="text-xs text-stone-500">
+
+          <p className="text-xs text-stone-500 italic">
             “Jika kamu bersyukur, pasti Kami akan menambah (nikmat) kepadamu.” (QS. Ibrahim: 7)
           </p>
 
           <div className="space-y-3">
-            <div className="relative">
-              <span className="absolute left-3 top-3 text-xs font-bold text-amber-600">1.</span>
-              <input
-                type="text"
-                placeholder="Hal pertama yang sangat kamu syukuri hari ini..."
-                value={gratitude1}
-                onChange={(e) => setGratitude1(e.target.value)}
-                className="w-full pl-8 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border text-xs focus:outline-none"
-              />
-            </div>
+            {gratitudeItems.map((item, index) => {
+              const defaultPlaceholders = [
+                'Hal pertama yang sangat kamu syukuri hari ini...',
+                'Kebaikan kecil atau kemudahan yang kamu rasakan...',
+                'Kesehatan, orang terkasih, atau rezeki tak terduga...'
+              ];
+              const placeholderText = index < defaultPlaceholders.length
+                ? defaultPlaceholders[index]
+                : `Hal lain yang kamu syukuri ke-${index + 1}...`;
 
-            <div className="relative">
-              <span className="absolute left-3 top-3 text-xs font-bold text-amber-600">2.</span>
-              <input
-                type="text"
-                placeholder="Kebaikan kecil atau kemudahan yang kamu rasakan..."
-                value={gratitude2}
-                onChange={(e) => setGratitude2(e.target.value)}
-                className="w-full pl-8 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border text-xs focus:outline-none"
-              />
-            </div>
+              return (
+                <div key={index} className="flex items-center gap-2 group">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3.5 top-3 text-xs font-bold text-amber-600 dark:text-amber-400">
+                      {index + 1}.
+                    </span>
+                    <input
+                      type="text"
+                      placeholder={placeholderText}
+                      value={item}
+                      onChange={(e) => handleUpdateGratitude(index, e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                    />
+                  </div>
 
-            <div className="relative">
-              <span className="absolute left-3 top-3 text-xs font-bold text-amber-600">3.</span>
-              <input
-                type="text"
-                placeholder="Kesehatan, orang terkasih, atau rezeki tak terduga..."
-                value={gratitude3}
-                onChange={(e) => setGratitude3(e.target.value)}
-                className="w-full pl-8 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border text-xs focus:outline-none"
-              />
-            </div>
+                  {gratitudeItems.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGratitude(index)}
+                      className="p-2.5 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex-shrink-0"
+                      title={`Hapus nomor ${index + 1}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
 
+            {/* BUTTON TAMBAH GRATITUDE (BISA LEBIH DARI 3) */}
+            <button
+              type="button"
+              onClick={handleAddGratitude}
+              className={`w-full py-2.5 px-4 rounded-2xl border-2 border-dashed text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-98 ${
+                appTheme === 'blush'
+                  ? 'border-rose-300 dark:border-rose-800/80 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30'
+                  : 'border-emerald-300 dark:border-emerald-700/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+              }`}
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Tambah Poin Rasa Syukur (+ Baris Baru)</span>
+            </button>
+
+            {/* BUTTON SIMPAN */}
             <button
               onClick={handleSaveGratitude}
-              className="w-full py-2.5 px-4 bg-stone-900 dark:bg-emerald-800 text-white text-xs font-bold rounded-2xl hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+              className={`w-full py-3 px-4 text-white text-xs font-bold rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98 ${
+                appTheme === 'blush'
+                  ? 'bg-rose-600 hover:bg-rose-700'
+                  : 'bg-emerald-800 hover:bg-emerald-900'
+              }`}
             >
               {isSavedGratitude ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>Tersimpan untuk Tanggal Ini!</span>
+                  <Check className="w-4 h-4 text-amber-300 stroke-[3]" />
+                  <span>Catatan Syukur Berhasil Disimpan!</span>
                 </>
               ) : (
                 <>

@@ -174,4 +174,19 @@ tags:
     `E:\APLIKASI\aplikasi jalur langit\docs\obsidian\`
 
 ---
+
+### 🔹 Turn 11: Poin Rasa Syukur Dinamis (Bisa Menambah Lebih dari 3 Poin)
+* **Pengguna**:
+  > *"ini kita tambah tombol tambah gratitude jadi bisa menambah lebih dari 3"*
+  > *(Mengunggah gambar tampilan Gratitude Journal dengan 3 input statis)*
+* **Penyebab & Kebutuhan**: Form rasa syukur sebelumnya terbatas pada 3 baris input statis (`gratitude1`, `gratitude2`, `gratitude3`). Pengguna membutuhkan fleksibilitas untuk mencatat lebih banyak nikmat harian (4, 5, atau berapapun) tanpa batasan.
+* **Solusi Rekayasa**:
+  1. Mengubah struktur state lokal di `QuranJournalTab.tsx` dari variabel terpisah menjadi array dinamis `gratitudeItems: string[]`.
+  2. Menambahkan tombol interaktif bertema elegan: **`[+ Tambah Poin Rasa Syukur (+ Baris Baru)]`**.
+  3. Menambahkan penomoran otomatis (1, 2, 3, 4, 5...) dengan placeholder kontekstual untuk setiap baris baru yang ditambah.
+  4. Menambahkan tombol hapus baris per item (`Trash2`) dengan proteksi minimal 1 baris agar pengguna dapat mengoreksi baris tambahan.
+  5. Menambahkan badge ringkasan di header: `X Hal Disyukuri` yang menghitung otomatis jumlah poin nikmat yang telah diisi.
+  6. Menyimpan seluruh daftar poin ke `useJalurLangitStore` (`gratitudeMap[selectedDate]`) dengan notifikasi visual tersimpan.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
