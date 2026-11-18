@@ -102,18 +102,18 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
         </div>
       </div>
 
-      {/* Month Horizontal Fast-Picker (Januari s/d Desember) */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-stone-100 dark:border-emerald-900/40 pt-1">
+      {/* Month Fast-Picker (Januari s/d Desember) - Responsive Grid agar pas di dalam Card */}
+      <div className="grid grid-cols-6 sm:grid-cols-12 gap-1 sm:gap-1.5 border-b border-stone-100 dark:border-emerald-900/40 pb-2.5 pt-1">
         {MONTH_NAMES_ID.map((name, idx) => {
           const isSelectedMonth = calendarMonth === idx;
           return (
             <button
               key={name}
               onClick={() => setCalendarMonth(idx)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`w-full py-1.5 px-0.5 rounded-xl text-[11px] sm:text-xs font-semibold text-center transition-all ${
                 isSelectedMonth
-                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-emerald-900/20'
+                  ? 'bg-emerald-700 dark:bg-emerald-800 text-white dark:text-amber-300 font-bold shadow-xs scale-[1.02]'
+                  : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
               }`}
             >
               {name.slice(0, 3)}

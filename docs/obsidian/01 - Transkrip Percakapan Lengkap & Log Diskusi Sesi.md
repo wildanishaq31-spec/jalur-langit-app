@@ -382,4 +382,28 @@ tags:
 
 ---
 
+### 🔹 Turn 21: Perbaikan Tampilan Pemilih Bulan Kalender (Responsif & Anti-Terpotong di Mobile Card)
+* **Pengguna**:
+  > *"untuk bulannya menghilang mulai november dan desember jadi buat agar pas cardnya"*
+  > *(Mengunggah tangkapan layar pemilih bulan di kalender di mana bulan November terpotong di tepi kanan card dan Desember hilang dari pandangan)*
+* **Penyebab & Kebutuhan**:
+  - Pada komponen `src/components/CalendarMonthView.tsx`, baris pemilih 12 bulan (Januari s/d Desember) sebelumnya menggunakan `flex gap-1.5 overflow-x-auto` dengan teks tombol yang memiliki padding `px-3` serta properti `whitespace-nowrap`.
+  - Pada layar smartphone/mobile (atau card berukuran terbatas), total lebar 12 tombol tersebut melampaui lebar card (membutuhkan lebih dari 500px).
+  - Akibatnya, tanpa scroll horizontal manual, bulan November terpotong di ujung kanan dan bulan Desember tersembunyi sepenuhnya di luar batas card.
+* **Solusi Rekayasa**:
+  1. **Layout Grid Responsif (`src/components/CalendarMonthView.tsx`)**:
+     - Mengganti kontainer flex scrollable dengan grid responsif cerdas:
+       `grid grid-cols-6 sm:grid-cols-12 gap-1 sm:gap-1.5 border-b border-stone-100 dark:border-emerald-900/40 pb-2.5 pt-1`.
+     - **Di layar ponsel / mobile**: Otomatis tertata rapi dalam 2 baris × 6 kolom (Semester 1: Jan - Jun di baris atas, Semester 2: Jul - Des di baris bawah).
+     - **Di layar tablet / desktop**: Otomatis tertata horizontal 1 baris penuh × 12 kolom (`sm:grid-cols-12`).
+  2. **Styling Tombol Bulan Presisi**:
+     - Mengubah styling tombol menjadi `w-full py-1.5 px-0.5 rounded-xl text-[11px] sm:text-xs font-semibold text-center transition-all`.
+     - Bulan terpilih diberi efek kontras tinggi yang jelas dan elegan baik di mode Terang maupun mode Gelap: `bg-emerald-700 dark:bg-emerald-800 text-white dark:text-amber-300 font-bold shadow-xs scale-[1.02]`.
+     - Bulan yang tidak aktif memiliki efek hover dan touch feedback yang halus (`text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-emerald-900/30`).
+  3. **Verifikasi**:
+     - 100% dari 12 bulan (Januari hingga Desember) kini tampil utuh di dalam card tanpa terpotong, tanpa scrollbar horizontal yang canggung, dan mudah dijangkau jari pengguna.
+     - `npm run build` sukses 100% tanpa error.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
