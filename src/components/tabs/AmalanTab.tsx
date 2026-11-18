@@ -32,12 +32,12 @@ import { AlarmNotificationModal } from '@/components/modals/AlarmNotificationMod
 import { playGentleChime } from '@/utils/audioAlert';
 
 const CATEGORIES: { id: TimeCategory | 'semua'; label: string; icon: React.ReactNode }[] = [
-  { id: 'semua', label: 'Semua Waktu', icon: <Sparkles className="w-4 h-4" /> },
-  { id: 'dini_hari', label: 'Dini Hari', icon: <Moon className="w-4 h-4" /> },
-  { id: 'subuh', label: 'Subuh', icon: <Sun className="w-4 h-4" /> },
-  { id: 'dhuha', label: 'Dhuha & Siang', icon: <Sun className="w-4 h-4" /> },
-  { id: 'petang', label: 'Petang', icon: <Sunset className="w-4 h-4" /> },
-  { id: 'malam', label: 'Malam', icon: <Moon className="w-4 h-4" /> },
+  { id: 'semua', label: 'Semua Waktu', icon: <Sparkles className="w-3.5 h-3.5 shrink-0" /> },
+  { id: 'dini_hari', label: 'Dini Hari', icon: <Moon className="w-3.5 h-3.5 shrink-0" /> },
+  { id: 'subuh', label: 'Subuh', icon: <Sun className="w-3.5 h-3.5 shrink-0" /> },
+  { id: 'dhuha', label: 'Dhuha & Siang', icon: <Sun className="w-3.5 h-3.5 shrink-0" /> },
+  { id: 'petang', label: 'Petang', icon: <Sunset className="w-3.5 h-3.5 shrink-0" /> },
+  { id: 'malam', label: 'Malam', icon: <Moon className="w-3.5 h-3.5 shrink-0" /> },
 ];
 
 export const AmalanTab: React.FC = () => {
@@ -235,8 +235,8 @@ export const AmalanTab: React.FC = () => {
         />
       </div>
 
-      {/* Time Categories Filter Pills with Active Time Glow Dot */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {/* Time Categories Filter Pills with Active Time Glow Dot - Responsive Grid Anti-Terpotong */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
         {CATEGORIES.map((cat) => {
           const isActive = selectedCategory === cat.id;
           const isSlotCurrentlyActive = cat.id === activeSlot.category;
@@ -245,16 +245,16 @@ export const AmalanTab: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all relative ${
+              className={`w-full py-2.5 px-1.5 sm:px-2.5 rounded-2xl text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 sm:gap-1.5 transition-all relative ${
                 isActive
-                  ? 'bg-emerald-800 text-amber-300 shadow-xs'
-                  : 'bg-white dark:bg-emerald-950/40 border border-stone-200/80 dark:border-emerald-800/60 text-stone-600 dark:text-stone-300 hover:bg-stone-50'
+                  ? 'bg-emerald-800 text-amber-300 shadow-xs font-bold scale-[1.02]'
+                  : 'bg-white dark:bg-emerald-950/40 border border-stone-200/80 dark:border-emerald-800/60 text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-emerald-900/30'
               }`}
             >
               {cat.icon}
-              <span>{cat.label}</span>
+              <span className="truncate">{cat.label}</span>
               {isSlotCurrentlyActive && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" title="Sedang Masuk Waktu Saat Ini" />
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Sedang Masuk Waktu Saat Ini" />
               )}
             </button>
           );

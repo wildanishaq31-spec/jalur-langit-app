@@ -406,4 +406,28 @@ tags:
 
 ---
 
+### 🔹 Turn 22: Perbaikan Tampilan Filter Waktu Amalan Harian & Tab Navigasi (Responsif & Anti-Terpotong di Mobile)
+* **Pengguna**:
+  > *"ini juga agar responsif tidak terpotong seperti di gambar di buat pas juga"*
+  > *(Mengunggah tangkapan layar pill filter waktu amalan: `Semua Waktu`, `Dini Hari`, `Subuh`, `Dhuha & Siang •`, dan `Pet...` yang terpotong di tepi kanan sementara `Malam` hilang)*
+* **Penyebab & Kebutuhan**:
+  - Pada komponen `src/components/tabs/AmalanTab.tsx`, 6 kategori waktu amalan (`Semua Waktu`, `Dini Hari`, `Subuh`, `Dhuha & Siang`, `Petang`, `Malam`) disusun menggunakan `flex gap-2 overflow-x-auto` dengan teks tombol panjang dan padding statis.
+  - Pada layar smartphone/mobile, baris filter melebihi lebar layar, menyebabkan tombol `Petang` terpotong sebagian dan `Malam` hilang dari layar jika pengguna tidak melakukan scroll horizontal.
+* **Solusi Rekayasa**:
+  1. **Grid Responsif Filter Waktu Amalan (`src/components/tabs/AmalanTab.tsx`)**:
+     - Mengubah kontainer tombol menjadi `grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2`.
+     - **Di layar ponsel / mobile**: Otomatis tertata rapi dalam 2 baris × 3 kolom yang simetris:
+       - Baris 1: `✨ Semua Waktu` | `🌙 Dini Hari` | `☀️ Subuh`
+       - Baris 2: `☀️ Dhuha & Siang` | `🌅 Petang` | `🌙 Malam`
+     - **Di layar tablet / desktop**: Otomatis melebar menjadi 1 baris penuh × 6 kolom (`sm:grid-cols-6`).
+     - Mengubah ikon menjadi ukuran proporsional `w-3.5 h-3.5 shrink-0`, teks dengan `text-[11px] sm:text-xs truncate`, dan indikator slot waktu aktif `animate-pulse shrink-0` agar seluruh 6 filter pas 100% di dalam layar tanpa scrollbar atau terpotong.
+  2. **Pencegahan Proaktif pada Sub-Tab Lain**:
+     - **Quran & Kajian Tab (`src/components/tabs/QuranJournalTab.tsx`)**: Mengubah sub-tab navigasi dari `flex overflow-x-auto` menjadi `grid grid-cols-2 sm:grid-cols-4 gap-1.5` agar 4 sub-tab (Tadabbur, 1 Day 1 Juz, 1 Day 1 Kajian, Gratitude Journal) tersusun rapi dalam 2 baris di layar smartphone.
+     - **Preset Tasbih Modal (`src/components/tabs/TasbihTab.tsx`)**: Mengubah kategori preset dari `flex overflow-x-auto` menjadi `flex flex-wrap gap-1.5` agar semua pill preset otomatis membungkus (*wrap*) dengan rapi di dalam modal mobile.
+  3. **Verifikasi**:
+     - `npm run build` sukses 100% (Turbopack, TypeScript 0 error).
+     - Seluruh tombol filter pas di layar, responsif, mudah disentuh jari (*touch-friendly*), dan tidak ada elemen yang terpotong.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

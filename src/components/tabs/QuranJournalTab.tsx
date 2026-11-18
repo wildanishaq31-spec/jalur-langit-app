@@ -102,54 +102,54 @@ export const QuranJournalTab: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-28 min-h-[calc(100vh-140px)] animate-fade-in">
-      {/* Sub-tab Navigation */}
-      <div className="flex bg-stone-100 dark:bg-emerald-950/60 p-1 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60 overflow-x-auto scrollbar-none">
+      {/* Sub-tab Navigation - Responsive Grid Anti-Terpotong */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-stone-100 dark:bg-emerald-950/60 p-1.5 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60">
         <button
           onClick={() => setActiveSubTab('tadabbur')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 transition-all ${
+          className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
             activeSubTab === 'tadabbur'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
-              : 'text-stone-600 dark:text-stone-400'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5 text-teal-600" />
-          <span>Quran Tadabbur ({quranTadabburList.length})</span>
+          <BookOpen className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+          <span className="truncate">Tadabbur ({quranTadabburList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('juz')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 transition-all ${
+          className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
             activeSubTab === 'juz'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
-              : 'text-stone-600 dark:text-stone-400'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>1 Day 1 Juz ({quranCompletedJuz.length}/30)</span>
+          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <span className="truncate">1 Day 1 Juz ({quranCompletedJuz.length}/30)</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('kajian')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 transition-all ${
+          className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
             activeSubTab === 'kajian'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
-              : 'text-stone-600 dark:text-stone-400'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
         >
-          <Video className="w-3.5 h-3.5 text-rose-500" />
-          <span>1 Day 1 Kajian ({kajianNotes.length})</span>
+          <Video className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+          <span className="truncate">1 Day 1 Kajian ({kajianNotes.length})</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('syukur')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 transition-all ${
+          className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
             activeSubTab === 'syukur'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
-              : 'text-stone-600 dark:text-stone-400'
+              : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
         >
-          <Heart className="w-3.5 h-3.5 text-pink-500" />
-          <span>Gratitude Journal</span>
+          <Heart className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+          <span className="truncate">Gratitude Journal</span>
         </button>
       </div>
 

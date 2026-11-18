@@ -507,8 +507,8 @@ export const TasbihTab: React.FC = () => {
               </button>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {/* Category Filter Pills - Responsive Wrap Anti-Terpotong */}
+            <div className="flex flex-wrap gap-1.5 pb-1">
               {(['semua', 'sholat', 'sholawat', 'istighfar', 'hajat'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -516,7 +516,7 @@ export const TasbihTab: React.FC = () => {
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
                     selectedCategory === cat
                       ? 'bg-stone-900 dark:bg-emerald-800 text-white shadow-xs'
-                      : 'bg-stone-100 dark:bg-emerald-900/30 text-stone-600 dark:text-stone-300'
+                      : 'bg-stone-100 dark:bg-emerald-900/30 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-emerald-900/50'
                   }`}
                 >
                   {cat === 'sholat' ? 'Ba\'da Sholat' : cat}
