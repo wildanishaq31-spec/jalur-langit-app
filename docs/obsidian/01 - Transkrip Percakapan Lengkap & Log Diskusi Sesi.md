@@ -977,4 +977,36 @@ tags:
 
 ---
 
+### 🔹 Turn 41: Penambahan Pagination Dinamis & Responsif pada Tabel Daftar Pembeli Panel Admin
+* **Pengguna**:
+  > *"daftar pembeli kita kasih pagination 10,20 dan seterusnya"*
+* **Latar Belakang & Analisis Fitur**:
+  - Untuk memfasilitasi data pembeli Lynk.id yang bertambah banyak, tabel daftar pembeli membutuhkan sistem paginasi (*pagination*) yang fleksibel.
+  - Pengguna meminta opsi jumlah baris per halaman (10, 20, dan seterusnya) serta navigasi halaman yang rapi dan mudah digunakan.
+* **Solusi Rekayasa & Implementasi Kode ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+  1. **State Paginasi & Pengirisan Data**:
+     - `currentPage` (halaman aktif saat ini) dan `pageSize` (default: 10 per halaman).
+     - Menghitung `totalPages = Math.max(1, Math.ceil(totalItems / pageSize))`.
+     - Pengirisan data yang akurat: `paginatedBuyers = filteredBuyers.slice(startIndex, endIndex)`.
+  2. **Dropdown Pilihan Ukuran Halaman ("10, 20 dan seterusnya")**:
+     - Opsi baris per halaman: **10**, **20**, **50**, dan **100** pembeli per halaman.
+     - Mengubah ukuran halaman otomatis mereset `currentPage` kembali ke halaman 1.
+  3. **Navigasi Halaman Ergonomis & Komprehensif**:
+     - Indikator rentang: *"Menampilkan 1 - 10 dari 45 pembeli"*.
+     - Tombol Navigasi Lengkap:
+       - ⏪ *Halaman Pertama (`ChevronsLeft`)*
+       - ◀ *Halaman Sebelumnya (`ChevronLeft`)*
+       - Nomor halaman aktif dengan jendela pintar (*windowing*) elipsis (`...`) jika jumlah halaman banyak.
+       - ▶ *Halaman Berikutnya (`ChevronRight`)*
+       - ⏩ *Halaman Terakhir (`ChevronsRight`)*
+     - Status nonaktif (*disabled states*) otomatis saat berada di halaman pertama atau terakhir.
+  4. **Sinkronisasi Pencarian & Filter Paket**:
+     - Saat admin mengetik di kolom pencarian atau mengklik batang paket di *PackageSalesBarChart*, paginasi otomatis kembali ke halaman 1.
+     - Penanganan *empty state* yang ramah jika tidak ada data pembeli yang cocok dengan filter.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run lint`: 0 error (exit code 0).
+  - `npm run build`: 100% sukses, 18/18 halaman statis dan dynamic routes siap produksi.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

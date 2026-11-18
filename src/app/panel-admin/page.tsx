@@ -13,10 +13,14 @@ import {
   Download, 
   Sparkles, 
   KeyRound, 
-  Lock,
-  Zap,
-  Copy,
-  Check
+  Lock, 
+  Zap, 
+  Copy, 
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
@@ -44,6 +48,8 @@ export default function PanelAdminPage() {
   const [newTier, setNewTier] = useState<UserTier>('ultimate');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTierFilter, setSelectedTierFilter] = useState<UserTier | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const webhookEndpointUrl = 'https://jalur-langit-app.vercel.app/api/webhook/lynkid';
 
@@ -161,6 +167,24 @@ export default function PanelAdminPage() {
       selectedTierFilter === 'all' || b.tier === selectedTierFilter;
     return matchesSearch && matchesTier;
   });
+
+  // Pagination calculation
+  const totalItems = filteredBuyers.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedBuyers = filteredBuyers.slice(startIndex, endIndex);
+
+  const handleSelectTierFilter = (tier: UserTier | 'all') => {
+    setSelectedTierFilter(tier);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#08120d] text-[#1c2e26] dark:text-[#f0f7f3] transition-colors p-4 sm:p-6 pb-20 select-none">
@@ -313,7 +337,7 @@ export default function PanelAdminPage() {
             <PackageSalesBarChart
               buyers={whitelist}
               selectedTierFilter={selectedTierFilter}
-              onSelectTierFilter={setSelectedTierFilter}
+              onSelectTierFilter={handleSelectTierFilter}
             />
 
             {/* 1. KOTAK INTEGRASI WEBHOOK LYNK.ID OTOMATIS */}
@@ -463,7 +487,7 @@ export default function PanelAdminPage() {
                       <span>Filter: {TIER_CONFIG[selectedTierFilter].name}</span>
                       <button
                         type="button"
-                        onClick={() => setSelectedTierFilter('all')}
+                        onClick={() => handleSelectTierFilter('all')}
                         className="hover:text-rose-600 font-black ml-0.5 cursor-pointer"
                       >
                         ✕
@@ -477,7 +501,7 @@ export default function PanelAdminPage() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Cari email atau nama..."
                     className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
@@ -496,47 +520,173 @@ export default function PanelAdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100 dark:divide-emerald-900/40">
-                    {filteredBuyers.map((buyer) => (
-                      <tr key={buyer.email} className="hover:bg-stone-50/60 dark:hover:bg-emerald-900/20 transition-colors">
-                        <td className="py-3 px-3">
-                          <div className="font-bold text-stone-900 dark:text-stone-100">
-                            {buyer.name}
-                          </div>
-                          <div className="text-[11px] text-stone-400 font-mono">
-                            {buyer.email}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <select
-                            value={buyer.tier}
-                            onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
-                            className="px-2 py-1 rounded-lg border text-xs font-bold bg-white dark:bg-emerald-950 border-stone-200 dark:border-emerald-800 text-stone-800 dark:text-stone-200"
-                          >
-                            <option value="starter">Starter (Rp 49k)</option>
-                            <option value="ultimate">Ultimate (Rp 89k)</option>
-                            <option value="vip">VIP (Rp 149k)</option>
-                          </select>
-                        </td>
-                        <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
-                          {buyer.orderId}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <button
-                            onClick={() => {
-                              if (confirm(`Hapus akses untuk ${buyer.email}?`)) {
-                                removeBuyerFromWhitelist(buyer.email);
-                              }
-                            }}
-                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
-                            title="Cabut Akses"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                    {paginatedBuyers.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-stone-400 italic">
+                          Tidak ada pembeli yang sesuai dengan kriteria pencarian atau filter.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      paginatedBuyers.map((buyer) => (
+                        <tr key={buyer.email} className="hover:bg-stone-50/60 dark:hover:bg-emerald-900/20 transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="font-bold text-stone-900 dark:text-stone-100">
+                              {buyer.name}
+                            </div>
+                            <div className="text-[11px] text-stone-400 font-mono">
+                              {buyer.email}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <select
+                              value={buyer.tier}
+                              onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
+                              className="px-2 py-1 rounded-lg border text-xs font-bold bg-white dark:bg-emerald-950 border-stone-200 dark:border-emerald-800 text-stone-800 dark:text-stone-200"
+                            >
+                              <option value="starter">Starter (Rp 49k)</option>
+                              <option value="ultimate">Ultimate (Rp 89k)</option>
+                              <option value="vip">VIP (Rp 149k)</option>
+                            </select>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
+                            {buyer.orderId}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              onClick={() => {
+                                if (confirm(`Hapus akses untuk ${buyer.email}?`)) {
+                                  removeBuyerFromWhitelist(buyer.email);
+                                }
+                              }}
+                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
+                              title="Cabut Akses"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="pt-4 border-t border-stone-100 dark:border-emerald-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                
+                {/* Left: Range Info & Page Size Selector */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-stone-500 dark:text-stone-400 font-medium">
+                    {totalItems > 0 ? (
+                      <>Menampilkan <b>{startIndex + 1} - {endIndex}</b> dari <b>{totalItems}</b> pembeli</>
+                    ) : (
+                      '0 pembeli ditemukan'
+                    )}
+                  </span>
+
+                  <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300">
+                    <span className="text-stone-400">| Per halaman:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-stone-50 dark:bg-emerald-900/40 border border-stone-200 dark:border-emerald-800 text-xs font-bold text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Right: Page Navigation Buttons */}
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    {/* First Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={safeCurrentPage === 1}
+                      className="p-1.5 rounded-lg border border-stone-200 dark:border-emerald-800 bg-white dark:bg-emerald-950 text-stone-600 dark:text-stone-300 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      title="Halaman Pertama"
+                    >
+                      <ChevronsLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Prev Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={safeCurrentPage === 1}
+                      className="p-1.5 rounded-lg border border-stone-200 dark:border-emerald-800 bg-white dark:bg-emerald-950 text-stone-600 dark:text-stone-300 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      title="Halaman Sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-1 px-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => {
+                          if (totalPages <= 7) return true;
+                          return (
+                            p === 1 ||
+                            p === totalPages ||
+                            Math.abs(p - safeCurrentPage) <= 1
+                          );
+                        })
+                        .map((p, idx, arr) => {
+                          const prevPage = arr[idx - 1];
+                          const hasGap = prevPage && p - prevPage > 1;
+
+                          return (
+                            <React.Fragment key={p}>
+                              {hasGap && (
+                                <span className="px-1 text-stone-400 select-none">...</span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setCurrentPage(p)}
+                                className={`min-w-7 h-7 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  safeCurrentPage === p
+                                    ? 'bg-emerald-800 text-white shadow-xs'
+                                    : 'border border-stone-200 dark:border-emerald-800 bg-white dark:bg-emerald-950 text-stone-700 dark:text-stone-300 hover:bg-stone-50'
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+
+                    {/* Next Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={safeCurrentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-stone-200 dark:border-emerald-800 bg-white dark:bg-emerald-950 text-stone-600 dark:text-stone-300 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      title="Halaman Berikutnya"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    {/* Last Page */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={safeCurrentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-stone-200 dark:border-emerald-800 bg-white dark:bg-emerald-950 text-stone-600 dark:text-stone-300 hover:bg-stone-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      title="Halaman Terakhir"
+                    >
+                      <ChevronsRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
               </div>
 
             </div>
