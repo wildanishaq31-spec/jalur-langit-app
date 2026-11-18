@@ -17,7 +17,7 @@ import {
   Pencil
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
-import { QuranTadabburItem } from '@/types';
+import { QuranTadabburItem, KajianItem } from '@/types';
 import { AddKajianModal } from '@/components/modals/AddKajianModal';
 import { AddTadabburModal } from '@/components/modals/AddTadabburModal';
 import { formatDateIndonesian } from '@/utils/dateUtils';
@@ -40,6 +40,7 @@ export const QuranJournalTab: React.FC = () => {
   const [isKajianModalOpen, setIsKajianModalOpen] = useState(false);
   const [isTadabburModalOpen, setIsTadabburModalOpen] = useState(false);
   const [editingTadabburItem, setEditingTadabburItem] = useState<QuranTadabburItem | null>(null);
+  const [editingKajianItem, setEditingKajianItem] = useState<KajianItem | null>(null);
 
   // Gratitude for selectedDate (dynamic list)
   const [gratitudeItems, setGratitudeItems] = useState<string[]>(() => {
@@ -334,7 +335,10 @@ export const QuranJournalTab: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsKajianModalOpen(true)}
+              onClick={() => {
+                setEditingKajianItem(null);
+                setIsKajianModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -363,12 +367,36 @@ export const QuranJournalTab: React.FC = () => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => deleteKajian(note.id)}
-                      className="text-stone-400 hover:text-rose-500 transition-colors p-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      {note.videoUrl && (
+                        <a
+                          href={note.videoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
+                          title="Buka Video Kajian"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                      <button
+                        onClick={() => {
+                          setEditingKajianItem(note);
+                          setIsKajianModalOpen(true);
+                        }}
+                        className="p-1.5 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                        title="Edit Catatan Kajian"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteKajian(note.id)}
+                        className="p-1.5 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Hapus Kajian"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {note.notes && (
@@ -500,7 +528,11 @@ export const QuranJournalTab: React.FC = () => {
 
       <AddKajianModal
         isOpen={isKajianModalOpen}
-        onClose={() => setIsKajianModalOpen(false)}
+        editingItem={editingKajianItem}
+        onClose={() => {
+          setIsKajianModalOpen(false);
+          setEditingKajianItem(null);
+        }}
       />
     </div>
   );

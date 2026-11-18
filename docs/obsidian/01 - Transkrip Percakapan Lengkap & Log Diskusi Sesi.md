@@ -204,4 +204,19 @@ tags:
   3. Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Tadabbur pada `QuranJournalTab.tsx` berdampingan dengan tombol link kajian dan tombol hapus.
 
 ---
+
+### 🔹 Turn 13: Fitur Edit Resume 1 Day 1 Kajian
+* **Pengguna**:
+  > *"1 day 1 kajian juga kita tambah tombol edit"*
+  > *(Mengunggah gambar kartu resume kajian yang hanya memiliki tombol hapus)*
+* **Penyebab & Kebutuhan**: Kartu resume kajian harian (*1 Day 1 Kajian*) sebelumnya belum memiliki tombol edit untuk menyunting tema, nama pemateri, tautan video kajian, poin hikmah, atau rencana aksi penerapan hidup.
+* **Solusi Rekayasa**:
+  1. Menambahkan fungsi mutasi state `updateKajian(id, updated)` pada `useJalurLangitStore`.
+  2. Memperbarui `AddKajianModal.tsx` agar mendukung mode **Create** maupun **Edit**:
+     - Menerima properti `editingItem?: KajianItem | null`.
+     - Otomatis mengisi seluruh input form (*pre-filled*) dengan data judul kajian, pemateri, videoUrl, ringkasan materi, dan rencana aksi nyata.
+     - Mengubah judul menjadi *"Edit Resume Kajian"* dan tombol submit menjadi *"Simpan Perubahan Kajian"*.
+  3. Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Kajian pada `QuranJournalTab.tsx` berdampingan dengan tombol tautan video dan tombol hapus.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
