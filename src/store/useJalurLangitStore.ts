@@ -120,6 +120,7 @@ interface JalurLangitState {
   todayAffirmation: string;
   setTodayAffirmation: (text: string) => void;
   addHajat: (hajat: Omit<HajatItem, 'id' | 'createdAt'>) => void;
+  updateHajat: (id: string, updated: Partial<Omit<HajatItem, 'id' | 'createdAt'>>) => void;
   updateHajatStatus: (id: string, status: HajatStatus, notes?: string) => void;
   deleteHajat: (id: string) => void;
 
@@ -145,6 +146,7 @@ interface JalurLangitState {
   // Sedekah Subuh
   sedekahLogs: SedekahItem[];
   addSedekah: (item: Omit<SedekahItem, 'id'>) => void;
+  updateSedekah: (id: string, updated: Partial<Omit<SedekahItem, 'id'>>) => void;
   deleteSedekah: (id: string) => void;
   
   // Quran & Kajian
@@ -296,6 +298,13 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         };
         set((state) => ({ hajatList: [newItem, ...state.hajatList] }));
       },
+      updateHajat: (id, updated) => {
+        set((state) => ({
+          hajatList: state.hajatList.map((h) =>
+            h.id === id ? { ...h, ...updated } : h
+          ),
+        }));
+      },
       updateHajatStatus: (id, status, notes) => {
         set((state) => ({
           hajatList: state.hajatList.map((h) =>
@@ -422,6 +431,13 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           id: `sedekah-${Date.now()}`,
         };
         set((state) => ({ sedekahLogs: [newItem, ...state.sedekahLogs] }));
+      },
+      updateSedekah: (id, updated) => {
+        set((state) => ({
+          sedekahLogs: state.sedekahLogs.map((s) =>
+            s.id === id ? { ...s, ...updated } : s
+          ),
+        }));
       },
       deleteSedekah: (id) => {
         set((state) => ({ sedekahLogs: state.sedekahLogs.filter((s) => s.id !== id) }));

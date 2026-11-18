@@ -11,12 +11,13 @@ import {
   CheckCircle2, 
   Clock, 
   Heart,
-  Calendar
+  Calendar,
+  Pencil
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { AddHajatModal } from '@/components/modals/AddHajatModal';
 import { AddSedekahModal } from '@/components/modals/AddSedekahModal';
-import { HajatStatus } from '@/types';
+import { HajatItem, HajatStatus, SedekahItem } from '@/types';
 
 export const HajatTab: React.FC = () => {
   const { 
@@ -30,6 +31,8 @@ export const HajatTab: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'hajat' | 'sedekah'>('hajat');
   const [isHajatModalOpen, setIsHajatModalOpen] = useState(false);
   const [isSedekahModalOpen, setIsSedekahModalOpen] = useState(false);
+  const [editingHajatItem, setEditingHajatItem] = useState<HajatItem | null>(null);
+  const [editingSedekahItem, setEditingSedekahItem] = useState<SedekahItem | null>(null);
 
   // Status handler with confetti when marked 'terkabul'
   const handleStatusChange = (id: string, newStatus: HajatStatus) => {
@@ -89,7 +92,10 @@ export const HajatTab: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsHajatModalOpen(true)}
+              onClick={() => {
+                setEditingHajatItem(null);
+                setIsHajatModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -131,16 +137,29 @@ export const HajatTab: React.FC = () => {
                         </h3>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          if (confirm('Hapus hajat ini?')) {
-                            deleteHajat(hajat.id);
-                          }
-                        }}
-                        className="p-1.5 text-stone-400 hover:text-rose-500 rounded-xl hover:bg-stone-50 dark:hover:bg-emerald-900/40 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setEditingHajatItem(hajat);
+                            setIsHajatModalOpen(true);
+                          }}
+                          className="p-1.5 text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-xl hover:bg-stone-50 dark:hover:bg-emerald-900/40 transition-colors"
+                          title="Edit Hajat"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('Hapus hajat ini?')) {
+                              deleteHajat(hajat.id);
+                            }
+                          }}
+                          className="p-1.5 text-stone-400 hover:text-rose-500 rounded-xl hover:bg-stone-50 dark:hover:bg-emerald-900/40 transition-colors"
+                          title="Hapus Hajat"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Specific Prayer */}
@@ -215,7 +234,10 @@ export const HajatTab: React.FC = () => {
             </h2>
 
             <button
-              onClick={() => setIsSedekahModalOpen(true)}
+              onClick={() => {
+                setEditingSedekahItem(null);
+                setIsSedekahModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -249,15 +271,30 @@ export const HajatTab: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       {log.amount && (
                         <span className="text-sm font-black text-emerald-700 dark:text-amber-300">
                           Rp {log.amount.toLocaleString('id-ID')}
                         </span>
                       )}
                       <button
-                        onClick={() => deleteSedekah(log.id)}
-                        className="text-stone-400 hover:text-rose-500 transition-colors p-1"
+                        onClick={() => {
+                          setEditingSedekahItem(log);
+                          setIsSedekahModalOpen(true);
+                        }}
+                        className="text-stone-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-1 rounded-lg hover:bg-stone-50 dark:hover:bg-emerald-900/40"
+                        title="Edit Sedekah"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm('Hapus catatan sedekah ini?')) {
+                            deleteSedekah(log.id);
+                          }
+                        }}
+                        className="text-stone-400 hover:text-rose-500 transition-colors p-1 rounded-lg hover:bg-stone-50 dark:hover:bg-emerald-900/40"
+                        title="Hapus Sedekah"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -279,12 +316,20 @@ export const HajatTab: React.FC = () => {
       {/* Modals */}
       <AddHajatModal
         isOpen={isHajatModalOpen}
-        onClose={() => setIsHajatModalOpen(false)}
+        onClose={() => {
+          setIsHajatModalOpen(false);
+          setEditingHajatItem(null);
+        }}
+        editingItem={editingHajatItem}
       />
 
       <AddSedekahModal
         isOpen={isSedekahModalOpen}
-        onClose={() => setIsSedekahModalOpen(false)}
+        onClose={() => {
+          setIsSedekahModalOpen(false);
+          setEditingSedekahItem(null);
+        }}
+        editingItem={editingSedekahItem}
       />
     </div>
   );

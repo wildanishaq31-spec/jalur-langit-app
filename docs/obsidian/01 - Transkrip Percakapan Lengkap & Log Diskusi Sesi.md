@@ -272,4 +272,35 @@ tags:
      - Mengubah `@keyframes fadeIn` di `globals.css` menjadi `to { opacity: 1; transform: none; }` agar tidak ada efek transform yang tertinggal.
 
 ---
+
+### 🔹 Turn 17: Fitur Edit Hajat & Manifesting serta Catatan Sedekah Subuh
+* **Pengguna**:
+  > *"sekarang hajat dan sedekah juga kasih tombol edit juga"*
+  > *(Mengunggah gambar kartu Hajat & Manifesting yang sebelumnya hanya memiliki tombol hapus)*
+* **Penyebab & Kebutuhan**:
+  - Pada tab **Hajat & Manifesting** serta **Sedekah Subuh**, kartu hanya memiliki ikon sampah (*Trash2*) untuk menghapus data.
+  - Pengguna membutuhkan fleksibilitas untuk memperbarui hajat, kategori, lafadz doa afirmasi, target waktu, penyaluran sedekah, nominal, dan doa yang diselipkan tanpa harus menghapus lalu mengetik ulang dari awal.
+* **Solusi Rekayasa**:
+  1. **Zustand Store (`src/store/useJalurLangitStore.ts`)**:
+     - Menambahkan aksi `updateHajat(id: string, updated: Partial<Omit<HajatItem, 'id' | 'createdAt'>>)` untuk memperbarui data hajat secara reaktif.
+     - Menambahkan aksi `updateSedekah(id: string, updated: Partial<Omit<SedekahItem, 'id'>>)` untuk memperbarui data sedekah subuh.
+  2. **Modal Hajat (`src/components/modals/AddHajatModal.tsx`)**:
+     - Mendukung mode **Create** maupun **Edit** lewat prop `editingItem?: HajatItem | null`.
+     - Form otomatis terisi (*pre-filled*) dengan data judul hajat, kategori hajat (*Rezeki, Karir, Jodoh, Keluarga, Kesehatan, Spiritual, Lainnya*), target waktu, dan lafadz doa spesifik.
+     - Menggunakan `createPortal(..., document.body)` dengan kelas `z-35 fixed inset-0 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 pb-24 flex items-center justify-center` sehingga latar gelap menjangkau penuh hingga ke balik menu bar bawah.
+     - Header terkunci (*sticky header*) dengan tombol Close `X` yang selalu terlihat, serta tombol submit dinamis: *"Simpan Perubahan Hajat"* (mode edit) vs *"Simpan Hajat & Mulai Doakan"* (mode tambah).
+  3. **Modal Sedekah (`src/components/modals/AddSedekahModal.tsx`)**:
+     - Mendukung mode **Create** maupun **Edit** lewat prop `editingItem?: SedekahItem | null`.
+     - Form otomatis terisi (*pre-filled*) dengan penyaluran sedekah, nominal (Rp), dan doa hajat yang diselipkan.
+     - Menggunakan `createPortal(..., document.body)` dengan `z-35` dan `pb-24`.
+     - Header terkunci (*sticky header*) dan tombol submit dinamis: *"Simpan Perubahan Sedekah"* vs *"Simpan Sedekah Subuh"*.
+  4. **Antarmuka Tab Hajat (`src/components/tabs/HajatTab.tsx`)**:
+     - Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Hajat berdampingan dengan tombol hapus.
+     - Menambahkan tombol Edit (*Pencil icon*) di setiap baris riwayat kartu Sedekah Subuh berdampingan dengan tombol hapus.
+     - Mengatur state `editingHajatItem` dan `editingSedekahItem`, serta memastikan state bersih kembali (*reset to null*) saat tombol *+ Tambah Hajat* atau *+ Catat Sedekah Hari Ini* ditekan.
+  5. **Verifikasi**:
+     - `npm run build` sukses 100% tanpa error TypeScript maupun linting.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
