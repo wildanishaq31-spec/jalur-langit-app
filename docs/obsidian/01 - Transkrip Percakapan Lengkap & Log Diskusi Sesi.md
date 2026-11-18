@@ -235,4 +235,20 @@ tags:
      - **Scrollable Form Body**: Hanya bagian input form yang dapat digulirkan (`overflow-y-auto flex-1`), menjaga estetika dan kenyamanan pengguna di semua ukuran layar desktop maupun ponsel.
 
 ---
+
+### 🔹 Turn 15: Penyelarasan Layout Modal Kajian agar Utuh Tanpa Terpotong Bagian Bawah
+* **Pengguna**:
+  > *"masih ke potong bagian bawahnya seperti gambar 1 seharusnya seperti gambar 2 utuh ada di tengah dan tidak terpotong"*
+  > *(Mengunggah gambar perbandingan modal Kajian yang terpotong tombol submit-nya vs modal Tadabbur yang utuh mengambang di tengah)*
+* **Penyebab Masalah**: 
+  - Modal Kajian sebelumnya menggunakan penataan kolom tunggal vertikal bertingkat yang memanjang dengan padding tebal (`py-3`, `space-y-4`, `rows={3}`), sehingga tingginya melampaui `85vh` dan tombol submit-nya terpotong di bagian bawah.
+  - Sebaliknya, modal Tadabbur (Gambar 2) menggunakan grid 2 kolom yang kompak dan padding proporsional (`py-2.5`, `space-y-3`, `rows={2}`) sehingga seluruh kartu muat 100% utuh di layar.
+* **Solusi Rekayasa**:
+  1. Menyelaraskan struktur `AddKajianModal.tsx` persis seperti `AddTadabburModal.tsx`:
+     - Menyatukan baris *Tema / Judul Kajian* dan *Pemateri / Ustadz* dalam grid 2 kolom: `grid grid-cols-1 sm:grid-cols-2 gap-3`.
+     - Mengatur padding input menjadi `px-3.5 py-2.5 text-xs` dan spacing form `space-y-3`.
+     - Mengatur textarea *Poin Penting & Tadabbur* menjadi `rows={2}`.
+  2. Hasilnya, modal Kajian kini memiliki tinggi yang sangat proporsional (~430px) dan tampil **utuh 100% mengambang di tengah layar** bersama tombol simpan dan tombol close, persis seperti tampilan Gambar 2.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

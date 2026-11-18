@@ -68,9 +68,9 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-fade-in">
-      <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[85vh] flex flex-col overflow-hidden">
-        {/* Fixed Header with Title, Icon & Close Button (Always visible at top) */}
-        <div className="p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
+      <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 flex flex-col overflow-hidden">
+        {/* Header with Title & Close Button */}
+        <div className="p-5 pb-3.5 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
           <div className="flex items-center gap-3">
             <div className={`p-2.5 rounded-2xl ${
               isEditing
@@ -100,37 +100,39 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
           </button>
         </div>
 
-        {/* Scrollable Form Content */}
-        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1 scrollbar-thin">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
-              Tema / Judul Kajian <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Contoh: Rahasia Istiqomah di Sepertiga Malam"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-xs"
-            />
+        {/* Compact Form Body (Matches Tadabbur Modal Layout) */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold mb-1">
+                Tema / Judul Kajian <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Contoh: Rahasia Istiqomah"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold mb-1">
+                Pemateri / Ustadz
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: Ustadz Adi Hidayat"
+                value={speaker}
+                onChange={(e) => setSpeaker(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
-              Pemateri / Ustadz
-            </label>
-            <input
-              type="text"
-              placeholder="Contoh: Ustadz Adi Hidayat / Buya Yahya"
-              value={speaker}
-              onChange={(e) => setSpeaker(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-xs"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
+            <label className="block text-xs font-semibold mb-1">
               Link YouTube / Podcast (Opsional)
             </label>
             <input
@@ -138,40 +140,40 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
               placeholder="https://youtube.com/..."
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
+            <label className="block text-xs font-semibold mb-1">
               Poin Penting & Tadabbur
             </label>
             <textarea
-              rows={3}
+              rows={2}
               placeholder="Hikmah utama dan ilmu baru yang didapatkan..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-300 mb-1">
-              Rencana Aksi Nyata (Amalan yang akan dipraktikkan)
+            <label className="block text-xs font-semibold mb-1">
+              Rencana Aksi Nyata (Penerapan Sehari-hari)
             </label>
             <input
               type="text"
               placeholder="Contoh: Bangun 30 menit sebelum Subuh & rutin istighfar"
               value={actionPlan}
               onChange={(e) => setActionPlan(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3.5 px-4 font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-xs text-white ${
+              className={`w-full py-3 px-4 font-bold rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 active:scale-98 text-xs text-white ${
                 appTheme === 'blush'
                   ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                   : 'bg-emerald-700 hover:bg-emerald-800 shadow-emerald-700/25'
