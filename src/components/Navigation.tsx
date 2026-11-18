@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Home, 
   CheckCircle2, 
@@ -20,6 +20,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { formatShortDateIndonesian } from '@/utils/dateUtils';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
+import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
 
 export type ActiveTab = 'home' | 'amalan' | 'tasbih' | 'glowup' | 'vision' | 'hajat' | 'quran';
 
@@ -31,6 +32,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   const { selectedDate, resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleReset = () => {
     if (confirm('Mulai ulang data amalan kalender? (Data impian & sedekah tetap aman)')) {
@@ -113,13 +115,9 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
               <RotateCcw className="w-4 h-4" />
             </button>
 
-            {/* Logout Button */}
+            {/* Logout Button (Opens Cool Mobile Modal) */}
             <button
-              onClick={() => {
-                if (confirm('Keluar dari akun aplikasi dan kembali ke halaman login?')) {
-                  logout();
-                }
-              }}
+              onClick={() => setIsLogoutModalOpen(true)}
               title="Keluar / Logout Akun"
               className="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
             >
@@ -130,7 +128,18 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
       </header>
 
       {/* Slide-over Drawer Menu Component */}
-      <AppDrawerMenu />
+      <AppDrawerMenu onOpenLogoutModal={() => setIsLogoutModalOpen(true)} />
+
+      {/* Cool Centered Mobile Logout Confirmation Popup */}
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={() => {
+          setIsLogoutModalOpen(false);
+          logout();
+        }}
+        userEmail={currentUser?.email}
+      />
 
       {/* Bottom Floating Navigation Bar (Mobile & Desktop) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg border-t border-stone-200/80 dark:border-emerald-800/60 py-2 px-2 shadow-lg">

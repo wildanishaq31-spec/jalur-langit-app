@@ -33,7 +33,11 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { RoadmapFeatureItem } from '@/types';
 
-export const AppDrawerMenu: React.FC = () => {
+interface AppDrawerMenuProps {
+  onOpenLogoutModal?: () => void;
+}
+
+export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal }) => {
   const { 
     isDrawerOpen, 
     setIsDrawerOpen,
@@ -414,7 +418,10 @@ export const AppDrawerMenu: React.FC = () => {
                       <span className="text-stone-500">Order: {currentUser.orderId}</span>
                       <button
                         onClick={() => {
-                          if (confirm('Keluar dari sesi akun ini dan kembali ke halaman login?')) {
+                          if (onOpenLogoutModal) {
+                            setIsDrawerOpen(false);
+                            onOpenLogoutModal();
+                          } else {
                             logout();
                             setIsDrawerOpen(false);
                           }
@@ -580,7 +587,10 @@ export const AppDrawerMenu: React.FC = () => {
 
             <button
               onClick={() => {
-                if (confirm('Keluar dari sesi akun dan kembali ke halaman login?')) {
+                if (onOpenLogoutModal) {
+                  setIsDrawerOpen(false);
+                  onOpenLogoutModal();
+                } else {
                   logout();
                   setIsDrawerOpen(false);
                 }

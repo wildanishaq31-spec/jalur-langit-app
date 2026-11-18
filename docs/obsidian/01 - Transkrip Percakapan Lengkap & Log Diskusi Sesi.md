@@ -702,4 +702,29 @@ tags:
 
 ---
 
+### 🔹 Turn 31: Pembuatan Modal Pop-Up Logout Mobile yang Keren & Modern di Tengah Layar
+* **Pengguna**:
+  > *"karena ini tipe mobile maka notifikasi logoutnya juga menggunakan popup yang lebih keren muncul di tengah"*
+* **Latar Belakang & Kebutuhan UI**:
+  - Konfirmasi logout sebelumnya masih memakai fungsi bawaan browser `confirm()`, yang terlihat kaku, kuno, dan tidak selaras dengan pengalaman visual mobile-app modern.
+  - Pengguna menginginkan pop-up modal khusus yang muncul di **tengah layar (*centered modal*)** dengan gaya estetika khas aplikasi mobile yang keren, elegan, dan ramah sentuhan jempol.
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Komponen Baru ([LogoutConfirmModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/LogoutConfirmModal.tsx))**:
+     - Desain modal mengapung di tengah layar (*fixed center*) dengan latar belakang gelap dan efek blur halus (*backdrop-blur*).
+     - **Ikon Utama Eksklusif**: Wadah gradien rose-amber dengan ikon `LogOut` yang dikelilingi gelombang denyut aura bercahaya (`animate-ping`).
+     - **Tipografi & Pesan Ramah**:
+       - Judul: *"Keluar dari Aplikasi?"*
+       - Keterangan: Menegaskan bahwa data amalan, dzikir, dan impian tetap aman tersimpan di memori HP.
+     - **Chip Akun Aktif**: Menampilkan alamat email pembeli yang sedang login disertai lencana status `Aktif`.
+     - **Tombol Aksi Mobile-First**:
+       - Tombol Abu-abu: `Batal` (menutup modal).
+       - Tombol Gradien Merah-Rose: `Ya, Keluar` (menjalankan `logout()` dan kembali ke `LoginPage`).
+     - Mendukung penutupan dengan tombol silang `✕`, klik di luar area modal, dan tombol keyboard `Escape`.
+  2. **Integrasi di Header ([Navigation.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/Navigation.tsx)) & Drawer ([AppDrawerMenu.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AppDrawerMenu.tsx))**:
+     - Tombol logout di header atas dan di drawer menu kini langsung memicu pembukaan `LogoutConfirmModal`.
+  3. **Verifikasi Build**:
+     - `npm run build` sukses 100% tanpa error (Turbopack 1.3s, TypeScript 0 error).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
