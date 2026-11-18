@@ -13,9 +13,11 @@ import {
   RotateCcw,
   Droplets,
   Image as ImageIcon,
-  Compass
+  Compass,
+  LogOut
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { formatShortDateIndonesian } from '@/utils/dateUtils';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
 
@@ -28,6 +30,7 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   const { selectedDate, resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
+  const { logout, currentUser } = useAuthStore();
 
   const handleReset = () => {
     if (confirm('Mulai ulang data amalan kalender? (Data impian & sedekah tetap aman)')) {
@@ -108,6 +111,19 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
               className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={() => {
+                if (confirm('Keluar dari akun aplikasi dan kembali ke halaman login?')) {
+                  logout();
+                }
+              }}
+              title="Keluar / Logout Akun"
+              className="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

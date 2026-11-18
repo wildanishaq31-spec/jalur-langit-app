@@ -682,4 +682,24 @@ tags:
 
 ---
 
+### 🔹 Turn 30: Penambahan Tombol Logout di Header Atas & Drawer Footer untuk Kemudahan Keluar Akun
+* **Pengguna**:
+  > *"tadi saya coba masuk ke mode pengujian dan sekarang saya tidak bisa keluar karena masih belum ada tombol logout agar bisa kembali ke halaman login"*
+* **Penyebab & Kebutuhan**:
+  - Pengguna sebelumnya telah berhasil login saat mencoba mode demo, sehingga status autentikasi tersimpan di *LocalStorage*.
+  - Tombol logout sebelumnya hanya berupa teks kecil di dalam sub-tab Utilitas di dalam Drawer, sehingga sulit ditemukan saat pengguna ingin segera kembali ke halaman login utama.
+  - Dibutuhkan tombol **Logout / Keluar Akun** yang jelas, mudah diakses, dan langsung terlihat di header navigasi atas.
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Tombol Logout di Top Header ([Navigation.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/Navigation.tsx))**:
+     - Mengimpor ikon `LogOut` dari `lucide-react` dan fungsi `logout()` dari `useAuthStore`.
+     - Menempatkan tombol logout berwarna merah lembut (`text-rose-500 hover:text-rose-700 hover:bg-rose-50`) tepat di sebelah kanan tombol reset pada header atas.
+     - Dilengkapi dialog konfirmasi: *"Keluar dari akun aplikasi dan kembali ke halaman login?"*.
+  2. **Tombol Logout di Drawer Footer ([AppDrawerMenu.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AppDrawerMenu.tsx))**:
+     - Memperbarui bagian footer drawer samping: kini menampilkan alamat email pembeli aktif di sisi kiri dan tombol **`Keluar`** berwarna merah di sisi kanan.
+  3. **Verifikasi Build & Uji Coba**:
+     - `npm run build` sukses 100% tanpa error (Turbopack compile 1.4s, TypeScript 0 error).
+     - Pengguna kini dapat keluar akun kapan saja dengan 1 klik dari layar utama mana pun.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

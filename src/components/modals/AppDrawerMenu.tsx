@@ -25,7 +25,8 @@ import {
   Calendar, 
   ArrowRight,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  LogOut
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -567,10 +568,29 @@ export const AppDrawerMenu: React.FC = () => {
           </div>
 
           {/* 3. DRAWER FOOTER */}
-          <div className="p-4 border-t border-stone-200/80 dark:border-emerald-800/60 bg-stone-50/70 dark:bg-emerald-950/40 text-center">
-            <p className="text-[10px] text-stone-400">
-              Jalur Langit • Self Improvement & Spiritual Companion
-            </p>
+          <div className="p-4 border-t border-stone-200/80 dark:border-emerald-800/60 bg-stone-50/70 dark:bg-emerald-950/40 flex items-center justify-between gap-2">
+            <div className="space-y-0.5 max-w-[200px]">
+              <div className="text-[11px] font-bold text-stone-800 dark:text-stone-200 truncate">
+                {currentUser?.email || 'Jalur Langit PWA'}
+              </div>
+              <p className="text-[9px] text-stone-400">
+                Self Improvement & Spiritual
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                if (confirm('Keluar dari sesi akun dan kembali ke halaman login?')) {
+                  logout();
+                  setIsDrawerOpen(false);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-950/80 text-rose-600 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-900 transition-all active:scale-95 shrink-0"
+              title="Keluar dari akun aplikasi"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Keluar</span>
+            </button>
           </div>
 
         </div>
