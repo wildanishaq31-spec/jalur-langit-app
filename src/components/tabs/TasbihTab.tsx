@@ -88,6 +88,9 @@ export const TasbihTab: React.FC = () => {
     setCustomTarget,
     toggleSound,
     toggleVibration,
+    markAmalanCompleted,
+    markAmalanIncomplete,
+    isAmalanCompleted,
   } = useJalurLangitStore();
 
   const [isPressing, setIsPressing] = useState(false);
@@ -114,6 +117,18 @@ export const TasbihTab: React.FC = () => {
   const filteredPresets = selectedCategory === 'semua'
     ? TASBIH_PRESETS
     : TASBIH_PRESETS.filter((p) => p.category === selectedCategory);
+
+  const PRESET_TO_AMALAN_MAP: Record<string, string> = {
+    sholawat_jibril: 'sholawat_jibril',
+    istighfar_sahur: 'istighfar_sahur',
+    istighfar_1000: 'istighfar_sahur',
+    dzikir_pagi: 'dzikir_pagi',
+    dzikir_petang: 'dzikir_petang',
+    sayyidul_istighfar: 'sayyidul_istighfar',
+  };
+
+  const linkedAmalanId = PRESET_TO_AMALAN_MAP[tasbihPresetId];
+  const isLinkedAmalanDone = linkedAmalanId ? isAmalanCompleted(selectedDate, linkedAmalanId) : false;
 
   // Synchronize when switching presets
   useEffect(() => {
@@ -186,8 +201,15 @@ export const TasbihTab: React.FC = () => {
           origin: { y: 0.6 },
           colors: ['#0f3d2e', '#c9933b', '#fbbf24', '#34d399']
         });
+        if (linkedAmalanId) {
+          markAmalanCompleted(selectedDate, linkedAmalanId);
+        }
         setCurrentCounter(0); // Reset to 0 so user can do next cycle!
-        setStatusBanner(`✨ Target ${activePreset.name} (${activeTarget}x) Selesai & Tersimpan!`);
+        setStatusBanner(
+          linkedAmalanId
+            ? `✨ Target ${activePreset.name} (${activeTarget}x) Selesai! Amalan checklist otomatis SELESAI 🎉`
+            : `✨ Target ${activePreset.name} (${activeTarget}x) Selesai & Tersimpan!`
+        );
       } else {
         setCurrentCounter(nextCount);
       }
@@ -299,6 +321,52 @@ export const TasbihTab: React.FC = () => {
             <span>Pilih Dzikir</span>
           </button>
         </div>
+
+        {/* Linked Amalan Sync Status Bar */}
+        {linkedAmalanId && (
+          <div className="p-3 sm:p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isLinkedAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+              <div>
+                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                  <span>Terhubung ke Amalan Checklist</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isLinkedAmalanDone
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                  }`}>
+                    {isLinkedAmalanDone ? 'Sudah Selesai ✓' : 'Belum Selesai'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  {isLinkedAmalanDone
+                    ? 'Target amalan ini sudah selesai dan otomatis tercatat di kalender checklist.'
+                    : 'Capai target ketukan atau klik tombol untuk menyelesaikan amalan ini.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (isLinkedAmalanDone) {
+                  markAmalanIncomplete(selectedDate, linkedAmalanId);
+                } else {
+                  markAmalanCompleted(selectedDate, linkedAmalanId);
+                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+                  setStatusBanner(`✨ Masya Allah! Amalan ${activePreset.name} otomatis ditandai SELESAI di Checklist!`);
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
+                isLinkedAmalanDone
+                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>{isLinkedAmalanDone ? 'Batal Selesai' : 'Tandai Selesai di Checklist ✓'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. CENTER DZIKIR DISPLAY CARD */}

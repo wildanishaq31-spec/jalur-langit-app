@@ -1,5 +1,14 @@
 export type TimeCategory = 'dini_hari' | 'subuh' | 'dhuha' | 'petang' | 'malam';
 
+export type ActiveTab = 'home' | 'amalan' | 'tasbih' | 'glowup' | 'vision' | 'hajat' | 'quran';
+
+export interface AmalanLinkedMenu {
+  tab: ActiveTab;
+  subTab?: string;
+  presetId?: string;
+  actionLabel: string;
+}
+
 export interface AmalanItem {
   id: string;
   title: string;
@@ -11,6 +20,7 @@ export interface AmalanItem {
   targetUnit?: string;
   virtue?: string;
   isPriority?: boolean;
+  linkedMenu?: AmalanLinkedMenu;
 }
 
 export type HajatCategory = 

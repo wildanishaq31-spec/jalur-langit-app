@@ -430,4 +430,56 @@ tags:
 
 ---
 
+### 🔹 Turn 23: Integrasi Lintas Menu Amalan (Tombol Navigasi Pengerjaan & Sinkronisasi Otomatis Checklist)
+* **Pengguna**:
+  > *"di menu amalan ini kan ada yang berhubungan dengan menu lain misal seperti di gambar 1 kan ini di menu tasbih ada, di menu quran juga ada, jadi kita beri tombol untuk mengerjakan dan akan mengarahkan ke menunya dan setelah di kerjakan maka di amalan otomatis terselesaikan. jadi di amalan ini banyak yang terhubung dengan menu menu lain"*
+  > *(Mengunggah 4 gambar card amalan: Sholawat Jibril, Sayyidul Istighfar, Muhasabah & Gratitude, Sholat Tahajjud, Witir, Istighfar Sahur, Munajat Hajat, Sedekah Subuh, Dzikir Pagi, Dzikir Petang, Membaca QS. Al-Waqi'ah, dll)*
+* **Penyebab & Kebutuhan**:
+  - Amalan harian di checklist memiliki kaitan fungsional langsung dengan modul fitur lain di aplikasi:
+    - Amalan dzikir (Sholawat Jibril 1.000x, Istighfar Sahur 100x, Dzikir Pagi, Dzikir Petang, Sayyidul Istighfar) terkait dengan modul **Tasbih & Dzikir**.
+    - Amalan hajat dan sedekah (Munajat Hajat Spesifik, Sedekah Subuh) terkait dengan modul **Papan Hajat & Sedekah**.
+    - Amalan tilawah dan renungan (Membaca QS. Al-Waqi'ah, QS. Al-Mulk, Muhasabah & Gratitude Journal) terkait dengan modul **Quran & Ilmu**.
+  - Pengguna menginginkan alur kerja terpadu:
+    1. Ada tombol aksi langsung di card amalan untuk langsung menuju menu terkait (*deep linking* ke preset atau sub-tab yang sesuai).
+    2. Setelah aktivitas di menu tersebut dikerjakan (misal: target dzikir 1.000x tercapai, sedekah dicatat, atau jurnal syukur disimpan), amalan di checklist kalender **secara otomatis ditandai SELESAI (`completedAmalan`)** tanpa perlu mencentang manual lagi.
+* **Solusi Rekayasa**:
+  1. **Struktur Data & Definisi Tipe (`src/types/index.ts` & `src/data/amalanData.ts`)**:
+     - Menambahkan tipe `AmalanLinkedMenu` (`tab`, `subTab`, `presetId`, `actionLabel`).
+     - Memetakan 10 amalan harian utama ke modul fiturnya masing-masing:
+       - `sholawat_jibril` ➔ Tab `tasbih` (Preset: `sholawat_jibril`, target: 1000)
+       - `istighfar_sahur` ➔ Tab `tasbih` (Preset: `istighfar_sahur`, target: 100)
+       - `dzikir_pagi` ➔ Tab `tasbih` (Preset: `dzikir_pagi`, target: 33)
+       - `dzikir_petang` ➔ Tab `tasbih` (Preset: `dzikir_petang`, target: 33)
+       - `sayyidul_istighfar` ➔ Tab `tasbih` (Preset: `sayyidul_istighfar`, target: 3)
+       - `sedekah_subuh` ➔ Tab `hajat` (Sub-tab: `sedekah`)
+       - `hajat_dini_hari` ➔ Tab `hajat` (Sub-tab: `hajat`)
+       - `surah_waqiah` ➔ Tab `quran` (Sub-tab: `tadabbur`)
+       - `surah_mulk` ➔ Tab `quran` (Sub-tab: `tadabbur`)
+       - `muhasabah_gratitude` ➔ Tab `quran` (Sub-tab: `syukur`)
+     - Menambahkan 4 preset baru di `TASBIH_PRESETS` agar seluruh dzikir amalan memiliki profil doa dan target yang presisi.
+  2. **Manajemen Navigasi & Auto-Completion di Zustand Store (`src/store/useJalurLangitStore.ts`)**:
+     - Menambahkan `activeTab`, `setActiveTab`, `hajatActiveSubTab`, `quranActiveSubTab`.
+     - Membuat fungsi `navigateToTab(tab, subTab, meta)` yang memindahkan halaman aktif, mengaktifkan preset tasbih atau sub-tab target, serta melakukan scroll halus ke atas.
+     - Menambahkan `markAmalanCompleted(dateStr, amalanId)` dan `markAmalanIncomplete(dateStr, amalanId)`.
+     - Mengaitkan penyelesaian otomatis:
+       - Saat `addSedekah` dieksekusi ➔ otomatis menandai `sedekah_subuh` selesai di checklist tanggal tersebut.
+       - Saat `setGratitudeList` disimpan ➔ otomatis menandai `muhasabah_gratitude` selesai di checklist.
+       - Saat `incrementTasbih` mencapai target ketukan (`reachedTarget`) ➔ otomatis menandai amalan terkait (`sholawat_jibril`, `istighfar_sahur`, dll) selesai di checklist.
+  3. **UI Tombol Tindakan di Tab Amalan (`src/components/tabs/AmalanTab.tsx`)**:
+     - Menambahkan footer terintegrasi pada setiap card amalan yang memiliki `linkedMenu`:
+       - Indikator: `Terhubung ke Menu [Nama Modul]` dengan dot amber berkedip jika belum selesai, atau dot hijau mantap jika sudah selesai.
+       - Tombol Aksi: `[ 📿 Kerjakan di Tasbih (1.000x) → ]`, `[ 🤲 Catat Sedekah Subuh → ]`, `[ 📖 Buka QS. Al-Waqi'ah di Quran → ]`, dsb.
+       - Jika sudah selesai, tombol berubah menjadi `[ ✓ Sudah Dikerjakan (Buka Menu ↗) ]`.
+  4. **UI Banner Sinkronisasi di Menu Tujuan**:
+     - **Tab Tasbih (`src/components/tabs/TasbihTab.tsx`)**: Menampilkan banner sinkronisasi real-time yang memantau amalan terkait, otomatis memicu perayaan confetti saat target selesai, serta tombol cepat `Tandai Selesai di Checklist ✓`.
+     - **Tab Hajat & Sedekah (`src/components/tabs/HajatTab.tsx`)**: Menampilkan banner sinkronisasi untuk `Munajat Hajat Spesifik` dan `Sedekah Subuh` dengan status selesai real-time.
+     - **Tab Quran & Ilmu (`src/components/tabs/QuranJournalTab.tsx`)**:
+       - Menambahkan kartu **Surah Rutin Harian** untuk `QS. Al-Waqi'ah` (Petang) dan `QS. Al-Mulk` (Malam) dengan tombol centang pembacaan 1-klik.
+       - Menambahkan banner sinkronisasi real-time pada sub-tab Gratitude Journal.
+  5. **Verifikasi**:
+     - `npm run build` sukses 100% tanpa error (*Turbopack, TypeScript 0 error*).
+     - Alur navigasi bolak-balik antara Amalan dan modul lain berjalan mulus dan status checklist tersinkronisasi instan.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

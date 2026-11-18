@@ -33,6 +33,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     targetUnit: 'kali',
     virtue: 'Ciri penghuni surga yang dipuji Allah dalam QS. Adz-Dzariyat: 18.',
     isPriority: true,
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'istighfar_sahur',
+      actionLabel: 'Kerjakan di Tasbih (100x)',
+    },
   },
   {
     id: 'hajat_dini_hari',
@@ -42,6 +47,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Sebut nama hajat dan impian terbesar Anda secara rinci, yakin bahwa Allah Maha Kuasa.',
     virtue: 'Allah turun ke langit dunia di sepertiga malam terakhir menyeru: Siapa yang meminta kepada-Ku maka Aku kabulkan.',
     isPriority: false,
+    linkedMenu: {
+      tab: 'hajat',
+      subTab: 'hajat',
+      actionLabel: 'Buka Papan Hajat & Doa',
+    },
   },
 
   // --- SUBUH ---
@@ -73,6 +83,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Sisihkan sedekah di awal pagi (lewat celengan khusus atau transfer) sambil selipkan doa hajat.',
     virtue: 'Dua malaikat berdoa setiap pagi: Ya Allah gantilah yang berinfak, dan binasakanlah yang kikir. (HR. Bukhari & Muslim)',
     isPriority: true,
+    linkedMenu: {
+      tab: 'hajat',
+      subTab: 'sedekah',
+      actionLabel: 'Catat Sedekah Subuh',
+    },
   },
   {
     id: 'dzikir_pagi',
@@ -83,6 +98,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Membaca wirid dan doa perlindungan pagi hari untuk benteng diri dan keberkahan hari.',
     virtue: 'Menjadi pelindung dari godaan syaithan dan pembuka pintu ketenangan jiwa.',
     isPriority: false,
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'dzikir_pagi',
+      actionLabel: 'Buka Dzikir Pagi di Tasbih',
+    },
   },
 
   // --- DHUHA & SIANG ---
@@ -138,6 +158,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Membaca doa perlindungan menjelang matahari terbenam.',
     virtue: 'Menjaga diri dari marabahaya malam hingga terbit fajar kembali.',
     isPriority: false,
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'dzikir_petang',
+      actionLabel: 'Buka Dzikir Petang di Tasbih',
+    },
   },
   {
     id: 'surah_waqiah',
@@ -148,6 +173,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Membaca dan merenungi ayat-ayat pembuka kelapangan rezeki dan akhirat.',
     virtue: 'Diajarkan oleh para ulama sebagai wasilah menjauhkan diri dari kefakiran dan kemiskinan.',
     isPriority: true,
+    linkedMenu: {
+      tab: 'quran',
+      subTab: 'tadabbur',
+      actionLabel: 'Buka QS. Al-Waqi\'ah di Quran',
+    },
   },
 
   // --- MALAM & SEBELUM TIDUR ---
@@ -178,6 +208,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Membaca 30 ayat surat Al-Mulk setiap malam sebelum terlelap.',
     virtue: 'Surat pelindung dan pembela pembacanya dari siksa kubur. (HR. Tirmidzi)',
     isPriority: true,
+    linkedMenu: {
+      tab: 'quran',
+      subTab: 'tadabbur',
+      actionLabel: 'Buka QS. Al-Mulk di Quran',
+    },
   },
   {
     id: 'sholawat_jibril',
@@ -190,6 +225,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     targetUnit: 'kali',
     virtue: 'Barangsiapa bersholawat kepadaku 1x, Allah akan bersholawat kepadanya 10x dan menghapus 10 dosanya.',
     isPriority: true,
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'sholawat_jibril',
+      actionLabel: 'Kerjakan di Tasbih (1.000x)',
+    },
   },
   {
     id: 'sayyidul_istighfar',
@@ -200,6 +240,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Membaca rajanya istighfar, Ayat Kursi, dan 3 Qul (Al-Ikhlas, Al-Falaq, An-Nas).',
     virtue: 'Jaminan surga jika meninggal dunia di malam hari tersebut. (HR. Bukhari)',
     isPriority: false,
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'sayyidul_istighfar',
+      actionLabel: 'Lantunkan di Tasbih',
+    },
   },
   {
     id: 'muhasabah_gratitude',
@@ -209,6 +254,11 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     description: 'Mencatat 3 nikmat yang disyukuri hari ini dan memaafkan kesalahan semua orang sebelum tidur.',
     virtue: 'Hati yang damai, lapang dada, dan mengundang tambahan nikmat dari Allah (QS. Ibrahim: 7).',
     isPriority: false,
+    linkedMenu: {
+      tab: 'quran',
+      subTab: 'syukur',
+      actionLabel: 'Tulis Gratitude Journal',
+    },
   },
 ];
 
@@ -265,6 +315,42 @@ export const TASBIH_PRESETS: TasbihPreset[] = [
     transliteration: 'Astaghfirullahal \'adzim wa atubu ilaih',
     meaning: 'Aku memohon ampunan kepada Allah Yang Maha Agung dan bertaubat kepada-Nya.',
     target: 1000,
+    category: 'istighfar',
+  },
+  {
+    id: 'istighfar_sahur',
+    name: 'Istighfar Waktu Sahur (100x)',
+    arabic: 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ',
+    transliteration: 'Astaghfirullahal \'adzim wa atubu ilaih',
+    meaning: 'Memohon ampunan Allah di waktu sahur menjelang fajar Subuh (QS. Adz-Dzariyat: 18).',
+    target: 100,
+    category: 'istighfar',
+  },
+  {
+    id: 'dzikir_pagi',
+    name: 'Dzikir Pagi (Al-Ma\'tsurat)',
+    arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ',
+    transliteration: 'Ashbahnaa wa ashbahal mulku lillaahi walhamdulillah',
+    meaning: 'Kami memasuki waktu pagi dan segala kerajaan milik Allah, segala puji bagi Allah.',
+    target: 33,
+    category: 'sholat',
+  },
+  {
+    id: 'dzikir_petang',
+    name: 'Dzikir Petang (Al-Ma\'tsurat)',
+    arabic: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ',
+    transliteration: 'Amsaynaa wa amsal mulku lillaahi walhamdulillah',
+    meaning: 'Kami memasuki waktu petang dan segala kerajaan milik Allah, segala puji bagi Allah.',
+    target: 33,
+    category: 'sholat',
+  },
+  {
+    id: 'sayyidul_istighfar',
+    name: 'Sayyidul Istighfar & Dzikir Tidur',
+    arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ',
+    transliteration: 'Allahumma anta rabbi laa ilaaha illaa anta khalaqtani wa ana \'abduka',
+    meaning: 'Ya Allah, Engkau adalah Tuhanku, tidak ada Tuhan selain Engkau yang menciptakanku.',
+    target: 3,
     category: 'istighfar',
   },
   {

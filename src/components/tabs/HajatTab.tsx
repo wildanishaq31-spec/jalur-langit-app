@@ -12,7 +12,8 @@ import {
   Clock, 
   Heart,
   Calendar,
-  Pencil
+  Pencil,
+  Check
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { AddHajatModal } from '@/components/modals/AddHajatModal';
@@ -25,10 +26,18 @@ export const HajatTab: React.FC = () => {
     updateHajatStatus, 
     deleteHajat, 
     sedekahLogs, 
-    deleteSedekah 
+    deleteSedekah,
+    selectedDate,
+    hajatActiveSubTab,
+    setHajatActiveSubTab,
+    markAmalanCompleted,
+    markAmalanIncomplete,
+    isAmalanCompleted
   } = useJalurLangitStore();
 
-  const [activeSubTab, setActiveSubTab] = useState<'hajat' | 'sedekah'>('hajat');
+  const isHajatAmalanDone = isAmalanCompleted(selectedDate, 'hajat_dini_hari');
+  const isSedekahAmalanDone = isAmalanCompleted(selectedDate, 'sedekah_subuh');
+
   const [isHajatModalOpen, setIsHajatModalOpen] = useState(false);
   const [isSedekahModalOpen, setIsSedekahModalOpen] = useState(false);
   const [editingHajatItem, setEditingHajatItem] = useState<HajatItem | null>(null);
@@ -54,9 +63,9 @@ export const HajatTab: React.FC = () => {
       {/* Sub-tab Navigation */}
       <div className="flex bg-stone-100 dark:bg-emerald-950/60 p-1 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60">
         <button
-          onClick={() => setActiveSubTab('hajat')}
+          onClick={() => setHajatActiveSubTab('hajat')}
           className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-            activeSubTab === 'hajat'
+            hajatActiveSubTab === 'hajat'
               ? 'bg-white dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -66,9 +75,9 @@ export const HajatTab: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveSubTab('sedekah')}
+          onClick={() => setHajatActiveSubTab('sedekah')}
           className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-            activeSubTab === 'sedekah'
+            hajatActiveSubTab === 'sedekah'
               ? 'bg-white dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -79,8 +88,49 @@ export const HajatTab: React.FC = () => {
       </div>
 
       {/* SUB-TAB 1: HAJAT & MANIFESTING */}
-      {activeSubTab === 'hajat' && (
+      {hajatActiveSubTab === 'hajat' && (
         <div className="space-y-4">
+          {/* Linked Amalan Sync Banner: Munajat Hajat Spesifik */}
+          <div className="p-3.5 sm:p-4 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isHajatAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+              <div>
+                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <span>Amalan Dini Hari: Munajat Hajat Spesifik</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isHajatAmalanDone
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                  }`}>
+                    {isHajatAmalanDone ? 'Selesai ✓' : 'Belum Selesai'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Sebutkan hajat & impian terbesar dalam doa mustajab sepertiga malam.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (isHajatAmalanDone) {
+                  markAmalanIncomplete(selectedDate, 'hajat_dini_hari');
+                } else {
+                  markAmalanCompleted(selectedDate, 'hajat_dini_hari');
+                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
+                isHajatAmalanDone
+                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>{isHajatAmalanDone ? 'Batal Selesai' : 'Tandai Munajat Selesai ✓'}</span>
+            </button>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
@@ -210,8 +260,48 @@ export const HajatTab: React.FC = () => {
       )}
 
       {/* SUB-TAB 2: SEDEKAH SUBUH */}
-      {activeSubTab === 'sedekah' && (
+      {hajatActiveSubTab === 'sedekah' && (
         <div className="space-y-4">
+          {/* Linked Amalan Sync Banner: Sedekah Subuh */}
+          <div className="p-3.5 sm:p-4 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isSedekahAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+              <div>
+                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <span>Amalan Subuh: Sedekah Subuh</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isSedekahAmalanDone
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                  }`}>
+                    {isSedekahAmalanDone ? 'Selesai ✓' : 'Belum Selesai'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Menyisihkan sedekah di awal fajar membuka pintu berkah dan doa malaikat.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (isSedekahAmalanDone) {
+                  markAmalanIncomplete(selectedDate, 'sedekah_subuh');
+                } else {
+                  markAmalanCompleted(selectedDate, 'sedekah_subuh');
+                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
+                isSedekahAmalanDone
+                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>{isSedekahAmalanDone ? 'Batal Selesai' : 'Tandai Sedekah Selesai ✓'}</span>
+            </button>
+          </div>
           {/* Summary Card */}
           <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-800 to-teal-900 text-white shadow-lg space-y-3">
             <div className="flex items-center justify-between">

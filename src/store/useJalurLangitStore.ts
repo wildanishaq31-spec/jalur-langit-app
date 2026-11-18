@@ -14,7 +14,8 @@ import {
   QuranTadabburItem,
   AppTheme,
   DailyTasbihProgress,
-  TimeCategory
+  TimeCategory,
+  ActiveTab
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
@@ -99,6 +100,15 @@ interface JalurLangitState {
   setAppTheme: (theme: AppTheme) => void;
   toggleTheme: () => void;
 
+  // Active Tab & Cross-menu Navigation
+  activeTab: ActiveTab;
+  setActiveTab: (tab: ActiveTab) => void;
+  hajatActiveSubTab: 'hajat' | 'sedekah';
+  setHajatActiveSubTab: (subTab: 'hajat' | 'sedekah') => void;
+  quranActiveSubTab: 'tadabbur' | 'juz' | 'kajian' | 'syukur';
+  setQuranActiveSubTab: (subTab: 'tadabbur' | 'juz' | 'kajian' | 'syukur') => void;
+  navigateToTab: (tab: ActiveTab, subTab?: string, meta?: { presetId?: string; targetCount?: number }) => void;
+
   // Real Calendar Navigation (Januari s/d Desember)
   calendarYear: number;
   calendarMonth: number; // 0..11
@@ -113,6 +123,8 @@ interface JalurLangitState {
   // Completed Amalan (Key: YYYY-MM-DD)
   completedAmalan: Record<string, string[]>;
   toggleAmalan: (dateStr: string, amalanId: string) => void;
+  markAmalanCompleted: (dateStr: string, amalanId: string) => void;
+  markAmalanIncomplete: (dateStr: string, amalanId: string) => void;
   isAmalanCompleted: (dateStr: string, amalanId: string) => boolean;
   getDateCompletionPercentage: (dateStr: string, totalCount: number) => number;
   
@@ -198,6 +210,32 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       setAppTheme: (theme) => set({ appTheme: theme }),
       toggleTheme: () => set((state) => ({ appTheme: state.appTheme === 'dark' ? 'light' : 'dark' })),
 
+      // Navigation & Cross-menu integration
+      activeTab: 'home',
+      setActiveTab: (tab) => set({ activeTab: tab }),
+      hajatActiveSubTab: 'hajat',
+      setHajatActiveSubTab: (subTab) => set({ hajatActiveSubTab: subTab }),
+      quranActiveSubTab: 'tadabbur',
+      setQuranActiveSubTab: (subTab) => set({ quranActiveSubTab: subTab }),
+      navigateToTab: (tab, subTab, meta) => {
+        if (meta?.presetId) {
+          get().setTasbihPreset(meta.presetId);
+          if (meta.targetCount) {
+            get().setCustomTarget(meta.targetCount);
+          }
+        }
+        if (tab === 'hajat' && (subTab === 'hajat' || subTab === 'sedekah')) {
+          set({ hajatActiveSubTab: subTab });
+        }
+        if (tab === 'quran' && (subTab === 'tadabbur' || subTab === 'juz' || subTab === 'kajian' || subTab === 'syukur')) {
+          set({ quranActiveSubTab: subTab });
+        }
+        set({ activeTab: tab });
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      },
+
       calendarYear: 2026,
       calendarMonth: 10,
       selectedDate: '2026-11-17',
@@ -259,6 +297,32 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             [dateStr]: updated,
           },
         });
+      },
+
+      markAmalanCompleted: (dateStr, amalanId) => {
+        const state = get();
+        const currentList = state.completedAmalan[dateStr] || [];
+        if (!currentList.includes(amalanId)) {
+          set({
+            completedAmalan: {
+              ...state.completedAmalan,
+              [dateStr]: [...currentList, amalanId],
+            },
+          });
+        }
+      },
+
+      markAmalanIncomplete: (dateStr, amalanId) => {
+        const state = get();
+        const currentList = state.completedAmalan[dateStr] || [];
+        if (currentList.includes(amalanId)) {
+          set({
+            completedAmalan: {
+              ...state.completedAmalan,
+              [dateStr]: currentList.filter((id) => id !== amalanId),
+            },
+          });
+        }
       },
 
       isAmalanCompleted: (dateStr, amalanId) => {
@@ -441,6 +505,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           id: `sedekah-${Date.now()}`,
         };
         set((state) => ({ sedekahLogs: [newItem, ...state.sedekahLogs] }));
+        get().markAmalanCompleted(item.date || get().selectedDate, 'sedekah_subuh');
       },
       updateSedekah: (id, updated) => {
         set((state) => ({
@@ -519,6 +584,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             [dateStr]: list,
           },
         }));
+        if (list && list.length > 0) {
+          get().markAmalanCompleted(dateStr, 'muhasabah_gratitude');
+        }
       },
 
       // Tasbih
@@ -563,6 +631,20 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             [dateStr]: updatedDaily,
           },
         });
+
+        if (reachedTarget) {
+          if (state.tasbihPresetId === 'sholawat_jibril') {
+            get().markAmalanCompleted(dateStr, 'sholawat_jibril');
+          } else if (state.tasbihPresetId === 'istighfar_sahur' || state.tasbihPresetId === 'istighfar_1000') {
+            get().markAmalanCompleted(dateStr, 'istighfar_sahur');
+          } else if (state.tasbihPresetId === 'dzikir_pagi') {
+            get().markAmalanCompleted(dateStr, 'dzikir_pagi');
+          } else if (state.tasbihPresetId === 'dzikir_petang') {
+            get().markAmalanCompleted(dateStr, 'dzikir_petang');
+          } else if (state.tasbihPresetId === 'sayyidul_istighfar') {
+            get().markAmalanCompleted(dateStr, 'sayyidul_istighfar');
+          }
+        }
 
         return reachedTarget;
       },

@@ -12,8 +12,7 @@ import { QuranJournalTab } from '@/components/tabs/QuranJournalTab';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-  const appTheme = useJalurLangitStore((s) => s.appTheme);
+  const { activeTab, setActiveTab, appTheme } = useJalurLangitStore();
 
   useEffect(() => {
     if (appTheme === 'dark') {

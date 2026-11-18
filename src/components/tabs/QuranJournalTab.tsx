@@ -33,9 +33,17 @@ export const QuranJournalTab: React.FC = () => {
     deleteKajian,
     quranTadabburList,
     deleteQuranTadabbur,
+    quranActiveSubTab,
+    setQuranActiveSubTab,
+    markAmalanCompleted,
+    markAmalanIncomplete,
+    isAmalanCompleted
   } = useJalurLangitStore();
 
-  const [activeSubTab, setActiveSubTab] = useState<'tadabbur' | 'juz' | 'kajian' | 'syukur'>('tadabbur');
+  const isWaqiahDone = isAmalanCompleted(selectedDate, 'surah_waqiah');
+  const isMulkDone = isAmalanCompleted(selectedDate, 'surah_mulk');
+  const isGratitudeAmalanDone = isAmalanCompleted(selectedDate, 'muhasabah_gratitude');
+
   const [isKajianModalOpen, setIsKajianModalOpen] = useState(false);
   const [isTadabburModalOpen, setIsTadabburModalOpen] = useState(false);
   const [editingTadabburItem, setEditingTadabburItem] = useState<QuranTadabburItem | null>(null);
@@ -105,9 +113,9 @@ export const QuranJournalTab: React.FC = () => {
       {/* Sub-tab Navigation - Responsive Grid Anti-Terpotong */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-stone-100 dark:bg-emerald-950/60 p-1.5 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60">
         <button
-          onClick={() => setActiveSubTab('tadabbur')}
+          onClick={() => setQuranActiveSubTab('tadabbur')}
           className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-            activeSubTab === 'tadabbur'
+            quranActiveSubTab === 'tadabbur'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -117,9 +125,9 @@ export const QuranJournalTab: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveSubTab('juz')}
+          onClick={() => setQuranActiveSubTab('juz')}
           className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-            activeSubTab === 'juz'
+            quranActiveSubTab === 'juz'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -129,9 +137,9 @@ export const QuranJournalTab: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveSubTab('kajian')}
+          onClick={() => setQuranActiveSubTab('kajian')}
           className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-            activeSubTab === 'kajian'
+            quranActiveSubTab === 'kajian'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -141,9 +149,9 @@ export const QuranJournalTab: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveSubTab('syukur')}
+          onClick={() => setQuranActiveSubTab('syukur')}
           className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-            activeSubTab === 'syukur'
+            quranActiveSubTab === 'syukur'
               ? 'bg-white dark:bg-emerald-900 text-teal-900 dark:text-teal-100 shadow-sm'
               : 'text-stone-600 dark:text-stone-400 hover:text-stone-900'
           }`}
@@ -154,8 +162,81 @@ export const QuranJournalTab: React.FC = () => {
       </div>
 
       {/* SUB-TAB 1: DEEP QURAN TADABBUR (SHEET 8) */}
-      {activeSubTab === 'tadabbur' && (
+      {quranActiveSubTab === 'tadabbur' && (
         <div className="space-y-4">
+          {/* Daily Surah Routine Card: Al-Waqi'ah (Petang) & Al-Mulk (Malam) */}
+          <div className="p-4 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                  Surah Rutin Harian (Terhubung ke Checklist Amalan)
+                </h3>
+              </div>
+              <span className="text-[10px] text-stone-500 font-semibold">{formatDateIndonesian(selectedDate)}</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* QS. Al-Waqi'ah */}
+              <div className="p-3 bg-white dark:bg-emerald-900/40 rounded-2xl border border-stone-200/70 dark:border-emerald-800/50 flex items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${isWaqiahDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+                    <span className="text-xs font-bold text-stone-900 dark:text-stone-100">QS. Al-Waqi'ah</span>
+                  </div>
+                  <span className="text-[11px] text-stone-500">Amalan Waktu Petang</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (isWaqiahDone) {
+                      markAmalanIncomplete(selectedDate, 'surah_waqiah');
+                    } else {
+                      markAmalanCompleted(selectedDate, 'surah_waqiah');
+                      confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 ${
+                    isWaqiahDone
+                      ? 'bg-emerald-100 dark:bg-emerald-800/80 text-emerald-800 dark:text-emerald-200'
+                      : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+                  }`}
+                >
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>{isWaqiahDone ? 'Sudah Dibaca ✓' : 'Tandai Selesai'}</span>
+                </button>
+              </div>
+
+              {/* QS. Al-Mulk */}
+              <div className="p-3 bg-white dark:bg-emerald-900/40 rounded-2xl border border-stone-200/70 dark:border-emerald-800/50 flex items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2 h-2 rounded-full ${isMulkDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+                    <span className="text-xs font-bold text-stone-900 dark:text-stone-100">QS. Al-Mulk</span>
+                  </div>
+                  <span className="text-[11px] text-stone-500">Amalan Waktu Malam</span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (isMulkDone) {
+                      markAmalanIncomplete(selectedDate, 'surah_mulk');
+                    } else {
+                      markAmalanCompleted(selectedDate, 'surah_mulk');
+                      confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 ${
+                    isMulkDone
+                      ? 'bg-emerald-100 dark:bg-emerald-800/80 text-emerald-800 dark:text-emerald-200'
+                      : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+                  }`}
+                >
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>{isMulkDone ? 'Sudah Dibaca ✓' : 'Tandai Selesai'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
@@ -276,7 +357,7 @@ export const QuranJournalTab: React.FC = () => {
       )}
 
       {/* SUB-TAB 2: 1 DAY 1 JUZ TRACKER */}
-      {activeSubTab === 'juz' && (
+      {quranActiveSubTab === 'juz' && (
         <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -320,7 +401,7 @@ export const QuranJournalTab: React.FC = () => {
       )}
 
       {/* SUB-TAB 3: 1 DAY 1 KAJIAN (SHEET 4) */}
-      {activeSubTab === 'kajian' && (
+      {quranActiveSubTab === 'kajian' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -418,8 +499,48 @@ export const QuranJournalTab: React.FC = () => {
       )}
 
       {/* SUB-TAB 4: GRATITUDE & SYUKUR */}
-      {activeSubTab === 'syukur' && (
+      {quranActiveSubTab === 'syukur' && (
         <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
+          {/* Linked Amalan Sync Banner: Muhasabah & Gratitude Journal */}
+          <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isGratitudeAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+              <div>
+                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                  <span>Terhubung ke Amalan: Muhasabah & Gratitude Journal</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isGratitudeAmalanDone
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
+                  }`}>
+                    {isGratitudeAmalanDone ? 'Selesai ✓' : 'Belum Selesai'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Menyimpan catatan syukur hari ini otomatis menandai amalan ini selesai di Checklist Amalan.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (isGratitudeAmalanDone) {
+                  markAmalanIncomplete(selectedDate, 'muhasabah_gratitude');
+                } else {
+                  markAmalanCompleted(selectedDate, 'muhasabah_gratitude');
+                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
+                isGratitudeAmalanDone
+                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+              }`}
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>{isGratitudeAmalanDone ? 'Batal Selesai' : 'Tandai Selesai di Checklist ✓'}</span>
+            </button>
+          </div>
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
               <Heart className="w-5 h-5 fill-rose-500/20" />

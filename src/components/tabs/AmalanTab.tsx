@@ -16,7 +16,9 @@ import {
   Clock,
   Bell,
   BellRing,
-  Volume2
+  Volume2,
+  BookOpen,
+  HeartHandshake
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { DEFAULT_AMALAN_LIST } from '@/data/amalanData';
@@ -50,6 +52,7 @@ export const AmalanTab: React.FC = () => {
     getDateCompletionPercentage,
     notificationsEnabled,
     notificationTimes,
+    navigateToTab,
   } = useJalurLangitStore();
 
   const [selectedCategory, setSelectedCategory] = useState<TimeCategory | 'semua'>('semua');
@@ -364,6 +367,67 @@ export const AmalanTab: React.FC = () => {
                         Fadhilah & Dalil:
                       </strong>
                       {item.virtue}
+                    </div>
+                  )}
+
+                  {/* Cross-Menu Action Link Button */}
+                  {item.linkedMenu && (
+                    <div className="w-full mt-3.5 pt-3 border-t border-stone-100 dark:border-emerald-900/40 flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">
+                        <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
+                        <span>
+                          {isDone ? (
+                            <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">Tersinkronisasi Selesai</strong>
+                          ) : (
+                            <>
+                              Terhubung ke{' '}
+                              <strong className="text-stone-700 dark:text-stone-300 font-semibold">
+                                {item.linkedMenu.tab === 'tasbih'
+                                  ? 'Menu Tasbih & Dzikir'
+                                  : item.linkedMenu.tab === 'hajat'
+                                  ? 'Menu Hajat & Sedekah'
+                                  : item.linkedMenu.tab === 'quran'
+                                  ? 'Menu Quran & Ilmu'
+                                  : 'Menu Terkait'}
+                              </strong>
+                            </>
+                          )}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (item.linkedMenu) {
+                            navigateToTab(
+                              item.linkedMenu.tab,
+                              item.linkedMenu.subTab,
+                              {
+                                presetId: item.linkedMenu.presetId,
+                                targetCount: item.targetCount,
+                              }
+                            );
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs active:scale-95 ${
+                          isDone
+                            ? 'bg-stone-100 dark:bg-emerald-900/40 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-emerald-900/60'
+                            : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:text-amber-200 ring-1 ring-emerald-600/30'
+                        }`}
+                      >
+                        {isDone ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
+                            <span>Sudah Dikerjakan (Buka Menu ↗)</span>
+                          </>
+                        ) : (
+                          <>
+                            {item.linkedMenu.tab === 'tasbih' && <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                            {item.linkedMenu.tab === 'hajat' && <HeartHandshake className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                            {item.linkedMenu.tab === 'quran' && <BookOpen className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                            <span>{item.linkedMenu.actionLabel} →</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
                 </div>
