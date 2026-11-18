@@ -155,6 +155,7 @@ interface JalurLangitState {
   deleteKajian: (id: string) => void;
   quranTadabburList: QuranTadabburItem[];
   addQuranTadabbur: (item: Omit<QuranTadabburItem, 'id' | 'createdAt'>) => void;
+  updateQuranTadabbur: (id: string, updated: Partial<Omit<QuranTadabburItem, 'id' | 'createdAt'>>) => void;
   deleteQuranTadabbur: (id: string) => void;
   
   // Gratitude (Key: YYYY-MM-DD)
@@ -457,6 +458,13 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           createdAt: new Date().toISOString(),
         };
         set((state) => ({ quranTadabburList: [newItem, ...state.quranTadabburList] }));
+      },
+      updateQuranTadabbur: (id, updated) => {
+        set((state) => ({
+          quranTadabburList: state.quranTadabburList.map((t) =>
+            t.id === id ? { ...t, ...updated } : t
+          ),
+        }));
       },
       deleteQuranTadabbur: (id) => {
         set((state) => ({ quranTadabburList: state.quranTadabburList.filter(t => t.id !== id) }));

@@ -13,9 +13,11 @@ import {
   Bookmark,
   ExternalLink,
   Video,
-  FileText
+  FileText,
+  Pencil
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+import { QuranTadabburItem } from '@/types';
 import { AddKajianModal } from '@/components/modals/AddKajianModal';
 import { AddTadabburModal } from '@/components/modals/AddTadabburModal';
 import { formatDateIndonesian } from '@/utils/dateUtils';
@@ -37,6 +39,7 @@ export const QuranJournalTab: React.FC = () => {
   const [activeSubTab, setActiveSubTab] = useState<'tadabbur' | 'juz' | 'kajian' | 'syukur'>('tadabbur');
   const [isKajianModalOpen, setIsKajianModalOpen] = useState(false);
   const [isTadabburModalOpen, setIsTadabburModalOpen] = useState(false);
+  const [editingTadabburItem, setEditingTadabburItem] = useState<QuranTadabburItem | null>(null);
 
   // Gratitude for selectedDate (dynamic list)
   const [gratitudeItems, setGratitudeItems] = useState<string[]>(() => {
@@ -164,7 +167,10 @@ export const QuranJournalTab: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsTadabburModalOpen(true)}
+              onClick={() => {
+                setEditingTadabburItem(null);
+                setIsTadabburModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -193,21 +199,32 @@ export const QuranJournalTab: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {item.youtubeLink && (
                       <a
                         href={item.youtubeLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-1.5 text-stone-400 hover:text-red-500 transition-colors"
+                        className="p-1.5 text-stone-400 hover:text-red-500 rounded-lg hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
                         title="Buka Link Kajian"
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
                     )}
                     <button
+                      onClick={() => {
+                        setEditingTadabburItem(item);
+                        setIsTadabburModalOpen(true);
+                      }}
+                      className="p-1.5 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
+                      title="Edit Lembar Tadabbur"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => deleteQuranTadabbur(item.id)}
-                      className="p-1.5 text-stone-400 hover:text-rose-500 transition-colors"
+                      className="p-1.5 text-stone-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Hapus Tadabbur"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -474,7 +491,11 @@ export const QuranJournalTab: React.FC = () => {
       {/* MODALS */}
       <AddTadabburModal
         isOpen={isTadabburModalOpen}
-        onClose={() => setIsTadabburModalOpen(false)}
+        editingItem={editingTadabburItem}
+        onClose={() => {
+          setIsTadabburModalOpen(false);
+          setEditingTadabburItem(null);
+        }}
       />
 
       <AddKajianModal

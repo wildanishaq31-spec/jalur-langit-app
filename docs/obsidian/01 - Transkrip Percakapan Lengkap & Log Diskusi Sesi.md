@@ -189,4 +189,19 @@ tags:
   6. Menyimpan seluruh daftar poin ke `useJalurLangitStore` (`gratitudeMap[selectedDate]`) dengan notifikasi visual tersimpan.
 
 ---
+
+### 🔹 Turn 12: Fitur Edit Lembar Quran Tadabbur
+* **Pengguna**:
+  > *"untuk quran tadabbur juga di kasih tombol edit"*
+  > *(Mengunggah gambar kartu Quran Tadabbur QS. Al-Waqi'ah dan QS. At-Talaq yang hanya memiliki tombol hapus dan link)*
+* **Penyebab & Kebutuhan**: Kartu Tadabbur Al-Qur'an sebelumnya hanya dapat dihapus, belum bisa disunting jika pengguna ingin merevisi atau memperdalam refleksi 4 pilar (Surah, Ayat, Kisah Asbabun Nuzul, Topik, Hikmah Jiwa, atau Rencana Aksi Nyata).
+* **Solusi Rekayasa**:
+  1. Menambahkan fungsi mutasi state `updateQuranTadabbur(id, updated)` pada `useJalurLangitStore`.
+  2. Memperbarui `AddTadabburModal.tsx` agar mendukung mode **Create** maupun **Edit**:
+     - Menerima properti `editingItem?: QuranTadabburItem | null`.
+     - Otomatis mengisi seluruh input form (*pre-filled*) dengan data ayat dan 4 pilar tadabbur yang sedang diedit.
+     - Mengubah judul menjadi *"Edit Lembar Tadabbur Al-Qur'an"* dan tombol submit menjadi *"Simpan Perubahan Tadabbur"*.
+  3. Menambahkan tombol Edit (*Pencil icon*) di sudut kanan atas setiap kartu Tadabbur pada `QuranJournalTab.tsx` berdampingan dengan tombol link kajian dan tombol hapus.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
