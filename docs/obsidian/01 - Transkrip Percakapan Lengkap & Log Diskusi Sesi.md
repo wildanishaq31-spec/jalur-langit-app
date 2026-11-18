@@ -896,4 +896,54 @@ tags:
 
 ---
 
+### 🔹 Turn 39: Otomatisasi Sinkronisasi Akses Pembeli Lynk.id (Webhook Endpoint, Server Store & Pengujian Panel Admin)
+* **Pengguna**:
+  > *"untuk tambah akses pembeli seharusnya otomatis, berarti kan lynk dan aplikasi jalur langit ini harus terhubung, jadi alurnya user klik link paket di lynk lalu membeli paket lalu user cek email dan klik link jalur langit untuk install pwa, lalu user login dengan email yang di gunakan saat membeli dan akan di verifikasi jika benar maka bisa login dan sudah otomatis mendapat akses sesuuai paketnya, jadi di panel admin itu otomatis semua tidak ada yang manual memberi akses. tadi kamu kan sudah buat alur aliran pengguna seperti di gambar"*
+  > *(Mengunggah Gambar Diagram Urutan Aliran Akses Pembeli Lynk.id & PWA Jalur Langit)*
+* **Latar Belakang & Analisis Arsitektur**:
+  - Pengguna menegaskan bahwa proses pemberian akses pembeli **wajib 100% otomatis tanpa intervensi manual admin**.
+  - Alur bisnis sesuai diagram sekuens:
+    1. Pembeli memilih paket di Lynk.id (Starter Rp 49k / Ultimate Rp 89k / VIP Rp 149k) dan menyelesaikan pembayaran.
+    2. Lynk.id otomatis mengirimkan notifikasi pembelian ke email pembeli berisi URL install/unduh aplikasi: `https://jalur-langit-app.vercel.app/download`.
+    3. Pada saat yang sama, server Lynk.id mengirim HTTP Webhook (POST) ke endpoint aplikasi: `https://jalur-langit-app.vercel.app/api/webhook/lynkid`.
+    4. Server Jalur Langit menerima payload, mengekstrak email, nama, dan mendeteksi paket lisensi berdasarkan harga/nama item, lalu mendaftarkannya ke whitelist server.
+    5. Pembeli membuka link PWA, memasang aplikasi ke layar beranda (Add to Home Screen), lalu login dengan akun Google atau mengetikkan email yang sama dengan email checkout Lynk.id.
+    6. Aplikasi melakukan verifikasi ke server (`/api/auth/verify-buyer`):
+       - Jika terdaftar: Memunculkan animasi transisi bulan sabit emas berkedip (*golden moon pulse*) dan membuka modul aplikasi sesuai hak akses paket secara otomatis. Akun juga di-cache di `localStorage` agar aplikasi tetap bisa dipakai saat offline.
+       - Jika belum beli / email beda: Menampilkan dialog ramah penolakan dengan tombol langsung ke katalog Lynk.id.
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Server-Side Buyer Storage Layer ([src/lib/serverBuyerStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/lib/serverBuyerStore.ts))**:
+     - Mengelola penyimpanan server-side persisten dengan in-memory cache global (`__globalBuyersList`) yang tahan selama masa serverless warm instance.
+     - Dilengkapi fungsi cerdas `determineTierFromLynkData(productName, amount)` yang memetakan:
+       - `amount >= 140000` atau mengandung kata "VIP" / "149" ➔ `vip`
+       - `amount >= 80000` atau mengandung kata "Full" / "Bundling" / "Ultimate" / "89" ➔ `ultimate`
+       - Default / `amount >= 40000` ➔ `starter`
+  2. **Webhook Endpoint Lynk.id ([src/app/api/webhook/lynkid/route.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/api/webhook/lynkid/route.ts))**:
+     - `GET`: Menyediakan health-check endpoint yang memverifikasi webhook online dan siap menerima trafik.
+     - `POST`: Menerima payload dari Lynk.id, mendukung variasi struktur JSON (seperti `customer.email`, `buyer_email`, `items[0].price`, dll.), memvalidasi format email, menentukan tier, dan menyimpannya secara otomatis ke database.
+  3. **Endpoint Verifikasi Autentikasi ([src/app/api/auth/verify-buyer/route.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/api/auth/verify-buyer/route.ts))**:
+     - Menerima email saat pembeli melakukan login, mencocokkan ke database server, dan mengembalikan profil pembeli beserta tier lisensinya.
+  4. **Pembaruan Store Autentikasi ([src/store/useAuthStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useAuthStore.ts))**:
+     - `loginWithEmail` diubah menjadi fungsi `async`. Pertama-tama memanggil API server `/api/auth/verify-buyer`.
+     - Jika terverifikasi secara online, data pembeli langsung disimpan ke whitelist lokal offline pembeli untuk menjamin keandalan *Offline-First PWA*.
+     - Jika server offline, fallback ke cache lokal yang sudah tersimpan.
+  5. **Indikator Loading Autentikasi ([src/components/auth/LoginPage.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/auth/LoginPage.tsx))**:
+     - Menambahkan state `isVerifying` dengan spinner pemrosesan pada tombol "Verifikasi Akses Pembeli" dan tombol "Masuk dengan Google".
+  6. **Pembaruan Panel Kontrol Owner ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - Menambahkan kotak **URL Webhook Lynk.id** lengkap dengan tombol 1-klik salin (`https://jalur-langit-app.vercel.app/api/webhook/lynkid`) dan indikator status hijau "Sistem Otomatis Lynk.id Aktif".
+     - Menambahkan **3 Tombol Simulasi Pembelian Lynk.id Seketika**:
+       - 🧪 Tes Beli Starter (Rp 49.000)
+       - 🧪 Tes Beli Ultimate (Rp 89.000)
+       - 🧪 Tes Beli VIP (Rp 149.000)
+       Sehingga Owner dapat menguji coba aliran data webhook secara nyata tanpa perlu membeli produk sungguhan terlebih dahulu.
+     - Formulir input manual tetap dipertahankan di bagian bawah hanya sebagai cadangan darurat (*fail-safe* jika pembeli salah mengetik email saat checkout).
+* **Hasil Pengujian & Verifikasi**:
+  - `GET /api/webhook/lynkid` ➔ HTTP 200 OK (Status: online).
+  - `POST /api/webhook/lynkid` dengan data simulasi ➔ HTTP 200 OK (Akses otomatis diberikan).
+  - `POST /api/auth/verify-buyer` dengan email terdaftar ➔ HTTP 200 OK (Berhasil login & tier sesuai).
+  - `POST /api/auth/verify-buyer` dengan email tak dikenal ➔ HTTP 404 (Akses ditolak).
+  - `npm run lint` & `npm run build`: 18/18 halaman statis dan dynamic routes sukses dikompilasi dengan Turbopack tanpa error.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

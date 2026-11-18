@@ -13,7 +13,10 @@ import {
   Download, 
   Sparkles, 
   KeyRound, 
-  Lock
+  Lock,
+  Zap,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
@@ -31,12 +34,16 @@ export default function PanelAdminPage() {
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [copiedWebhook, setCopiedWebhook] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
 
-  // Form states for adding new buyer
+  // Form states for adding new buyer (manual backup)
   const [newEmail, setNewEmail] = useState('');
   const [newName, setNewName] = useState('');
   const [newTier, setNewTier] = useState<UserTier>('ultimate');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const webhookEndpointUrl = 'https://jalur-langit-app.vercel.app/api/webhook/lynkid';
 
   // PIN Admin Default: 1409 atau jalurlangit
   const handleUnlock = (e: React.FormEvent) => {
@@ -46,6 +53,61 @@ export default function PanelAdminPage() {
       setPinError(false);
     } else {
       setPinError(true);
+    }
+  };
+
+  const handleCopyWebhook = () => {
+    navigator.clipboard.writeText(webhookEndpointUrl);
+    setCopiedWebhook(true);
+    setTimeout(() => setCopiedWebhook(false), 3000);
+  };
+
+  // Simulasi Webhook Lynk.id Otomatis (Menguji Alur Sequence Diagram)
+  const handleSimulateWebhook = async (tier: UserTier) => {
+    setIsSimulating(true);
+    const mockNames = {
+      starter: 'Rina Marlina (Tes Lynk.id)',
+      ultimate: 'Dewi Lestari (Tes Lynk.id)',
+      vip: 'Ahmad Fauzi (Tes Lynk.id)'
+    };
+    const mockPrices = { starter: 49000, ultimate: 89000, vip: 149000 };
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const mockEmail = `pembeli.${tier}${randomSuffix}@gmail.com`;
+
+    try {
+      const res = await fetch('/api/webhook/lynkid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: `LYNK-SIM-${Date.now().toString().slice(-6)}`,
+          customer: {
+            email: mockEmail,
+            name: mockNames[tier]
+          },
+          product_name: `Jalur Langit - ${TIER_CONFIG[tier].name}`,
+          amount: mockPrices[tier],
+          status: 'PAID'
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.buyer) {
+        addBuyerToWhitelist(data.buyer);
+        alert(
+          `⚡ SIMULASI WEBHOOK SUKSES!\n\nLynk.id berhasil mengirim data pembayaran secara OTOMATIS ke server:\n` +
+          `• Email: ${data.buyer.email}\n` +
+          `• Nama: ${data.buyer.name}\n` +
+          `• Paket: ${data.buyer.tierLabel}\n\n` +
+          `Akun ini sekarang SUDAH BISA LANGSUNG LOGIN di halaman /login tanpa perlu input manual lagi!`
+        );
+      } else {
+        alert('Gagal mengirim simulasi: ' + (data.message || 'Error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memanggil endpoint webhook.');
+    } finally {
+      setIsSimulating(false);
     }
   };
 
@@ -240,13 +302,88 @@ export default function PanelAdminPage() {
               </div>
             </div>
 
-            {/* Add New Buyer Card */}
+            {/* 1. KOTAK INTEGRASI WEBHOOK LYNK.ID OTOMATIS */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-900/90 via-teal-900 to-emerald-950 text-white shadow-xl border border-amber-300/40 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Sistem Otomatis Lynk.id Aktif</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold font-serif text-amber-200">
+                    URL Webhook Lynk.id (Integrasi 100% Otomatis)
+                  </h3>
+                  <p className="text-xs text-emerald-100/80 max-w-xl leading-relaxed">
+                    Tempelkan URL ini di <b>Dashboard Lynk.id ➔ Pengaturan ➔ Webhook</b>. Setiap kali pembeli membayar paket di Lynk.id, webhook ini akan langsung memberikan akses secara otomatis tanpa perlu input manual!
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleCopyWebhook}
+                  className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-900 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0"
+                >
+                  {copiedWebhook ? <Check className="w-4 h-4 text-emerald-900" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedWebhook ? 'Tersalin ke Clipboard!' : 'Salin URL Webhook'}</span>
+                </button>
+              </div>
+
+              {/* URL Display */}
+              <div className="p-3 rounded-2xl bg-black/40 border border-emerald-700/60 font-mono text-xs text-amber-300 break-all select-all flex items-center justify-between">
+                <span>{webhookEndpointUrl}</span>
+              </div>
+
+              {/* 2. ALAT PENGUJIAN / SIMULASI WEBHOOK LYNK.ID */}
+              <div className="pt-3 border-t border-emerald-800/80 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-300" />
+                  <span className="text-xs font-bold text-amber-200 uppercase tracking-wider">
+                    Uji Coba Alur Diagram: Simulasi Pembelian Lynk.id Seketika
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-300">
+                  Klik salah satu tombol di bawah untuk menyimulasikan pembeli baru yang baru saja checkout di Lynk.id. Sistem akan langsung mencatatnya ke database dan email tersebut siap digunakan login:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                  <button
+                    onClick={() => handleSimulateWebhook('starter')}
+                    disabled={isSimulating}
+                    className="p-2.5 rounded-xl bg-emerald-800/90 hover:bg-emerald-700 border border-emerald-600/70 text-xs font-bold text-white transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+                  >
+                    <span>🧪 Tes Beli Starter (49k)</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSimulateWebhook('ultimate')}
+                    disabled={isSimulating}
+                    className="p-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 border border-amber-400/70 text-xs font-bold text-white transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+                  >
+                    <span>🧪 Tes Beli Ultimate (89k)</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSimulateWebhook('vip')}
+                    disabled={isSimulating}
+                    className="p-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 border border-purple-400/70 text-xs font-bold text-white transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+                  >
+                    <span>🧪 Tes Beli VIP (149k)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Add New Buyer Card (Manual Backup) */}
             <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-4">
-              <div className="flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                  Tambah Akses Pembeli Baru (Manual Entry)
-                </h3>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                    Input Manual Cadangan (Backup Darurat)
+                  </h3>
+                </div>
+                <span className="text-[10px] text-stone-400">
+                  Gunakan hanya jika pembeli salah ketik email di Lynk.id
+                </span>
               </div>
 
               <form onSubmit={handleAddBuyer} className="grid grid-cols-1 sm:grid-cols-4 gap-3">

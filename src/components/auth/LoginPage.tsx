@@ -29,22 +29,30 @@ export const LoginPage: React.FC = () => {
   const [googleEmailInput, setGoogleEmailInput] = useState('');
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   const [isUsingOtherAccount, setIsUsingOtherAccount] = useState(false);
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputEmail.trim()) return;
-    loginWithEmail(inputEmail.trim());
+    if (!inputEmail.trim() || isVerifying) return;
+    setIsVerifying(true);
+    await loginWithEmail(inputEmail.trim());
+    setIsVerifying(false);
   };
 
-  const handleSelectGoogleAccount = (email: string) => {
+  const handleSelectGoogleAccount = async (email: string) => {
     setIsGoogleModalOpen(false);
-    loginWithEmail(email);
+    setIsVerifying(true);
+    await loginWithEmail(email);
+    setIsVerifying(false);
   };
 
-  const handleCustomGoogleSubmit = (e: React.FormEvent) => {
+  const handleCustomGoogleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!googleEmailInput.trim()) return;
+    if (!googleEmailInput.trim() || isVerifying) return;
     setIsGoogleModalOpen(false);
-    loginWithEmail(googleEmailInput.trim());
+    setIsVerifying(true);
+    await loginWithEmail(googleEmailInput.trim());
+    setIsVerifying(false);
     setGoogleEmailInput('');
     setIsUsingOtherAccount(false);
   };
@@ -166,11 +174,20 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={!inputEmail.trim()}
+              disabled={!inputEmail.trim() || isVerifying}
               className="w-full py-2 sm:py-2.5 px-4 rounded-xl sm:rounded-2xl bg-emerald-800 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
             >
-              <span>Verifikasi Akses Pembeli</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              {isVerifying ? (
+                <>
+                  <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Memeriksa Akses Lynk.id...</span>
+                </>
+              ) : (
+                <>
+                  <span>Verifikasi Akses Pembeli</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
             </button>
           </form>
 

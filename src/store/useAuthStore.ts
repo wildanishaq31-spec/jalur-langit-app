@@ -64,7 +64,7 @@ interface AuthState {
   whitelist: AuthUser[];
 
   // Actions
-  loginWithEmail: (emailInput: string) => boolean;
+  loginWithEmail: (emailInput: string) => Promise<boolean>;
   completeTransition: () => void;
   logout: () => void;
   clearAuthError: () => void;
@@ -84,13 +84,43 @@ export const useAuthStore = create<AuthState>()(
       deniedEmailAttempt: null,
       whitelist: INITIAL_BUYER_WHITELIST,
 
-      loginWithEmail: (emailInput: string) => {
+      loginWithEmail: async (emailInput: string) => {
         const cleaned = emailInput.trim().toLowerCase();
         if (!cleaned || !cleaned.includes('@')) {
           set({ authError: 'invalid_email', deniedEmailAttempt: emailInput });
           return false;
         }
 
+        // 1. Verifikasi real-time ke Server / Cloud Database (hasil otomatis dari Webhook Lynk.id)
+        try {
+          const res = await fetch('/api/auth/verify-buyer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleaned })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.user) {
+              set((state) => ({
+                currentUser: data.user,
+                authError: null,
+                deniedEmailAttempt: null,
+                isTransitioning: true,
+                // Simpan juga ke cache offline browser pembeli
+                whitelist: [
+                  data.user,
+                  ...state.whitelist.filter((b) => b.email.toLowerCase() !== cleaned)
+                ]
+              }));
+              return true;
+            }
+          }
+        } catch (err) {
+          console.warn('Gagal menghubungi verifikasi server online, beralih ke cache lokal:', err);
+        }
+
+        // 2. Fallback verifikasi ke cache whitelist lokal jika sedang offline
         const match = get().whitelist.find(
           (b) => b.email.toLowerCase() === cleaned
         );
