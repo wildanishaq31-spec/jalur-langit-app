@@ -946,4 +946,35 @@ tags:
 
 ---
 
+### 🔹 Turn 40: Pembuatan Interactive Chart Bar untuk Statistik Pembelian Paket di Panel Admin
+* **Pengguna**:
+  > *"di panel admin buatkan chat bar interaktif untuk jumlah pembelian paket,"*
+* **Latar Belakang & Analisis Fitur**:
+  - Pengguna meminta pembuatan *chart bar* (diagram batang interaktif) di Panel Admin (`/panel-admin`) untuk memvisualisasikan volume dan sebaran pembelian masing-masing paket lisensi (Starter Rp 49k, Ultimate Rp 89k, VIP Rp 149k).
+  - Selain sekadar grafik statis, komponen dirancang menjadi *interactive dashboard widget* multifungsi yang terhubung langsung dengan tabel daftar pembeli dan simulator webhook.
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Komponen Dedicated Bar Chart ([src/components/admin/PackageSalesBarChart.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/admin/PackageSalesBarChart.tsx))**:
+     - **Mode Dual Switcher**:
+       - 👥 *Berdasarkan Jumlah Akun (Volume/Unit)*
+       - 💰 *Berdasarkan Nilai Omset (Rupiah)*
+     - **3 Batang Visual Interaktif & Responsif**:
+       - 🌿 *Starter (Rp 49.000)*: Gradient emerald-teal, ikon ShieldCheck.
+       - 🌟 *Ultimate Bundling (Rp 89.000)*: Gradient amber-gold dengan badge `Best Seller 🔥`, ikon Award.
+       - 👑 *VIP Sultan (Rp 149.000)*: Gradient purple-indigo dengan badge `High Value 👑`, ikon Crown.
+       - Batang beranimasi mulus (`duration-500`) menyesuaikan proporsi persentase tertinggi dan dilengkapi tooltip melayang (*floating tooltip pill*) yang menampilkan nilai unit/omset dan pangsa pasar (%).
+     - **Papan Filter Cepat Interaktif (*Interactive Filter & Command Bar*)**:
+       - Tab pil tombol interaktif: *Semua*, *Starter*, *Ultimate*, *VIP*, dan tombol *Reset Filter*.
+       - Mengklik salah satu batang grafik langsung mengaktifkan filter dinamis ke tabel pembeli di bawahnya.
+     - **Horizontal Multi-Segment Stacked Bar**:
+       - Batang akumulasi pangsa pasar horizontal di bawah grafik yang menunjukkan persentase kontribusi masing-masing paket secara seketika.
+  2. **Integrasi Panel Admin ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - Menghubungkan state `selectedTierFilter` antara grafik batang dan daftar tabel pembeli (`filteredBuyers`).
+     - Menambahkan indikator filter aktif di header tabel pembeli dengan tombol hapus filter (`✕`).
+     - Mengintegrasikan kalkulasi omset dan jumlah akun secara reaktif saat admin melakukan simulasi pembelian webhook.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run lint`: 0 error (exit code 0).
+  - `npm run build`: 100% sukses, 18/18 rute statis dan dinamis terkompilasi dengan lancar.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

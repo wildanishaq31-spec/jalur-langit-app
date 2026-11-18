@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
+import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
 
 export default function PanelAdminPage() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function PanelAdminPage() {
   const [newName, setNewName] = useState('');
   const [newTier, setNewTier] = useState<UserTier>('ultimate');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTierFilter, setSelectedTierFilter] = useState<UserTier | 'all'>('all');
 
   const webhookEndpointUrl = 'https://jalur-langit-app.vercel.app/api/webhook/lynkid';
 
@@ -149,11 +151,16 @@ export default function PanelAdminPage() {
 
   const estimatedRevenue = (starterCount * 49000) + (ultimateCount * 89000) + (vipCount * 149000);
 
-  // Filtered buyers
-  const filteredBuyers = whitelist.filter(b => 
-    b.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtered buyers (search query + interactive chart bar tier filter)
+  const filteredBuyers = whitelist.filter((b) => {
+    const matchesSearch =
+      b.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.orderId.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTier =
+      selectedTierFilter === 'all' || b.tier === selectedTierFilter;
+    return matchesSearch && matchesTier;
+  });
 
   return (
     <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#08120d] text-[#1c2e26] dark:text-[#f0f7f3] transition-colors p-4 sm:p-6 pb-20 select-none">
@@ -302,6 +309,13 @@ export default function PanelAdminPage() {
               </div>
             </div>
 
+            {/* CHART BAR INTERAKTIF JUMLAH PEMBELIAN PAKET */}
+            <PackageSalesBarChart
+              buyers={whitelist}
+              selectedTierFilter={selectedTierFilter}
+              onSelectTierFilter={setSelectedTierFilter}
+            />
+
             {/* 1. KOTAK INTEGRASI WEBHOOK LYNK.ID OTOMATIS */}
             <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-900/90 via-teal-900 to-emerald-950 text-white shadow-xl border border-amber-300/40 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -439,11 +453,23 @@ export default function PanelAdminPage() {
             {/* Buyer Whitelist Table */}
             <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
                     Daftar Pembeli Terdaftar ({filteredBuyers.length})
                   </h3>
+                  {selectedTierFilter !== 'all' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800">
+                      <span>Filter: {TIER_CONFIG[selectedTierFilter].name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTierFilter('all')}
+                        className="hover:text-rose-600 font-black ml-0.5 cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )}
                 </div>
 
                 <div className="relative w-full sm:w-64">
