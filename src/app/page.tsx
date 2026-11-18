@@ -9,10 +9,19 @@ import { GlowUpTab } from '@/components/tabs/GlowUpTab';
 import { VisionBoardTab } from '@/components/tabs/VisionBoardTab';
 import { HajatTab } from '@/components/tabs/HajatTab';
 import { QuranJournalTab } from '@/components/tabs/QuranJournalTab';
+import { LoginPage } from '@/components/auth/LoginPage';
+import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function Page() {
   const { activeTab, setActiveTab, appTheme } = useJalurLangitStore();
+  const { isAuthenticated, isTransitioning, completeTransition } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (appTheme === 'dark') {
@@ -22,6 +31,23 @@ export default function Page() {
     }
   }, [appTheme]);
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#fbf9f5] dark:bg-[#0a1410]" />
+    );
+  }
+
+  // 1. Tampilkan animasi transisi loading saat berhasil login
+  if (isTransitioning) {
+    return <LoginTransitionLoader onComplete={completeTransition} />;
+  }
+
+  // 2. Tampilkan halaman login jika belum terautentikasi
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  // 3. Tampilkan aplikasi penuh saat pembeli terverifikasi
   return (
     <div
       className="min-h-screen transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]"
@@ -42,3 +68,4 @@ export default function Page() {
     </div>
   );
 }
+

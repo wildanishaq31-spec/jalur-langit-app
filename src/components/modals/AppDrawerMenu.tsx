@@ -28,6 +28,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { RoadmapFeatureItem } from '@/types';
 
@@ -54,6 +55,8 @@ export const AppDrawerMenu: React.FC = () => {
     sedekahLogs,
     visionBoardItems
   } = useJalurLangitStore();
+
+  const { currentUser, logout } = useAuthStore();
 
   const [newIdeaText, setNewIdeaText] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -385,6 +388,44 @@ export const AppDrawerMenu: React.FC = () => {
 
             {drawerActiveTab === 'utilitas' && (
               <>
+                {/* 0. Info Lisensi Pembeli Lynk.id */}
+                {currentUser && (
+                  <div className="p-4 rounded-3xl bg-gradient-to-r from-emerald-100/90 to-teal-50 dark:from-emerald-950/80 dark:to-teal-950/50 border border-emerald-300 dark:border-emerald-700/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-700 text-amber-300 flex items-center justify-center font-bold text-xs shadow-xs">
+                          {currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U'}
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1">
+                            <span>{currentUser.name}</span>
+                          </div>
+                          <div className="text-[10px] text-stone-500">{currentUser.email}</div>
+                        </div>
+                      </div>
+
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-stone-900 shadow-xs">
+                        {currentUser.tierLabel}
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-emerald-200/80 dark:border-emerald-900/60 flex items-center justify-between text-[10px]">
+                      <span className="text-stone-500">Order: {currentUser.orderId}</span>
+                      <button
+                        onClick={() => {
+                          if (confirm('Keluar dari sesi akun ini dan kembali ke halaman login?')) {
+                            logout();
+                            setIsDrawerOpen(false);
+                          }
+                        }}
+                        className="text-rose-600 dark:text-rose-400 font-bold hover:underline"
+                      >
+                        Ganti Akun / Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 1. Pengaturan Tampilan & Efek */}
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">

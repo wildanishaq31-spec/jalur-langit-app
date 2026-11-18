@@ -611,4 +611,56 @@ tags:
 
 ---
 
+### 🔹 Turn 28: Implementasi Fase 1 — Halaman Login Mobile, Animasi Loading Transisi Logo, dan Simulasi Whitelist Lynk.id
+* **Pengguna**:
+  > *"untuk harga qw masih setuju yang tadi karena memiliki psikologi yaitu 49 ribu, 89 ribu dan 149 ribu yang aslinya harga kan 50 ribu, 90 ribu dan 150 ribu.*
+  > *1. kita lanjut ke fase 1 yaitu membuat halaman login mobile"*
+* **Latar Belakang & Spesifikasi Kebutuhan**:
+  - Menetapkan harga psikologis akhir untuk 3 paket Lynk.id:
+    - **🥉 Paket Starter**: Rp 49.000
+    - **🥈 Paket Full Bundling (Best Seller)**: Rp 89.000
+    - **🥇 Paket VIP Ultimate**: Rp 149.000
+  - Melaksanakan pembangunan **Fase 1**:
+    1. **Halaman Login Mobile (`LoginPage.tsx`)**: Desain mobile-first bernuansa *Islamic Emerald & Gold*, ramah jempol, tombol "Masuk dengan Google (Secured by Clerk)", form input email pembeli, serta chip demo pengujian cepat.
+    2. **Layar Animasi Transisi Loading (`LoginTransitionLoader.tsx`)**: Animasi logo bulan sabit emas membesar dengan denyut gelombang aura (*pulsing aura ring*), progress bar cairan emas (*liquid gold bar*), dan teks status progres bertahap saat login berhasil.
+    3. **Sistem Gatekeeper Whitelist Pembeli (`useAuthStore.ts`)**: Logika verifikasi email pembeli Lynk.id yang menolak akun yang belum membeli dengan modal *Access Denied* yang ramah (beserta tombol beli di Lynk.id).
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Tipe Data Autentikasi (`src/types/auth.ts`)**:
+     - Mendefinisikan tipe `UserTier ('starter' | 'ultimate' | 'vip')`, `AuthUser`, dan konfigurasi hak akses per paket (`TIER_CONFIG`).
+  2. **Auth State Store (`src/store/useAuthStore.ts`)**:
+     - Menggunakan Zustand `persist` (`jalur-langit-auth-storage-v1`) untuk mempertahankan sesi login di perangkat.
+     - Menyediakan database whitelist awal pembeli:
+       - `pembeli.starter@gmail.com` (Tier Starter - Rp 49rb)
+       - `pembeli.ultimate@gmail.com` (Tier Ultimate - Rp 89rb)
+       - `pembeli.vip@gmail.com` (Tier VIP - Rp 149rb)
+       - `agung@gmail.com` (Owner VIP)
+     - Aksi `loginWithEmail(email)`: jika email cocok, memicu `isTransitioning: true`; jika tidak cocok, memicu error `not_purchased` dengan email yang ditolak tersimpan di `deniedEmailAttempt`.
+  3. **Komponen Animasi Transisi (`src/components/auth/LoginTransitionLoader.tsx`)**:
+     - Tampilan layar penuh dengan latar belakang hijau zamrud malam (`#07130e`).
+     - Logo bulan sabit dan bintang emas berdenyut halus di tengah dengan dua cincin aura `animate-ping` dan `animate-pulse`.
+     - Progress bar animasi 0% -> 40% -> 75% -> 100% disertai teks spiritual dinamis (*"Memverifikasi lisensi..." -> "Menyiapkan lembar amalan..." -> "Bismillah, selamat datang..."*).
+     - Otomatis memicu `onComplete()` menuju dashboard utama.
+  4. **Komponen Halaman Login Mobile (`src/components/auth/LoginPage.tsx`)**:
+     - Desain mobile-first elegan beraksen emas dan hijau zamrud, mendukung tema terang/gelap.
+     - Header logo bulan sabit emas bercahaya + badge `Self Improvement Edition • Gerbang Akses Pembeli`.
+     - Tombol besar **Masuk dengan Google** dengan ikon resmi Google SVG dan badge `Secured by Clerk Authentication`.
+     - Form alternatif input email pembeli Lynk.id.
+     - 4 Chip Uji Coba Cepat (*Demo Mode*) untuk kemudahan testing langsung:
+       - 👑 Ultimate (Rp 89k)
+       - 🥉 Starter (Rp 49k)
+       - 💎 VIP (Rp 149k)
+       - ❌ Belum Beli (Simulasi Penolakan)
+     - Modal simulasi *Clerk Google Pop-Up* saat tombol Google diklik.
+     - Modal penolakan ramah (*Access Denied Modal*) saat login gagal, lengkap dengan tips verifikasi dan tombol langsung menuju tautan pembelian Lynk.id.
+  5. **Integrasi di Root Page (`src/app/page.tsx`)**:
+     - Gerbang proteksi: Jika `!isAuthenticated`, merender `<LoginPage />`.
+     - Jika `isTransitioning`, merender `<LoginTransitionLoader />`.
+     - Jika `isAuthenticated`, membuka aplikasi penuh.
+  6. **Integrasi Info Akun & Logout di Drawer Menu (`src/components/modals/AppDrawerMenu.tsx`)**:
+     - Pada tab *Utilitas & Data*, menampilkan kartu lisensi pembeli aktif (Nama, Email, Badge Tier, Nomor Order Lynk.id), serta tombol `Ganti Akun / Logout`.
+  7. **Verifikasi Build**:
+     - Menjalankan `npm run build`: Kompilasi Turbopack selesai dalam 1.3 detik, TypeScript 0 error, static prerender sukses.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
