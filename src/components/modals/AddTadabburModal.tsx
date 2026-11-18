@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, Sparkles, CheckCircle, Edit3 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, BookOpen, CheckCircle, Edit3 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { QuranTadabburItem } from '@/types';
 
@@ -21,8 +22,13 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
   const [topic, setTopic] = useState('');
   const [wisdom, setWisdom] = useState('');
   const [actionPlan, setActionPlan] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   const isEditing = Boolean(editingItem);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (editingItem) {
@@ -44,7 +50,7 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
     }
   }, [editingItem, isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,8 +81,8 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-35 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 pb-24 flex items-center justify-center animate-fade-in">
       <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[85vh] flex flex-col overflow-hidden">
         {/* Fixed Header with Title & Close Button (Always visible) */}
         <div className="p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
@@ -110,7 +116,7 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-3.5 flex-1 scrollbar-thin">
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-3 flex-1 scrollbar-thin">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold mb-1">Nama Surah *</label>
@@ -193,7 +199,7 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
           <div className="pt-2">
             <button
               type="submit"
-              className={`w-full py-3.5 px-4 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 ${
+              className={`w-full py-3 px-4 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 ${
                 appTheme === 'blush'
                   ? 'bg-rose-600 hover:bg-rose-700'
                   : 'bg-emerald-800 hover:bg-emerald-900'
@@ -205,6 +211,7 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, CheckCircle, Edit3, Video } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, CheckCircle, Edit3, Video } from 'lucide-react';
 import { useJalurLangitStore, getTodayKey } from '@/store/useJalurLangitStore';
 import { KajianItem } from '@/types';
 
@@ -19,8 +20,13 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
   const [videoUrl, setVideoUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [actionPlan, setActionPlan] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   const isEditing = Boolean(editingItem);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (editingItem) {
@@ -38,7 +44,7 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
     }
   }, [editingItem, isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,8 +72,8 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm p-4 sm:p-6 flex items-center justify-center animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-35 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 pb-24 flex items-center justify-center animate-fade-in">
       <div className="relative w-full max-w-lg my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 flex flex-col overflow-hidden">
         {/* Header with Title & Close Button */}
         <div className="p-5 pb-3.5 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95">
@@ -185,6 +191,7 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -102,7 +102,7 @@ export const QuranJournalTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-24 animate-fade-in">
+    <div className="space-y-6 pb-28 min-h-[calc(100vh-140px)] animate-fade-in">
       {/* Sub-tab Navigation */}
       <div className="flex bg-stone-100 dark:bg-emerald-950/60 p-1 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60 overflow-x-auto scrollbar-none">
         <button

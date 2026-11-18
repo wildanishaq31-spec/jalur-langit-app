@@ -251,4 +251,25 @@ tags:
   2. Hasilnya, modal Kajian kini memiliki tinggi yang sangat proporsional (~430px) dan tampil **utuh 100% mengambang di tengah layar** bersama tombol simpan dan tombol close, persis seperti tampilan Gambar 2.
 
 ---
+
+### 🔹 Turn 16: Resolusi Latar Gelap Modal (React Portal) agar Menutup Layar Penuh Menyentuh Menu Bar
+* **Pengguna**:
+  > *"gambar 1 yang background hitam itu tidak full sampai bottom menu , yang gambar 2 kan jelas background yang hitam full sampai menyentuh menubarnya jadinya popupnya terlihat full, saya maunya seperti itu gambar 1 latar hitamnya full sampai menyentuh manu barnya"*
+  > *(Mengunggah gambar perbandingan latar gelap modal Kajian yang terpotong 80px di atas menu bar vs latar modal Tadabbur yang full menyentuh menu bar)*
+* **Penyebab Masalah Inti (CSS Containing Block Trapping)**: 
+  - Class `.animate-fade-in` pada kontainer tab sebelumnya memiliki CSS `transform: translateY(...)`. Berdasarkan spesifikasi CSS, keberadaan properti `transform` pada elemen induk menciptakan *containing block* baru untuk seluruh elemen anak ber-`position: fixed`.
+  - Akibatnya, elemen overlay modal tidak merujuk ke viewport browser (`window`), melainkan terperangkap hanya setinggi div tab.
+  - Pada sub-tab Kajian yang hanya berisi 1 kartu, div tab berukuran pendek sehingga latar hitam modal terputus di tengah jalan sebelum mencapai menu bar bawah.
+* **Solusi Rekayasa**:
+  1. **React Portal (`createPortal`) ke `document.body`**:
+     - Modal di-portal langsung ke `document.body`, melepaskannya 100% dari batasan tinggi dan transform div tab mana pun.
+  2. **Layering Z-Index Presisi**:
+     - Modal overlay menggunakan `z-35` dan menu bar navigasi bawah menggunakan `z-40`.
+     - Latar hitam (`fixed inset-0 bg-black/75`) kini membentang penuh dari atas hingga bawah layar, masuk tepat di balik menu bar bawah (`z-40`) sehingga **latar hitam menyentuh menu bar secara utuh dan sempurna**.
+  3. **Penataan Center Viewport dengan Padding Menu Bar (`pb-24`)**:
+     - Dialog card berada persis mengambang di tengah area pandang di atas menu bar.
+  4. **Pembersihan CSS Animation**:
+     - Mengubah `@keyframes fadeIn` di `globals.css` menjadi `to { opacity: 1; transform: none; }` agar tidak ada efek transform yang tertinggal.
+
+---
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
