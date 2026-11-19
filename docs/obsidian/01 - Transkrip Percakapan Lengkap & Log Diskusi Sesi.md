@@ -1113,4 +1113,20 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 45: Penyelesaian Masalah Deployment Status Preview di Vercel (Sinkronisasi Branch Main vs Master)
+* **Permintaan User**:
+  - Menanyakan mengapa status deployment di Vercel tercatat sebagai *Preview*, bukan *Production*.
+* **Akar Masalah (Root Cause)**:
+  - Vercel secara default menetapkan branch **main** sebagai *Production Branch*.
+  - Sesi kerja sebelumnya melakukan push ke branch **master**, sehingga Vercel memperlakukannya sebagai *Preview Deployment* (branch preview).
+* **Solusi & Tindakan Teknis**:
+  - Melakukan sinkronisasi komit lokal ke branch remote origin/main (git push origin master:main).
+  - Menyiapkan branch lokal main agar terhubung langsung (*tracking*) ke origin/main.
+  - Seluruh pembaruan terkini (Komit 1422a18) kini telah aktif di branch main dan memicu **Production Deployment** otomatis di Vercel pada domain https://jalur-langit-app.vercel.app.
+* **Version Control**:
+  - Branch master dan main kini 100% tersinkronisasi identik di remote GitHub.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
