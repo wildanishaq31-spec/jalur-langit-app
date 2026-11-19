@@ -1504,4 +1504,28 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 59 - Pembaruan Sholawat Jibril Versi Panjang & Teks Latin Murni pada Modal Pemilihan Dzikir
+* **Permintaan Pengguna**:
+  - *"untuk sholawat jibril kita rubah menjadi versi panjang Shallallahu 'ala Muhammad, shallallahu 'alaihi wasallam dan di pilihan mode dzikirnya menggunakan latin saja jadi ganti text arabnya"*
+  - Lampiran: Tangkapan layar modal *"Pilih Dzikir & Wirid"* di mana setiap card dzikir sebelumnya menampilkan teks Arab tebal di bawah judul preset.
+* **Analisis & Solusi Teknis**:
+  1. **Pembaruan Sholawat Jibril ke Versi Panjang**:
+     - Di `src/data/amalanData.ts`:
+       - Teks Latin (Transliteration): `"Shallallahu 'ala Muhammad, shallallahu 'alaihi wasallam"`
+       - Teks Arab (Arabic Title & Calligraphy): `"صَلَّى اللهُ عَلَى مُحَمَّدٍ، صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ"`
+       - Arti (Meaning): `"Semoga Allah melimpahkan sholawat dan salam kepada Nabi Muhammad SAW."`
+       - Diperbarui pada daftar amalan utama checklist (`INITIAL_AMALAN_ITEMS`) dan preset tasbih (`TASBIH_PRESETS`).
+     - Di `src/components/tabs/TasbihTab.tsx`:
+       - Menyesuaikan ukuran font kaligrafi Arab dan transliterasi Latin di kartu utama tasbih secara dinamis (`text-2xl sm:text-3xl` dan `text-xs sm:text-sm font-bold tracking-wider`) agar kalimat panjang tampil rapi, proporsional, dan tidak meluap (*no overflow/cutoff*) di layar smartphone.
+  2. **Penggantian Teks Arab dengan Teks Latin Murni pada Modal Pilihan Dzikir**:
+     - Di `src/components/tabs/TasbihTab.tsx` pada modal daftar pilihan preset dzikir (`filteredPresets.map`):
+       - Menghapus rendering kaligrafi Arab (`preset.arabic`).
+       - Menggantinya dengan teks transliterasi Latin murni yang elegan: `<div className="text-xs font-medium text-emerald-700 dark:text-amber-300 italic my-1 leading-snug">&ldquo;{preset.transliteration}&rdquo;</div>`.
+       - Memperbarui transliterasi `paket_sholat` menjadi `"Subhanallah (33x) ➔ Alhamdulillah (33x) ➔ Allahu Akbar (33x)"` agar deskripsi urutan dzikir terbaca jelas dan informatif.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: Berhasil 100% tanpa error di 18/18 rute Next.js Turbopack.
+  - Tampilan modal pemilihan preset dzikir kini bersih, mudah dibaca dengan teks Latin, dan Sholawat Jibril versi panjang terintegrasi penuh.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

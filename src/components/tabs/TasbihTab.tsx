@@ -447,7 +447,9 @@ export const TasbihTab: React.FC = () => {
 
           {/* Glowing Arabic Calligraphy */}
           <div 
-            className="font-arabic text-4xl sm:text-5xl drop-shadow-[0_0_20px_rgba(251,191,36,0.4)] leading-relaxed select-none transition-all duration-300"
+            className={`font-arabic drop-shadow-[0_0_20px_rgba(251,191,36,0.4)] leading-relaxed select-none transition-all duration-300 px-2 ${
+              displayArabic.length > 25 ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'
+            }`}
             style={{
               color: stageTheme.accentColor,
               textShadow: `0 0 25px ${stageTheme.accentColor}80`
@@ -457,7 +459,13 @@ export const TasbihTab: React.FC = () => {
           </div>
 
           {/* Transliteration */}
-          <div className="text-base sm:text-lg font-extrabold uppercase tracking-widest text-white drop-shadow-sm">
+          <div 
+            className={`text-white drop-shadow-sm px-2 ${
+              displayTransliteration.length > 30 
+                ? 'text-xs sm:text-sm font-bold tracking-wider normal-case' 
+                : 'text-base sm:text-lg font-extrabold uppercase tracking-widest'
+            }`}
+          >
             {displayTransliteration}
           </div>
 
@@ -729,8 +737,8 @@ export const TasbihTab: React.FC = () => {
                       <div className="text-sm font-bold text-stone-900 dark:text-stone-100">
                         {preset.name}
                       </div>
-                      <div className="font-arabic text-base text-emerald-800 dark:text-amber-300 my-0.5">
-                        {preset.arabic}
+                      <div className="text-xs font-medium text-emerald-700 dark:text-amber-300 italic my-1 leading-snug">
+                        &ldquo;{preset.transliteration}&rdquo;
                       </div>
                       <div className="text-xs text-stone-500">
                         Default target: {preset.target}x
