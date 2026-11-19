@@ -22,29 +22,43 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { formatDateIndonesian } from '@/utils/dateUtils';
 import { TasbihPreset } from '@/types';
+import { AnimatedTasbihBeads, TasbihTheme } from '@/components/tasbih/AnimatedTasbihBeads';
 
-// Web Audio API click sound generator
-const playSoftBeep = () => {
+// Realistic organic wooden bead click sound synthesizer (Web Audio API)
+const playWoodBeadClick = () => {
   try {
     if (typeof window === 'undefined') return;
-    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+    const AudioContext =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+    // Sharp wooden contact impulse
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(1100, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.03);
+    gain1.gain.setValueAtTime(0.28, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start();
+    osc1.stop(ctx.currentTime + 0.03);
 
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
+    // Hollow wooden bead body resonance
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(420, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.045);
+    gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start();
+    osc2.stop(ctx.currentTime + 0.045);
   } catch {
     // ignore
   }
@@ -142,7 +156,12 @@ export const TasbihTab: React.FC = () => {
     setTimeout(() => setIsPressing(false), 120);
 
     if (soundEnabled) {
-      playSoftBeep();
+      playWoodBeadClick();
+    }
+    if (vibrationEnabled && typeof window !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([15]);
+      } catch {}
     }
 
     // Always increment lifetime and daily counter
@@ -262,6 +281,73 @@ export const TasbihTab: React.FC = () => {
   const displayMeaning = isPaketSholat ? currentStage.meaning : activePreset.meaning;
   const progressPercentage = Math.min(100, Math.round((currentCounter / activeTarget) * 100));
 
+  // Determine Stage Theme & Atmosphere (Matches Video reference 1:1)
+  const getStageTheme = (): {
+    theme: TasbihTheme;
+    accentColor: string;
+    bgGradient: string;
+    glowColor: string;
+    referenceText: string;
+  } => {
+    if (isPaketSholat) {
+      if (stageIndex === 0) {
+        return {
+          theme: 'gold',
+          accentColor: '#fbbf24',
+          bgGradient: 'from-[#1c150c] via-[#120e07] to-[#080703]',
+          glowColor: 'rgba(251, 191, 36, 0.25)',
+          referenceText: 'SAHIH MUSLIM 597',
+        };
+      } else if (stageIndex === 1) {
+        return {
+          theme: 'emerald',
+          accentColor: '#34d399',
+          bgGradient: 'from-[#071a12] via-[#05130d] to-[#020a07]',
+          glowColor: 'rgba(52, 211, 153, 0.25)',
+          referenceText: 'SAHIH MUSLIM 597',
+        };
+      } else {
+        return {
+          theme: 'sapphire',
+          accentColor: '#60a5fa',
+          bgGradient: 'from-[#071324] via-[#050e1a] to-[#02070e]',
+          glowColor: 'rgba(96, 165, 250, 0.25)',
+          referenceText: 'SAHIH MUSLIM 597',
+        };
+      }
+    }
+
+    if (tasbihPresetId.includes('sholawat')) {
+      return {
+        theme: 'rose',
+        accentColor: '#fb7185',
+        bgGradient: 'from-[#1f0a12] via-[#14060b] to-[#080204]',
+        glowColor: 'rgba(251, 113, 133, 0.25)',
+        referenceText: "HR. AHMAD & AN-NASA'I",
+      };
+    }
+
+    if (tasbihPresetId.includes('istighfar')) {
+      return {
+        theme: 'emerald',
+        accentColor: '#34d399',
+        bgGradient: 'from-[#071a12] via-[#05130d] to-[#020a07]',
+        glowColor: 'rgba(52, 211, 153, 0.25)',
+        referenceText: 'HR. BUKHARI & MUSLIM',
+      };
+    }
+
+    return {
+      theme: 'gold',
+      accentColor: '#fbbf24',
+      bgGradient: 'from-[#1c150c] via-[#120e07] to-[#080703]',
+      glowColor: 'rgba(251, 191, 36, 0.25)',
+      referenceText: 'KEUTAMAAN DZIKIR',
+    };
+  };
+
+  const stageTheme = getStageTheme();
+
   return (
     <div className="flex flex-col items-center justify-between min-h-[calc(100vh-170px)] pb-24 space-y-5 animate-fade-in">
       {/* 1. TOP HEADER CONTROLS & DZIKIR SELECTOR BAR */}
@@ -369,49 +455,145 @@ export const TasbihTab: React.FC = () => {
         )}
       </div>
 
-      {/* 2. CENTER DZIKIR DISPLAY CARD */}
-      <div className="w-full text-center p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-3">
-        {/* If Paket Ba'da Sholat: Show Interactive 3-Step Badges */}
-        {isPaketSholat && (
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 pb-1">
-            {SHOLAT_STAGES.map((st, idx) => {
-              const isCurrent = idx === stageIndex;
-              const isPast = idx < stageIndex;
-              return (
-                <div
-                  key={st.stage}
-                  className={`px-3 py-1.5 rounded-2xl text-[11px] font-bold flex items-center gap-1 transition-all ${
-                    isCurrent
-                      ? 'bg-emerald-700 text-white shadow-xs scale-105'
-                      : isPast
-                      ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300'
-                      : 'bg-stone-100 dark:bg-emerald-900/20 text-stone-400'
-                  }`}
-                >
-                  {isPast ? <Check className="w-3 h-3 stroke-[3]" /> : <span>{idx + 1}.</span>}
-                  <span>{st.name} ({isCurrent ? `${currentCounter}/${activeTarget}` : `${activeTarget}x`})</span>
-                </div>
-              );
-            })}
+      {/* 2. MAIN IMMERSIVE TASBIH CARD (Matches the reference video 1:1) */}
+      <div 
+        onClick={handleTap}
+        className={`relative w-full rounded-3xl overflow-hidden p-6 sm:p-8 select-none cursor-pointer touch-manipulation transition-all duration-300 shadow-2xl border border-white/10 bg-gradient-to-b ${stageTheme.bgGradient}`}
+        style={{ touchAction: 'manipulation' }}
+      >
+        {/* Ambient Floating Bokeh Lights in Background */}
+        <div 
+          className="absolute -top-10 -left-10 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-colors duration-500" 
+          style={{ backgroundColor: stageTheme.glowColor }} 
+        />
+        <div 
+          className="absolute top-1/3 -right-12 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-30 transition-colors duration-500" 
+          style={{ backgroundColor: stageTheme.glowColor }} 
+        />
+        <div 
+          className="absolute -bottom-10 left-1/4 w-60 h-60 rounded-full blur-3xl pointer-events-none opacity-25 transition-colors duration-500" 
+          style={{ backgroundColor: stageTheme.glowColor }} 
+        />
+
+        <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+          {/* Reference Tag: e.g. SAHIH MUSLIM 597 */}
+          <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] text-amber-200/80 drop-shadow-sm">
+            {stageTheme.referenceText}
+          </div>
+
+          {/* Glowing Arabic Calligraphy */}
+          <div 
+            className="font-arabic text-4xl sm:text-5xl drop-shadow-[0_0_20px_rgba(251,191,36,0.4)] leading-relaxed select-none transition-all duration-300"
+            style={{
+              color: stageTheme.accentColor,
+              textShadow: `0 0 25px ${stageTheme.accentColor}80`
+            }}
+          >
+            {displayArabic}
+          </div>
+
+          {/* Transliteration */}
+          <div className="text-base sm:text-lg font-extrabold uppercase tracking-widest text-white drop-shadow-sm">
+            {displayTransliteration}
+          </div>
+
+          {/* Meaning / Translation */}
+          <div 
+            className="text-xs font-semibold max-w-xs leading-relaxed uppercase tracking-wider"
+            style={{ color: stageTheme.accentColor }}
+          >
+            {displayMeaning}
+          </div>
+
+          {/* Big Punchy Counter: e.g. 1 / 33 */}
+          <div className="pt-2 flex items-baseline justify-center gap-1.5">
+            <span 
+              className={`text-6xl sm:text-7xl font-black font-mono tracking-tight transition-transform duration-100 ${
+                isPressing ? 'scale-110' : 'scale-100'
+              }`}
+              style={{
+                color: stageTheme.accentColor,
+                textShadow: `0 0 30px ${stageTheme.accentColor}60`
+              }}
+            >
+              {currentCounter}
+            </span>
+            <span className="text-2xl sm:text-3xl font-extrabold text-stone-400/80 font-mono">
+              /{activeTarget}
+            </span>
+          </div>
+
+          {/* 3 Stage Segmented Progress Bars (for Ba'da Sholat) */}
+          {isPaketSholat ? (
+            <div className="w-full max-w-xs pt-1 flex items-center justify-center gap-2">
+              {SHOLAT_STAGES.map((st, idx) => {
+                const isCurrent = idx === stageIndex;
+                const isPast = idx < stageIndex;
+                const fillPct = isPast ? 100 : isCurrent ? Math.min(100, Math.round((currentCounter / activeTarget) * 100)) : 0;
+                const stageColor = idx === 0 ? '#fbbf24' : idx === 1 ? '#34d399' : '#60a5fa';
+                
+                return (
+                  <div key={st.stage} className="flex-1 space-y-1">
+                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden p-0.5">
+                      <div 
+                        className="h-full rounded-full transition-all duration-200"
+                        style={{
+                          width: `${fillPct}%`,
+                          backgroundColor: stageColor,
+                          boxShadow: isCurrent ? `0 0 10px ${stageColor}` : undefined
+                        }}
+                      />
+                    </div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-stone-400 truncate">
+                      {st.name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="w-full max-w-xs pt-1">
+              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-200"
+                  style={{
+                    width: `${progressPercentage}%`,
+                    backgroundColor: stageTheme.accentColor,
+                    boxShadow: `0 0 12px ${stageTheme.accentColor}`
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* THE 3D SLIDING BEADS STREAM */}
+          <div className="w-full -my-2">
+            <AnimatedTasbihBeads
+              currentCount={currentCounter}
+              targetCount={activeTarget}
+              theme={stageTheme.theme}
+              isPressing={isPressing}
+              onTap={handleTap}
+            />
+          </div>
+
+          {/* Subtle tap helper text */}
+          <div className="text-[10px] uppercase font-bold tracking-widest text-stone-400/80 animate-pulse pt-1">
+            👆 Ketuk Layar atau Biji untuk Menghitung
+          </div>
+        </div>
+
+        {/* Dynamic Status / Transition Banner */}
+        {statusBanner && (
+          <div className="mt-4 px-4 py-2 rounded-2xl bg-amber-400/20 text-amber-200 border border-amber-400/40 flex items-center justify-center gap-2 text-xs font-bold animate-bounce text-center backdrop-blur-xs">
+            <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span>{statusBanner}</span>
           </div>
         )}
-
-        {/* Display ONLY the current active phrase! */}
-        <div className="font-arabic text-3xl sm:text-4xl text-stone-900 dark:text-stone-100 leading-loose">
-          {displayArabic}
-        </div>
-
-        <div className="text-sm sm:text-base font-bold text-amber-600 dark:text-amber-400">
-          “{displayTransliteration}”
-        </div>
-
-        <div className="text-xs text-stone-500 max-w-sm mx-auto">
-          {displayMeaning}
-        </div>
       </div>
 
       {/* 3. TARGET EDIT & QUICK PRESETS (33x, 100x, 500x, 1000x, Custom) */}
-      <div className="flex flex-wrap items-center justify-center gap-1.5 w-full">
+      <div className="flex flex-wrap items-center justify-center gap-1.5 w-full pt-1">
         <span className="text-xs font-semibold text-stone-500 mr-1">Target Dzikir:</span>
         {[33, 100, 500, 1000].map((t) => (
           <button
@@ -434,67 +616,6 @@ export const TasbihTab: React.FC = () => {
           <Edit2 className="w-3 h-3" />
           <span>Edit...</span>
         </button>
-      </div>
-
-      {/* 4. MASSIVE TACTILE TAP COUNTER BUTTON */}
-      <div className="relative flex flex-col items-center justify-center my-2">
-        <div className="absolute w-64 h-64 sm:w-72 sm:h-72 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 blur-xl pointer-events-none" />
-
-        <button
-          onClick={handleTap}
-          className={`relative w-56 h-56 sm:w-64 sm:h-64 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all duration-100 active:scale-95 select-none ${
-            isPressing
-              ? 'bg-gradient-to-br from-emerald-800 to-teal-900 text-amber-200 scale-95 shadow-inner'
-              : 'bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-950 text-white shadow-emerald-900/40 hover:brightness-105'
-          }`}
-          style={{ touchAction: 'manipulation' }}
-        >
-          {/* Subtle Outer SVG Progress Ring */}
-          <svg className="absolute inset-0 w-full h-full -rotate-90 p-1 pointer-events-none" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="46"
-              className="stroke-white/15"
-              strokeWidth="4"
-              fill="none"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="46"
-              className="stroke-amber-300 transition-all duration-200"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeDasharray={2 * Math.PI * 46}
-              strokeDashoffset={2 * Math.PI * 46 * (1 - progressPercentage / 100)}
-              fill="none"
-            />
-          </svg>
-
-          <span className="text-[11px] uppercase tracking-widest text-stone-200 font-medium mb-1">
-            Ketuk di Sini
-          </span>
-
-          {/* Big number starts from 0 for each phase! */}
-          <span className="text-6xl sm:text-7xl font-black font-mono tracking-tight">
-            {currentCounter}
-          </span>
-
-          <span className="text-xs font-semibold text-amber-200 mt-2 bg-black/30 px-3 py-1 rounded-full border border-white/20">
-            {isPaketSholat
-              ? `Fase ${stageIndex + 1}/3: ${currentStage.name} (${currentCounter}/${activeTarget})`
-              : `Target: ${activeTarget} kali`}
-          </span>
-        </button>
-
-        {/* Dynamic Status / Transition Banner */}
-        {statusBanner && (
-          <div className="mt-4 px-4 py-2 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 flex items-center gap-2 text-xs font-bold animate-bounce text-center">
-            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>{statusBanner}</span>
-          </div>
-        )}
       </div>
 
       {/* 5. BOTTOM CONTROLS & DAILY SAVED RESULTS */}
