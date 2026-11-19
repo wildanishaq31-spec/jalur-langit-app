@@ -47,7 +47,8 @@ const generateAnalyticalPoints = (): { x: number; y: number }[] => {
 
 const DEFAULT_POINTS = generateAnalyticalPoints();
 const FOCAL_INDEX = 211; // Index in DEFAULT_POINTS where the focal ring sits (192, 144)
-const BEAD_SPACING = 21; // Distance in px between adjacent beads
+const BEAD_SPACING = 27; // Spacing in px to provide a clean, distinct 8px gap between beads
+const NORMAL_BEAD_RADIUS = 9.5; // Diameter 19px + 8px gap = 27px spacing
 
 // Theme color definitions for glowing beads & rings
 const THEME_CONFIG: Record<
@@ -154,9 +155,11 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
 
   const cfg = THEME_CONFIG[theme] || THEME_CONFIG.gold;
 
-  // We render visible beads along the string from i = -12 (bottom tail) up to i = 8 (incoming strand)
+  const cycleSize = targetCount > 0 ? targetCount : 33;
+
+  // We render visible beads along the string from i = -10 (bottom tail) up to i = 7 (incoming strand)
   // i = 0 is the bead in or passing through the focal ring.
-  const BEAD_INDICES = Array.from({ length: 22 }, (_, idx) => idx - 12); // -12 to 9
+  const BEAD_INDICES = Array.from({ length: 18 }, (_, idx) => idx - 10); // -10 to +7
 
   return (
     <div
@@ -260,30 +263,13 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
         <path
           d="M 370 35 L 210 135 Q 188 142 165 175 L 165 355"
           fill="none"
-          stroke="#3d281a"
-          strokeWidth="3"
+          stroke="#452c1a"
+          strokeWidth="3.5"
           strokeLinecap="round"
-          className="opacity-60"
+          className="opacity-75"
         />
 
-        {/* 3. GOLDEN TASSEL & IMAM BEAD (Hanging at curve junction x=165, y=175) */}
-        <g className="pointer-events-none">
-          {/* Ornate Imam Bead Cap */}
-          <path
-            d="M 160 172 C 160 167 170 167 170 172 L 168 184 C 168 188 162 188 162 184 Z"
-            fill="url(#tassel-gold-grad)"
-            stroke="#78350f"
-            strokeWidth="0.5"
-          />
-          {/* Silken Golden Tassel Threads */}
-          <path d="M 165 186 Q 161 210 156 235" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.8" />
-          <path d="M 165 186 Q 163 212 161 240" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-          <path d="M 165 186 L 165 242" stroke="#d97706" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M 165 186 Q 167 212 169 240" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-          <path d="M 165 186 Q 169 210 174 235" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.8" />
-        </g>
-
-        {/* 4. THE 3D SLIDING BEADS STREAM */}
+        {/* 3. THE 3D SLIDING BEADS STREAM WITH AIRY 8PX GAPS & MOVING IMAM TASSEL */}
         {BEAD_INDICES.map((beadIdx) => {
           // Distance along the analytical path:
           // Moving forward as slideOffset goes 0 -> 1
@@ -293,19 +279,23 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
 
           // Is this bead counted?
           // Beads with index <= 0 have reached or passed the focal ring!
-          // (Or when slideOffset transitions the incoming bead #1 into #0)
           const isCounted = beadIdx <= 0;
           const isFocalBead = beadIdx === 0;
 
-          const beadRadius = isFocalBead ? 13 : 11.5;
+          // Check if this bead is the Imam Bead (with Tassel) in the active cycle
+          // At count = 0: Imam bead is at beadIdx = 0.
+          // At count = 1: Imam bead has moved to beadIdx = -1, etc.
+          const isImamBead = ((currentCount + beadIdx) % cycleSize + cycleSize) % cycleSize === 0;
+
+          const beadRadius = isFocalBead ? 11.5 : NORMAL_BEAD_RADIUS;
           const gradId = isCounted ? cfg.beadGradId : 'bead-grad-wood';
 
           // Opacity fade at the far ends of the strand
           const opacity =
-            beadIdx > 6
-              ? Math.max(0, 1 - (beadIdx - 6) * 0.35)
-              : beadIdx < -9
-              ? Math.max(0, 1 - Math.abs(beadIdx + 9) * 0.35)
+            beadIdx > 5
+              ? Math.max(0, 1 - (beadIdx - 5) * 0.4)
+              : beadIdx < -8
+              ? Math.max(0, 1 - Math.abs(beadIdx + 8) * 0.4)
               : 1;
 
           return (
@@ -316,20 +306,22 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
               className="transition-transform duration-75"
             >
               {/* Drop Shadow */}
-              <circle
+              <ellipse
                 cx="1"
                 cy="3"
-                r={beadRadius}
+                rx={isImamBead ? 10 : beadRadius}
+                ry={isImamBead ? 14 : beadRadius}
                 fill="rgba(0,0,0,0.38)"
                 filter="blur(2px)"
               />
 
               {/* Glowing Aura if Counted */}
               {isCounted && (
-                <circle
+                <ellipse
                   cx="0"
                   cy="0"
-                  r={beadRadius + 2}
+                  rx={isImamBead ? 12 : beadRadius + 2}
+                  ry={isImamBead ? 17 : beadRadius + 2}
                   fill="none"
                   stroke={cfg.ringStroke}
                   strokeWidth="1.5"
@@ -337,39 +329,113 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
                 />
               )}
 
-              {/* 3D Shaded Bead Body */}
-              <circle
-                cx="0"
-                cy="0"
-                r={beadRadius}
-                fill={`url(#${gradId})`}
-              />
+              {isImamBead ? (
+                /* === IMAM BEAD (OVAL) + GOLDEN TASSEL AS SHOWN IN USER IMAGE === */
+                <g>
+                  {/* Elongated Oval Bead Body */}
+                  <ellipse
+                    cx="0"
+                    cy="0"
+                    rx="10"
+                    ry="15"
+                    fill={`url(#${gradId})`}
+                  />
 
-              {/* Specular White Gloss Glint (Realistic 3D Reflection) */}
-              <ellipse
-                cx={-beadRadius * 0.3}
-                cy={-beadRadius * 0.32}
-                rx={beadRadius * 0.33}
-                ry={beadRadius * 0.2}
-                fill="white"
-                opacity={isCounted ? 0.75 : 0.55}
-                transform={`rotate(-28, ${-beadRadius * 0.3}, ${-beadRadius * 0.32})`}
-              />
+                  {/* Specular White Gloss Glint on Oval */}
+                  <ellipse
+                    cx="-3"
+                    cy="-5"
+                    rx="3.2"
+                    ry="5"
+                    fill="white"
+                    opacity={isCounted ? 0.75 : 0.55}
+                    transform="rotate(-20, -3, -5)"
+                  />
 
-              {/* Ambient Rim Light at Bottom */}
-              <ellipse
-                cx={beadRadius * 0.15}
-                cy={beadRadius * 0.42}
-                rx={beadRadius * 0.4}
-                ry={beadRadius * 0.18}
-                fill={isCounted ? cfg.ringStroke : '#d59b71'}
-                opacity={isCounted ? 0.35 : 0.18}
-              />
+                  {/* Ambient Rim Light */}
+                  <ellipse
+                    cx="1.5"
+                    cy="7"
+                    rx="4"
+                    ry="3"
+                    fill={isCounted ? cfg.ringStroke : '#d59b71'}
+                    opacity={isCounted ? 0.35 : 0.18}
+                  />
+
+                  {/* Golden Connector Oval Cap (Directly attached to bottom of oval bead) */}
+                  <ellipse
+                    cx="0"
+                    cy="18"
+                    rx="5.5"
+                    ry="7"
+                    fill="url(#tassel-gold-grad)"
+                    stroke="#78350f"
+                    strokeWidth="0.5"
+                  />
+                  {/* Cap highlight */}
+                  <ellipse
+                    cx="-1.5"
+                    cy="16"
+                    rx="2"
+                    ry="2.5"
+                    fill="white"
+                    opacity="0.75"
+                  />
+
+                  {/* Silken Golden Tassel Threads (Fanning Downwards with Gravity) */}
+                  <g className="pointer-events-none">
+                    <path d="M 0 24 Q -4 44 -9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
+                    <path d="M 0 24 Q -2.5 45 -6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                    <path d="M 0 24 Q -1 46 -2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
+                    <path d="M 0 24 L 0 68" stroke="#fde047" strokeWidth="1.6" strokeLinecap="round" />
+                    <path d="M 0 24 Q 1 46 2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
+                    <path d="M 0 24 Q 2.5 45 6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                    <path d="M 0 24 Q 4 44 9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
+                    {/* Inner fine threads */}
+                    <path d="M 0 24 L -4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
+                    <path d="M 0 24 L 4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
+                    {/* Golden neck ring */}
+                    <rect x="-3" y="24" width="6" height="2" rx="1" fill="#78350f" opacity="0.7" />
+                  </g>
+                </g>
+              ) : (
+                /* === REGULAR ROUND BEAD (WITH CLEAR 8PX AIRY GAP) === */
+                <g>
+                  {/* 3D Shaded Bead Body */}
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r={beadRadius}
+                    fill={`url(#${gradId})`}
+                  />
+
+                  {/* Specular White Gloss Glint (Realistic 3D Reflection) */}
+                  <ellipse
+                    cx={-beadRadius * 0.3}
+                    cy={-beadRadius * 0.32}
+                    rx={beadRadius * 0.33}
+                    ry={beadRadius * 0.2}
+                    fill="white"
+                    opacity={isCounted ? 0.75 : 0.55}
+                    transform={`rotate(-28, ${-beadRadius * 0.3}, ${-beadRadius * 0.32})`}
+                  />
+
+                  {/* Ambient Rim Light at Bottom */}
+                  <ellipse
+                    cx={beadRadius * 0.15}
+                    cy={beadRadius * 0.42}
+                    rx={beadRadius * 0.4}
+                    ry={beadRadius * 0.18}
+                    fill={isCounted ? cfg.ringStroke : '#d59b71'}
+                    opacity={isCounted ? 0.35 : 0.18}
+                  />
+                </g>
+              )}
             </g>
           );
         })}
 
-        {/* 5. THE GLOWING FOCAL RING RETICLE (Center Bead Target Indicator) */}
+        {/* 4. THE GLOWING FOCAL RING RETICLE (Center Bead Target Indicator) */}
         {(() => {
           const focalPt = DEFAULT_POINTS[FOCAL_INDEX] || { x: 192, y: 144 };
           return (
@@ -395,7 +461,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
               <circle
                 cx="0"
                 cy="0"
-                r="19.5"
+                r="18"
                 fill="none"
                 stroke={cfg.ringStroke}
                 strokeWidth="4"
@@ -407,7 +473,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
               <circle
                 cx="0"
                 cy="0"
-                r="17"
+                r="15.5"
                 fill="none"
                 stroke={cfg.ringStroke}
                 strokeWidth={isPressing ? 3 : 2.5}
@@ -416,18 +482,18 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
 
               {/* Left & Right Crosshair Alignment Ticks */}
               <line
-                x1="-24"
+                x1="-22"
                 y1="0"
-                x2="-18"
+                x2="-16.5"
                 y2="0"
                 stroke={cfg.ringStroke}
                 strokeWidth="2"
                 strokeLinecap="round"
               />
               <line
-                x1="18"
+                x1="16.5"
                 y1="0"
-                x2="24"
+                x2="22"
                 y2="0"
                 stroke={cfg.ringStroke}
                 strokeWidth="2"
