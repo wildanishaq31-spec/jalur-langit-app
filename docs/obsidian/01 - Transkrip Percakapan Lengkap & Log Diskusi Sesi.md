@@ -1170,4 +1170,35 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 47: Jam Dinamis pada Seluruh Kartu Amalan Mengikuti GPS Wilayah Pengguna
+* **Permintaan User**:
+  - Jam rentang waktu yang tertera pada setiap kartu amalan (badge 🕒 02:30 - 04:30 WIB, 03:30 - 04:30 WIB, dll seperti di tangkapan layar) agar dibuat otomatis mengikuti lokasi GPS masing-masing daerah secara dinamis.
+* **Tindakan & Solusi Teknis**:
+  1. **Fungsi Pemetaan Jam Dinamis Amalan (src/utils/prayerTimeService.ts)**:
+     - Menambahkan fungsi getDynamicAmalanTimeRange(amalanId, category, prayerTimes, tzOffset).
+     - Menghitung rentang waktu tiap amalan berdasarkan jam sholat GPS spesifik pengguna:
+       - **Sholat Tahajjud, Witir, & Munajat Hajat**: Menggunakan rentang sepertiga malam hingga fajar (tahajjud - subuh, contoh di Situbondo: 02:40 - 03:32 WIB).
+       - **Istighfar Waktu Sahur**: Menggunakan rentang menjelang adzan Subuh (contoh: 03:00 - 03:32 WIB).
+       - **Qobliyah Subuh**: subuh - subuh + 20m WIB (contoh: 03:32 - 03:52 WIB).
+       - **Sholat Subuh**: subuh - terbit WIB (contoh: 03:32 - 04:55 WIB).
+       - **Sedekah Subuh & Dzikir Pagi**: subuh - 06:30 WIB (contoh: 03:32 - 06:30 WIB).
+       - **Sholat Dhuha**: dhuha - zuhur WIB (contoh: 07:00 - 11:09 WIB).
+       - **Sholat Dzuhur**: zuhur - ashar WIB (contoh: 11:09 - 14:32 WIB).
+       - **Sholat Ashar, Dzikir Petang, & QS. Al-Waqi'ah**: ashar - maghrib WIB (contoh: 14:32 - 17:24 WIB).
+       - **Sholat Maghrib**: maghrib - isya WIB (contoh: 17:24 - 18:38 WIB).
+       - **Sholat Isya**: isya - 21:00 WIB (contoh: 18:38 - 21:00 WIB).
+       - **QS. Al-Mulk**: 20:00 - 22:30 WIB.
+       - **Sholawat Jibril**: Sepanjang Hari / Malam.
+       - **Sayyidul Istighfar & Muhasabah**: 21:00 - 23:00 WIB.
+     - Zona waktu otomatis mendeteksi akhiran WIB, WITA, atau WIT sesuai lokasi perangkat HP.
+  2. **Refactoring Tampilan Kartu Amalan (src/components/tabs/AmalanTab.tsx)**:
+     - Mengganti pembacaan string statis item.timeRange dengan dynamicTimeRange yang selalu dievaluasi secara reaktif terhadap userLocation.prayerTimes.
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error (exit code 0).
+  - npm run build: Sukses 100% pada 18/18 rute halaman.
+  - Komit dan push ganda ke origin/master dan origin/main untuk pembaharuan produksi Vercel.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

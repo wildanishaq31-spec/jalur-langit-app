@@ -31,6 +31,7 @@ import {
   getCurrentTimeCategory,
   ActiveTimeSlot
 } from '@/utils/dateUtils';
+import { getDynamicAmalanTimeRange } from '@/utils/prayerTimeService';
 
 const CATEGORIES: { id: TimeCategory | 'semua'; label: string; icon: React.ReactNode }[] = [
   { id: 'semua', label: 'Semua Waktu', icon: <Sparkles className="w-3.5 h-3.5 shrink-0" /> },
@@ -260,6 +261,12 @@ export const AmalanTab: React.FC = () => {
           const isDone = isAmalanCompleted(selectedDate, item.id);
           const isVirtueExpanded = expandedVirtueId === item.id;
           const isCurrentSlot = item.category === activeSlot.category;
+          const dynamicTimeRange = getDynamicAmalanTimeRange(
+            item.id,
+            item.category,
+            userLocation?.prayerTimes,
+            userLocation?.timezoneOffset
+          );
 
           return (
             <div
@@ -319,11 +326,11 @@ export const AmalanTab: React.FC = () => {
                   </p>
 
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    {/* Time Window Pill */}
-                    {item.timeRange && (
+                    {/* Time Window Pill (GPS-based Dynamic Prayer Time) */}
+                    {dynamicTimeRange && (
                       <span className="px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-emerald-900/40 text-stone-600 dark:text-stone-300 text-[11px] font-semibold flex items-center gap-1">
                         <Clock className="w-3 h-3 text-stone-400" />
-                        <span>{item.timeRange}</span>
+                        <span>{dynamicTimeRange}</span>
                       </span>
                     )}
 

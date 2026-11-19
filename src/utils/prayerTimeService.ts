@@ -343,3 +343,94 @@ export async function reverseGeocodeCity(lat: number, lng: number): Promise<stri
   }
   return null;
 }
+
+/**
+ * Menambahkan atau mengurangi menit dari format string "HH:mm"
+ */
+export function addMinutesToTimeString(timeStr: string, minutesDelta: number): string {
+  if (!timeStr || !timeStr.includes(':')) return timeStr;
+  const [h, m] = timeStr.split(':').map(Number);
+  let totalM = h * 60 + (m || 0) + minutesDelta;
+  if (totalM < 0) totalM += 24 * 60;
+  totalM = totalM % (24 * 60);
+  const hh = String(Math.floor(totalM / 60)).padStart(2, '0');
+  const mm = String(totalM % 60).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/**
+ * Menghasilkan label zona waktu (WIB, WITA, WIT)
+ */
+export function getTimezoneLabel(tzOffset = 7): string {
+  if (tzOffset === 8) return 'WITA';
+  if (tzOffset === 9) return 'WIT';
+  return 'WIB';
+}
+
+/**
+ * Mengubah rentang jam tiap amalan secara dinamis mengikuti jadwal sholat GPS
+ */
+export function getDynamicAmalanTimeRange(
+  amalanId: string,
+  category: TimeCategory,
+  prayerTimes?: RawPrayerTimes,
+  tzOffset = 7
+): string {
+  const p = prayerTimes || DEFAULT_USER_LOCATION.prayerTimes;
+  const tz = getTimezoneLabel(tzOffset);
+
+  switch (amalanId) {
+    // --- Dini Hari ---
+    case 'tahajjud':
+    case 'witir':
+    case 'hajat_dini_hari':
+      return `${p.tahajjud} - ${p.fajr} ${tz}`;
+    case 'istighfar_sahur':
+      return `${addMinutesToTimeString(p.fajr, -32)} - ${p.fajr} ${tz}`;
+
+    // --- Subuh ---
+    case 'qobliyah_subuh':
+      return `${p.fajr} - ${addMinutesToTimeString(p.fajr, 20)} ${tz}`;
+    case 'sholat_subuh':
+      return `${p.fajr} - ${p.sunrise} ${tz}`;
+    case 'sedekah_subuh':
+    case 'dzikir_pagi':
+      return `${p.fajr} - 06:30 ${tz}`;
+
+    // --- Dhuha & Siang ---
+    case 'sholat_dhuha':
+      return `${p.dhuha} - ${p.dhuhr} ${tz}`;
+    case 'sholat_dzuhur':
+      return `${p.dhuhr} - ${p.asr} ${tz}`;
+    case 'ikhtiar_bumi':
+      return `08:00 - 16:00 ${tz}`;
+
+    // --- Petang ---
+    case 'sholat_ashar':
+      return `${p.asr} - ${p.maghrib} ${tz}`;
+    case 'dzikir_petang':
+    case 'surah_waqiah':
+      return `${p.asr} - ${p.maghrib} ${tz}`;
+
+    // --- Malam ---
+    case 'sholat_maghrib':
+      return `${p.maghrib} - ${p.isha} ${tz}`;
+    case 'sholat_isya':
+      return `${p.isha} - 21:00 ${tz}`;
+    case 'surah_mulk':
+      return `20:00 - 22:30 ${tz}`;
+    case 'sholawat_jibril':
+      return 'Sepanjang Hari / Malam';
+    case 'sayyidul_istighfar':
+    case 'muhasabah_gratitude':
+      return `21:00 - 23:00 ${tz}`;
+
+    default:
+      if (category === 'dini_hari') return `${p.tahajjud} - ${p.fajr} ${tz}`;
+      if (category === 'subuh') return `${p.fajr} - ${p.sunrise} ${tz}`;
+      if (category === 'dhuha') return `${p.dhuha} - ${p.dhuhr} ${tz}`;
+      if (category === 'petang') return `${p.asr} - ${p.maghrib} ${tz}`;
+      if (category === 'malam') return `${p.maghrib} - ${p.tahajjud} ${tz}`;
+      return `Sepanjang Hari ${tz}`;
+  }
+}
