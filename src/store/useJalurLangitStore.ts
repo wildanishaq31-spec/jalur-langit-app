@@ -137,7 +137,9 @@ interface JalurLangitState {
   setHajatActiveSubTab: (subTab: 'hajat' | 'sedekah') => void;
   quranActiveSubTab: 'tadabbur' | 'juz' | 'kajian' | 'syukur';
   setQuranActiveSubTab: (subTab: 'tadabbur' | 'juz' | 'kajian' | 'syukur') => void;
-  navigateToTab: (tab: ActiveTab, subTab?: string, meta?: { presetId?: string; targetCount?: number }) => void;
+  lastSourceAmalanId: string | null;
+  setLastSourceAmalanId: (id: string | null) => void;
+  navigateToTab: (tab: ActiveTab, subTab?: string, meta?: { presetId?: string; targetCount?: number; amalanId?: string }) => void;
 
   // Real Calendar Navigation (Januari s/d Desember)
   calendarYear: number;
@@ -308,12 +310,17 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       setHajatActiveSubTab: (subTab) => set({ hajatActiveSubTab: subTab }),
       quranActiveSubTab: 'tadabbur',
       setQuranActiveSubTab: (subTab) => set({ quranActiveSubTab: subTab }),
+      lastSourceAmalanId: null,
+      setLastSourceAmalanId: (id) => set({ lastSourceAmalanId: id }),
       navigateToTab: (tab, subTab, meta) => {
         if (meta?.presetId) {
           get().setTasbihPreset(meta.presetId);
           if (meta.targetCount) {
             get().setCustomTarget(meta.targetCount);
           }
+        }
+        if (meta?.amalanId) {
+          set({ lastSourceAmalanId: meta.amalanId });
         }
         if (tab === 'hajat' && (subTab === 'hajat' || subTab === 'sedekah')) {
           set({ hajatActiveSubTab: subTab });

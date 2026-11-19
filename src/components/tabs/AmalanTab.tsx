@@ -399,6 +399,7 @@ export const AmalanTab: React.FC = () => {
                                 {
                                   presetId: item.linkedMenu.presetId,
                                   targetCount: item.targetCount,
+                                  amalanId: item.id,
                                 }
                               );
                             }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import { 
   RotateCcw, 
@@ -89,6 +90,7 @@ const SHOLAT_STAGES = [
 ];
 
 export const TasbihTab: React.FC = () => {
+  const router = useRouter();
   const {
     selectedDate,
     tasbihPresetId,
@@ -105,6 +107,8 @@ export const TasbihTab: React.FC = () => {
     markAmalanCompleted,
     markAmalanIncomplete,
     isAmalanCompleted,
+    navigateToTab,
+    lastSourceAmalanId,
   } = useJalurLangitStore();
 
   const [isPressing, setIsPressing] = useState(false);
@@ -141,8 +145,36 @@ export const TasbihTab: React.FC = () => {
     sayyidul_istighfar: 'sayyidul_istighfar',
   };
 
-  const linkedAmalanId = PRESET_TO_AMALAN_MAP[tasbihPresetId];
-  const isLinkedAmalanDone = linkedAmalanId ? isAmalanCompleted(selectedDate, linkedAmalanId) : false;
+  const effectiveAmalanId = lastSourceAmalanId || PRESET_TO_AMALAN_MAP[tasbihPresetId];
+
+  // Aksi ketika tombol lingkaran "Sudah" di sebelah kanan tasbih diklik:
+  // Tandai amalan selesai di checklist lalu kembali otomatis ke halaman amalan
+  const handleCompleteAndReturn = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (effectiveAmalanId) {
+      markAmalanCompleted(selectedDate, effectiveAmalanId);
+    }
+
+    // Efek perayaan fadhilah
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#0f3d2e', '#c9933b', '#2dd4bf', '#fbbf24']
+    });
+
+    if (vibrationEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([40, 60, 40]);
+    }
+
+    // Navigasi langsung kembali ke amalan checklist
+    navigateToTab('amalan');
+    router.push('/amalan');
+  };
 
   // Synchronize when switching presets
   useEffect(() => {
@@ -220,12 +252,12 @@ export const TasbihTab: React.FC = () => {
           origin: { y: 0.6 },
           colors: ['#0f3d2e', '#c9933b', '#fbbf24', '#34d399']
         });
-        if (linkedAmalanId) {
-          markAmalanCompleted(selectedDate, linkedAmalanId);
+        if (effectiveAmalanId) {
+          markAmalanCompleted(selectedDate, effectiveAmalanId);
         }
         setCurrentCounter(0); // Reset to 0 so user can do next cycle!
         setStatusBanner(
-          linkedAmalanId
+          effectiveAmalanId
             ? `✨ Target ${activePreset.name} (${activeTarget}x) Selesai! Amalan checklist otomatis SELESAI 🎉`
             : `✨ Target ${activePreset.name} (${activeTarget}x) Selesai & Tersimpan!`
         );
@@ -407,52 +439,6 @@ export const TasbihTab: React.FC = () => {
             <span>Pilih Dzikir</span>
           </button>
         </div>
-
-        {/* Linked Amalan Sync Status Bar */}
-        {linkedAmalanId && (
-          <div className="p-3 sm:p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isLinkedAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
-              <div>
-                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <span>Terhubung ke Amalan Checklist</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    isLinkedAmalanDone
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
-                  }`}>
-                    {isLinkedAmalanDone ? 'Sudah Selesai ✓' : 'Belum Selesai'}
-                  </span>
-                </p>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                  {isLinkedAmalanDone
-                    ? 'Target amalan ini sudah selesai dan otomatis tercatat di kalender checklist.'
-                    : 'Capai target ketukan atau klik tombol untuk menyelesaikan amalan ini.'}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                if (isLinkedAmalanDone) {
-                  markAmalanIncomplete(selectedDate, linkedAmalanId);
-                } else {
-                  markAmalanCompleted(selectedDate, linkedAmalanId);
-                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-                  setStatusBanner(`✨ Masya Allah! Amalan ${activePreset.name} otomatis ditandai SELESAI di Checklist!`);
-                }
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
-                isLinkedAmalanDone
-                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
-                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
-              }`}
-            >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>{isLinkedAmalanDone ? 'Batal Selesai' : 'Tandai Selesai di Checklist ✓'}</span>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* 2. MAIN IMMERSIVE TASBIH CARD (Matches the reference video 1:1) */}
@@ -567,7 +553,7 @@ export const TasbihTab: React.FC = () => {
           )}
 
           {/* THE 3D SLIDING BEADS STREAM */}
-          <div className="w-full -my-2">
+          <div className="w-full -my-2 relative">
             <AnimatedTasbihBeads
               currentCount={currentCounter}
               targetCount={activeTarget}
@@ -575,6 +561,29 @@ export const TasbihTab: React.FC = () => {
               isPressing={isPressing}
               onTap={handleTap}
             />
+
+            {/* Tombol Lingkaran "Sudah" di Sebelah Kanan Tasbih */}
+            <div className="absolute right-2 sm:right-6 bottom-4 sm:bottom-8 z-30 flex flex-col items-center gap-1">
+              <button
+                type="button"
+                onClick={handleCompleteAndReturn}
+                className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center p-1 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-800 border-2 border-amber-300 text-white shadow-[0_0_22px_rgba(16,185,129,0.55)] active:scale-90 hover:scale-105 transition-all cursor-pointer touch-manipulation select-none"
+                title="Tandai amalan ini sudah selesai dan kembali ke checklist"
+                aria-label="Tandai amalan sudah selesai dan kembali ke checklist"
+              >
+                {/* Subtle pulsing background glow ring */}
+                <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-30 animate-ping pointer-events-none" />
+                <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-400/50 to-emerald-400/50 blur-xs -z-10 opacity-70 group-hover:opacity-100 transition-opacity" />
+
+                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-amber-200 stroke-[3] drop-shadow-md group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-white drop-shadow-sm leading-none mt-0.5">
+                  Sudah
+                </span>
+              </button>
+              <span className="text-[9px] sm:text-[10px] font-bold text-amber-200/90 tracking-wide drop-shadow-sm select-none pointer-events-none">
+                Ke Checklist ↗
+              </span>
+            </div>
           </div>
 
           {/* Subtle tap helper text */}
