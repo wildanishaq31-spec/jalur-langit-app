@@ -10,7 +10,6 @@ import {
   BookOpen, 
   Moon,
   Sun,
-  Flame,
   RotateCcw,
   Droplets,
   Image as ImageIcon,
@@ -19,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { formatShortDateIndonesian } from '@/utils/dateUtils';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
 import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
 
@@ -33,7 +31,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { selectedDate, resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
+  const { resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
@@ -61,86 +59,79 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
 
   return (
     <>
-      {/* Top App Header */}
-      <header className="sticky top-0 z-40 w-full bg-white/85 dark:bg-emerald-950/85 backdrop-blur-md border-b border-stone-200/80 dark:border-emerald-800/60 px-4 sm:px-6 py-3 transition-colors shadow-xs">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-md transition-all bg-gradient-to-tr from-emerald-800 to-teal-700 text-amber-300 shadow-emerald-900/20">
-              <Moon className="w-5 h-5 fill-current" />
+      {/* Top App Header (Responsive & Compact Mobile-First) */}
+      <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-emerald-950/90 backdrop-blur-md border-b border-stone-200/80 dark:border-emerald-800/60 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors shadow-2xs">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          {/* Brand Identity: Logo + Title + Subtitle Badge */}
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-all bg-gradient-to-tr from-emerald-800 to-teal-700 text-amber-300">
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold font-serif text-base tracking-tight text-stone-900 dark:text-stone-100">
-                  Jalur Langit
-                </span>
-                <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
-                  Self Improvement Edition
-                </span>
-              </div>
-              <p className="text-[10px] text-stone-500 dark:text-stone-400">
-                Spiritual, Self-Growth & Manifesting Journal
-              </p>
+            <div className="flex flex-col min-w-0">
+              <span className="font-extrabold font-serif text-sm sm:text-base tracking-tight text-stone-900 dark:text-stone-100 leading-tight truncate">
+                Jalur Langit
+              </span>
+              <span className="text-[8px] sm:text-[9.5px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 w-fit leading-tight mt-0.5">
+                Self Improvement Edition
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Lab & Roadmap Drawer Menu Button (Opsi 1) */}
+          {/* Quick Action Controls (Compact Icons on Mobile) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Lab & Roadmap Drawer Menu Button */}
             <button
               onClick={toggleDrawer}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-900/40 dark:border-emerald-700 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/70 shadow-xs"
-              title="Menu Ekosistem & Roadmap Fitur Lab (Coming Soon)"
+              className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl border border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/80 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs"
+              title="Menu Ekosistem & Roadmap Fitur Lab"
+              aria-label="Menu Ekosistem & Lab"
             >
-              <Compass className="w-3.5 h-3.5 text-amber-500 animate-spin-slow" />
-              <span className="hidden sm:inline">Menu & Lab 🚀</span>
-              <span className="sm:hidden">Lab 🚀</span>
+              <Compass className="w-4 h-4 text-amber-500 animate-spin-slow shrink-0" />
+              <span className="hidden sm:inline text-xs font-bold">Lab 🚀</span>
             </button>
 
-            {/* Theme Switcher Button (Terang / Gelap) */}
+            {/* Theme Switcher Button (Icon Only on Mobile, Clean Switcher) */}
             <button
               onClick={toggleTheme}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-bold border transition-all active:scale-95 ${
+              className={`p-2 sm:px-2.5 sm:py-1.5 rounded-xl border transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs ${
                 appTheme === 'dark'
-                  ? 'bg-emerald-950/80 border-emerald-800 text-amber-300 hover:bg-emerald-900 shadow-xs'
-                  : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100 shadow-xs'
+                  ? 'bg-emerald-950/70 border-emerald-800/80 text-amber-300 hover:bg-emerald-900/60'
+                  : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100'
               }`}
-              title="Ganti Tema (Terang / Gelap)"
+              title={appTheme === 'dark' ? 'Ganti ke Mode Terang (Siang)' : 'Ganti ke Mode Gelap (Malam)'}
+              aria-label="Ganti Tema"
             >
               {appTheme === 'dark' ? (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span className="hidden sm:inline">Tema Gelap 🌙</span>
-                  <span className="sm:hidden">Gelap</span>
+                  <Moon className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+                  <span className="hidden md:inline text-xs font-bold">Gelap</span>
                 </>
               ) : (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span className="hidden sm:inline">Tema Terang ☀️</span>
-                  <span className="sm:hidden">Terang</span>
+                  <Sun className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
+                  <span className="hidden md:inline text-xs font-bold">Terang</span>
                 </>
               )}
             </button>
 
-            {/* Date Badge */}
-            <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-stone-100 dark:bg-emerald-900/40 border border-stone-200 dark:border-emerald-800 text-xs font-bold text-stone-800 dark:text-stone-200">
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span>{formatShortDateIndonesian(selectedDate)}</span>
-            </div>
-
+            {/* Reset Challenge (Desktop Only to prevent accidental taps on mobile) */}
             <button
               onClick={handleReset}
               title="Reset Tantangan 30 Hari"
-              className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
+              aria-label="Reset Tantangan"
+              className="hidden md:flex p-2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/40 transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 shrink-0" />
             </button>
 
-            {/* Logout Button (Opens Cool Mobile Modal) */}
+            {/* Logout Button (Opens Confirmation Modal) */}
             <button
               onClick={() => setIsLogoutModalOpen(true)}
               title="Keluar / Logout Akun"
-              className="p-1.5 text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+              aria-label="Keluar / Logout Akun"
+              className="p-2 rounded-xl text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all active:scale-95 flex items-center justify-center shadow-2xs"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 shrink-0" />
             </button>
           </div>
         </div>
