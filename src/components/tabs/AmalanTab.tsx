@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import { 
   ChevronLeft, 
@@ -43,6 +44,7 @@ const CATEGORIES: { id: TimeCategory | 'semua'; label: string; icon: React.React
 ];
 
 export const AmalanTab: React.FC = () => {
+  const router = useRouter();
   const { 
     selectedDate, 
     setSelectedDate,
@@ -403,6 +405,8 @@ export const AmalanTab: React.FC = () => {
                                 targetCount: item.targetCount,
                               }
                             );
+                            const targetRoute = item.linkedMenu.tab === 'home' ? '/dashboard' : `/${item.linkedMenu.tab}`;
+                            router.push(targetRoute);
                           }
                         }}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs active:scale-95 ${

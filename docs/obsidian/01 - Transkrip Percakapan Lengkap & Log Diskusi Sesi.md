@@ -1201,4 +1201,30 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 48: Perbaikan Navigasi Tombol Aksi Terhubung Antar-Menu di Tab Amalan
+* **Permintaan User**:
+  - Tombol aksi terhubung seperti "Kerjakan di Tasbih (100x) →" dan "Buka Papan Hajat & Doa →" di kartu amalan tidak berpindah ke menu tujuan saat diklik (halaman tetap berada di /amalan).
+* **Akar Masalah (Root Cause)**:
+  - Tombol aksi sebelumnya hanya memanggil fungsi internal navigateToTab di Zustand store yang menyetel state activeTab, namun belum memanggil router.push(targetRoute) Next.js Router untuk berpindah halaman secara nyata ke URL route tujuan (/tasbih, /hajat, /quran).
+* **Tindakan & Solusi Teknis**:
+  1. **Integrasi Next.js useRouter di src/components/tabs/AmalanTab.tsx**:
+     - Mengimpor dan menginisialisasi const router = useRouter().
+     - Memperbarui event onClick pada tombol aksi terhubung:
+       - Tetap memanggil navigateToTab untuk menyiapkan konfigurasi (misal: otomatis memilih preset tasbih dan target hitungan 100x/1000x, atau mengaktifkan sub-tab 'sedekah' / 'tadabbur' / 'syukur').
+       - Menambahkan eksekusi router.push(targetRoute) seketika menuju rute tujuan:
+         - *Istighfar Waktu Sahur* -> /tasbih (Preset Istighfar Sahur 100x).
+         - *Munajat Hajat Spesifik* -> /hajat (Sub-tab Hajat).
+         - *Sedekah Subuh* -> /hajat (Sub-tab Sedekah Subuh).
+         - *Dzikir Pagi / Petang* -> /tasbih (Preset Dzikir Pagi/Petang).
+         - *QS. Al-Waqi'ah & Al-Mulk* -> /quran (Sub-tab Tadabbur Surat).
+         - *Sholawat Jibril & Sayyidul Istighfar* -> /tasbih (Preset Sholawat).
+         - *Muhasabah & Gratitude Journal* -> /quran (Sub-tab Syukur).
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error (exit code 0).
+  - npm run build: Sukses 100% pada 18/18 halaman statis dan dinamis.
+  - Berhasil di-commit dan di-push ganda ke branch master dan main GitHub untuk pembaruan instan di produksi Vercel.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
