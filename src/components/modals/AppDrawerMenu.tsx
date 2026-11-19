@@ -29,7 +29,8 @@ import {
   CheckCircle2,
   LogOut,
   Smartphone,
-  KeyRound
+  KeyRound,
+  BellRing
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -57,6 +58,9 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
     toggleSound,
     vibrationEnabled,
     toggleVibration,
+    notificationsEnabled,
+    userLocation,
+    setIsAlarmModalOpen,
     resetAllData,
     completedAmalan,
     hajatList,
@@ -509,6 +513,29 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
                         <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
                           vibrationEnabled ? 'translate-x-4' : 'translate-x-0'
                         }`} />
+                      </button>
+                    </div>
+
+                    {/* GPS Prayer Times & Notification row */}
+                    <div className="flex items-center justify-between pt-3 border-t border-stone-200/60 dark:border-emerald-900/40">
+                      <div className="space-y-0.5">
+                        <div className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                          <BellRing className="w-4 h-4 text-emerald-600" />
+                          <span>Pengingat & Jadwal Sholat GPS</span>
+                        </div>
+                        <p className="text-[11px] text-stone-500">
+                          {userLocation?.cityName?.split(',')[0] || 'Situbondo'} • {notificationsEnabled ? '🟢 Notifikasi Aktif' : '⚪ Belum Aktif'}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setIsAlarmModalOpen(true);
+                          setIsDrawerOpen(false);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 transition-colors"
+                      >
+                        Buka
                       </button>
                     </div>
                   </div>

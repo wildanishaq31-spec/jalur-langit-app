@@ -1129,4 +1129,45 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 46: PWA Service Worker & Pengingat Otomatis Berbasis GPS HP (Standar Kemenag RI)
+* **Permintaan User**:
+  - Menginginkan agar jadwal jam pengingat amalan mengikuti koordinat GPS perangkat HP pengguna secara otomatis (contoh: Kabupaten Situbondo: Dini Hari 02:40, Subuh 03:32, Dhuha mulai 07:00, Ashar 14:32).
+  - Memasang dan mengaktifkan PWA Service Worker beserta sistem pengingat otomatis di bilah notifikasi HP (*Android Notification Bar*) tanpa perlu setel alarm manual lagi.
+* **Tindakan & Solusi Teknis**:
+  1. **Pembuatan PWA Service Worker (public/sw.js)**:
+     - Handler install & activate untuk caching aset statis dan kontrol instan klien.
+     - Handler notificationclick: menutup notifikasi dan secara otomatis memfokuskan atau membuka tab aplikasi langsung ke rute /amalan.
+     - Handler push event: siap mendukung notifikasi awan (Web Push) di masa depan.
+     - Penambahan manifest PWA lengkap (public/manifest.json) dengan shortcuts amalan, tasbih, dan vision board.
+  2. **Mesin Kalkulasi Jadwal Sholat Kemenag RI Berbasis GPS (src/utils/prayerTimeService.ts)**:
+     - Mendeteksi koordinat GPS HP secara presisi via navigator.geolocation dan mencocokkan nama kota/kabupaten terdekat di Indonesia.
+     - Mengambil jadwal sholat resmi Kemenag RI via API Aladhan (Metode 20) secara realtime saat online.
+     - Memiliki mesin kalkulasi astronomi offline internal (rumus deklinasi matahari, persamaan waktu, sudut Subuh 20°, Isya 18°, bayangan Ashar Syafi'i, dan buffer pengaman 2 menit Ihtiyat Kemenag) sehingga jadwal sholat tetap 100% akurat meski pengguna tidak memiliki kuota internet.
+     - Pemetaan otomatis ke 5 amalan Jalur Langit:
+       - **Dini Hari**: 02:40 (dihitung otomatis ~52 menit sebelum Subuh untuk Tahajjud & Sahur).
+       - **Subuh**: 03:32 (waktu Subuh, Qobliyah, & Sedekah Fajar).
+       - **Dhuha**: 07:00 (sesuai arahan user: mulai jam 7 pagi).
+       - **Petang**: 14:32 (waktu Ashar & QS. Al-Waqi'ah).
+       - **Malam**: 20:00 (ba'da Isya untuk QS. Al-Mulk & Istighfar).
+  3. **Pengelola Notifikasi Global Background (src/components/pwa/PwaNotificationManager.tsx)**:
+     - Dipasang di src/components/layout/AppShell.tsx sehingga aktif di seluruh halaman aplikasi.
+     - Mendaftarkan Service Worker PWA secara otomatis.
+     - Memeriksa jadwal waktu amalan setiap 15 detik.
+     - Begitu jam amalan tiba: memainkan bunyi gentle chime, menggetarkan perangkat HP, dan memunculkan notifikasi native di bilah notifikasi Android melalui Service Worker.
+     - Mencegah spam/notifikasi ganda pada hari yang sama dengan pencatatan status harian di localStorage.
+  4. **Pembaruan Modal Pengingat & Jam Sholat (src/components/modals/AlarmNotificationModal.tsx)**:
+     - Menampilkan kartu status GPS (Kota terdeteksi & timezone).
+     - Tombol 1-klik Sinkron GPS untuk memperbarui posisi dan jam sholat terkini.
+     - Tabel lengkap 7 waktu sholat Kemenag RI (Subuh, Terbit, Dhuha, Zuhur, Asar, Magrib, Isya).
+     - Tombol Tes Notifikasi ke Bilah HP Sekarang untuk memverifikasi langsung di bilah notifikasi Android pengguna.
+  5. **Integrasi Waktu Dinamis di Tab Amalan (src/components/tabs/AmalanTab.tsx & src/utils/dateUtils.ts)**:
+     - Banner jam amalan kini otomatis mendeteksi slot waktu yang aktif berdasarkan jam hasil kalkulasi GPS, bukan lagi batas jam statis Jakarta.
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error (exit code 0).
+  - npm run build: 100% lolos kompilasi 18/18 halaman.
+  - Komit dan push ganda ke branch master dan main GitHub untuk pemicu produksi Vercel.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

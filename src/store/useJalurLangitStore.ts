@@ -20,6 +20,15 @@ import {
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
+import { 
+  UserLocationData, 
+  DEFAULT_USER_LOCATION, 
+  getDeviceGeolocation, 
+  reverseGeocodeCity, 
+  findNearestIndonesianCity, 
+  fetchKemenagPrayerTimes, 
+  mapPrayerTimesToAmalanCategories 
+} from '@/utils/prayerTimeService';
 
 export const getTodayKey = getTodayDateString;
 
@@ -222,6 +231,15 @@ interface JalurLangitState {
   setNotificationsEnabled: (enabled: boolean) => void;
   setNotificationTime: (category: TimeCategory, time: string) => void;
   resetAllData: () => void;
+
+  // GPS Location & Prayer Times Schedule
+  userLocation: UserLocationData;
+  isLocationLoading: boolean;
+  isAlarmModalOpen: boolean;
+  setIsAlarmModalOpen: (open: boolean) => void;
+  setUserLocation: (location: UserLocationData) => void;
+  syncGPSPrayerTimes: () => Promise<boolean>;
+  setCityManually: (cityName: string, lat: number, lng: number, tz: number) => Promise<void>;
 }
 
 export const useJalurLangitStore = create<JalurLangitState>()(
@@ -744,10 +762,10 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       vibrationEnabled: true,
       notificationsEnabled: false,
       notificationTimes: {
-        dini_hari: '03:15',
-        subuh: '04:45',
-        dhuha: '08:30',
-        petang: '16:00',
+        dini_hari: '02:40',
+        subuh: '03:32',
+        dhuha: '07:00',
+        petang: '14:32',
         malam: '20:00',
       },
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
@@ -764,6 +782,87 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           selectedDate: getTodayDateString(),
           completedAmalan: {},
         });
+      },
+
+      // GPS Location & Prayer Times Schedule
+      userLocation: DEFAULT_USER_LOCATION,
+      isLocationLoading: false,
+      isAlarmModalOpen: false,
+      setIsAlarmModalOpen: (open) => set({ isAlarmModalOpen: open }),
+      setUserLocation: (location) => set({ userLocation: location }),
+
+      syncGPSPrayerTimes: async () => {
+        set({ isLocationLoading: true });
+        try {
+          const geo = await getDeviceGeolocation();
+          let lat = DEFAULT_USER_LOCATION.latitude;
+          let lng = DEFAULT_USER_LOCATION.longitude;
+          let isGps = false;
+          let tz = 7;
+
+          if (geo) {
+            lat = geo.lat;
+            lng = geo.lng;
+            isGps = true;
+            const offset = Math.round(-new Date().getTimezoneOffset() / 60);
+            tz = offset >= 7 && offset <= 9 ? offset : 7;
+          }
+
+          let cityName = isGps ? await reverseGeocodeCity(lat, lng) : null;
+          if (!cityName) {
+            cityName = findNearestIndonesianCity(lat, lng);
+          }
+
+          const prayers = await fetchKemenagPrayerTimes(lat, lng, tz, new Date());
+          const amalanTimes = mapPrayerTimesToAmalanCategories(prayers);
+
+          const locationData: UserLocationData = {
+            cityName,
+            latitude: lat,
+            longitude: lng,
+            timezoneOffset: tz,
+            isGPSActive: isGps,
+            lastSyncedAt: new Date().toISOString(),
+            prayerTimes: prayers,
+          };
+
+          set({
+            userLocation: locationData,
+            notificationTimes: amalanTimes,
+            isLocationLoading: false,
+          });
+
+          return isGps;
+        } catch (err) {
+          console.error('Gagal sinkronisasi GPS:', err);
+          set({ isLocationLoading: false });
+          return false;
+        }
+      },
+
+      setCityManually: async (cityName, lat, lng, tz) => {
+        set({ isLocationLoading: true });
+        try {
+          const prayers = await fetchKemenagPrayerTimes(lat, lng, tz, new Date());
+          const amalanTimes = mapPrayerTimesToAmalanCategories(prayers);
+
+          set({
+            userLocation: {
+              cityName,
+              latitude: lat,
+              longitude: lng,
+              timezoneOffset: tz,
+              isGPSActive: false,
+              lastSyncedAt: new Date().toISOString(),
+              prayerTimes: prayers,
+            },
+            notificationTimes: amalanTimes,
+            isLocationLoading: false,
+          });
+        } catch (err) {
+          console.error('Gagal ganti kota:', err);
+          set({ isLocationLoading: false });
+        }
       },
     }),
     {

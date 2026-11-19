@@ -1,11 +1,13 @@
 {
+  "id": "com.jalurlangit.app",
   "name": "Jalur Langit - 30 Day Spiritual Journal",
   "short_name": "Jalur Langit",
-  "description": "30-Day Spiritual & Manifesting Journal untuk ikhtiar langit, digital tasbih, checklist ibadah harian, dan pencatat doa mustajab.",
-  "start_url": "/",
+  "description": "30-Day Spiritual & Manifesting Journal untuk ikhtiar langit, digital tasbih, checklist ibadah harian, jadwal sholat GPS otomatis, dan pencatat doa mustajab.",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0f3d2e",
-  "theme_color": "#0f3d2e",
+  "background_color": "#061c14",
+  "theme_color": "#061c14",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -14,6 +16,25 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Checklist Amalan",
+      "short_name": "Amalan",
+      "url": "/amalan",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Tasbih Digital",
+      "short_name": "Tasbih",
+      "url": "/tasbih",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Vision Board",
+      "short_name": "Vision",
+      "url": "/vision",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
   ]
 }
-

@@ -20,6 +20,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
 import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
+import { AlarmNotificationModal } from '@/components/modals/AlarmNotificationModal';
 
 export type ActiveTab = 'home' | 'amalan' | 'tasbih' | 'glowup' | 'vision' | 'hajat' | 'quran';
 
@@ -31,7 +32,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { resetAllData, appTheme, toggleTheme, toggleDrawer } = useJalurLangitStore();
+  const { resetAllData, appTheme, toggleTheme, toggleDrawer, isAlarmModalOpen, setIsAlarmModalOpen } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
@@ -139,6 +140,12 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
 
       {/* Slide-over Drawer Menu Component */}
       <AppDrawerMenu onOpenLogoutModal={() => setIsLogoutModalOpen(true)} />
+
+      {/* GPS Prayer Times & Notification Modal */}
+      <AlarmNotificationModal
+        isOpen={isAlarmModalOpen}
+        onClose={() => setIsAlarmModalOpen(false)}
+      />
 
       {/* Cool Centered Mobile Logout Confirmation Popup */}
       <LogoutConfirmModal

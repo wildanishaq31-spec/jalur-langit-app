@@ -18,7 +18,8 @@ import {
   BellRing,
   Volume2,
   BookOpen,
-  HeartHandshake
+  HeartHandshake,
+  MapPin
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { DEFAULT_AMALAN_LIST } from '@/data/amalanData';
@@ -30,8 +31,6 @@ import {
   getCurrentTimeCategory,
   ActiveTimeSlot
 } from '@/utils/dateUtils';
-import { AlarmNotificationModal } from '@/components/modals/AlarmNotificationModal';
-import { playGentleChime } from '@/utils/audioAlert';
 
 const CATEGORIES: { id: TimeCategory | 'semua'; label: string; icon: React.ReactNode }[] = [
   { id: 'semua', label: 'Semua Waktu', icon: <Sparkles className="w-3.5 h-3.5 shrink-0" /> },
@@ -52,12 +51,13 @@ export const AmalanTab: React.FC = () => {
     getDateCompletionPercentage,
     notificationsEnabled,
     notificationTimes,
+    userLocation,
+    setIsAlarmModalOpen,
     navigateToTab,
   } = useJalurLangitStore();
 
   const [selectedCategory, setSelectedCategory] = useState<TimeCategory | 'semua'>('semua');
   const [expandedVirtueId, setExpandedVirtueId] = useState<string | null>(null);
-  const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
 
   // Real-time clock & Active slot
   const [currentTimeStr, setCurrentTimeStr] = useState<string>('19:40 WIB');
@@ -76,31 +76,12 @@ export const AmalanTab: React.FC = () => {
   useEffect(() => {
     setTodayStr(getTodayDateString());
     setCurrentTimeStr(getCurrentTimeString());
-    setActiveSlot(getCurrentTimeCategory());
+    setActiveSlot(getCurrentTimeCategory(notificationTimes));
 
     const timer = setInterval(() => {
       setCurrentTimeStr(getCurrentTimeString());
-      const slot = getCurrentTimeCategory();
+      const slot = getCurrentTimeCategory(notificationTimes);
       setActiveSlot(slot);
-
-      // Check notification alarm schedule if enabled
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        const now = new Date();
-        const currentH = String(now.getHours()).padStart(2, '0');
-        const currentM = String(now.getMinutes()).padStart(2, '0');
-        const nowHM = `${currentH}:${currentM}`;
-
-        // Match against user notificationTimes
-        Object.entries(notificationTimes).forEach(([cat, scheduledTime]) => {
-          if (scheduledTime === nowHM && now.getSeconds() < 10) {
-            playGentleChime();
-            new Notification(`Jalur Langit: Masuk ${slot.label}! 🔔`, {
-              body: slot.message,
-              icon: '/icon.svg',
-            });
-          }
-        });
-      }
     }, 10000);
 
     return () => clearInterval(timer);
@@ -144,7 +125,7 @@ export const AmalanTab: React.FC = () => {
       <div className="p-5 rounded-3xl border shadow-xs transition-all bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-amber-950/20 border-emerald-200/80 dark:border-emerald-900/40">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -157,6 +138,15 @@ export const AmalanTab: React.FC = () => {
                 <span>{activeSlot.icon}</span>
                 <span>{activeSlot.label}</span>
               </span>
+              {userLocation?.cityName && (
+                <>
+                  <span className="text-xs text-stone-400 hidden sm:inline">•</span>
+                  <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-emerald-600" />
+                    <span className="truncate max-w-[150px]">{userLocation.cityName.split(',')[0]}</span>
+                  </span>
+                </>
+              )}
             </div>
 
             <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
@@ -175,12 +165,12 @@ export const AmalanTab: React.FC = () => {
             {notificationsEnabled ? (
               <>
                 <BellRing className="w-3.5 h-3.5 text-amber-300" />
-                <span>Alarm Aktif</span>
+                <span>Alarm GPS Aktif 🔔</span>
               </>
             ) : (
               <>
                 <Bell className="w-3.5 h-3.5" />
-                <span>Atur Pengingat HP</span>
+                <span>Atur Pengingat GPS</span>
               </>
             )}
           </button>
@@ -436,12 +426,6 @@ export const AmalanTab: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Alarm Notification Settings Modal */}
-      <AlarmNotificationModal
-        isOpen={isAlarmModalOpen}
-        onClose={() => setIsAlarmModalOpen(false)}
-      />
     </div>
   );
 };

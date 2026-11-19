@@ -46,7 +46,7 @@ export interface ActiveTimeSlot {
   message: string;
 }
 
-export const getCurrentTimeCategory = (): ActiveTimeSlot => {
+export const getCurrentTimeCategory = (customTimes?: Record<TimeCategory, string>): ActiveTimeSlot => {
   if (typeof window === 'undefined') {
     return {
       category: 'malam',
@@ -62,7 +62,70 @@ export const getCurrentTimeCategory = (): ActiveTimeSlot => {
   const minutes = now.getMinutes();
   const timeInMinutes = hours * 60 + minutes;
 
-  // 02:30 to 04:30 = 150 to 270
+  // Jika customTimes dari jadwal sholat GPS tersedia, gunakan batas waktu dinamis
+  if (customTimes) {
+    const parseHM = (timeStr?: string, defaultMin = 0) => {
+      if (!timeStr) return defaultMin;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + (m || 0);
+    };
+
+    const diniHariMin = parseHM(customTimes.dini_hari, 160); // default 02:40
+    const subuhMin = parseHM(customTimes.subuh, 212);       // default 03:32
+    const dhuhaMin = parseHM(customTimes.dhuha, 420);       // default 07:00
+    const petangMin = parseHM(customTimes.petang, 872);     // default 14:32
+    const malamMin = parseHM(customTimes.malam, 1118);      // default 18:38 / 20:00
+
+    if (timeInMinutes >= diniHariMin && timeInMinutes < subuhMin) {
+      return {
+        category: 'dini_hari',
+        label: 'Waktu Dini Hari',
+        timeRange: `${customTimes.dini_hari} - ${customTimes.subuh}`,
+        icon: '🌙',
+        message: 'Waktu sepertiga malam terakhir telah tiba. Saatnya Sholat Tahajjud, Witir, & Munajat Hajat!',
+      };
+    }
+
+    if (timeInMinutes >= subuhMin && timeInMinutes < dhuhaMin) {
+      return {
+        category: 'subuh',
+        label: 'Waktu Subuh',
+        timeRange: `${customTimes.subuh} - ${customTimes.dhuha}`,
+        icon: '🌅',
+        message: 'Masuk waktu Subuh! Kerjakan Qobliyah Subuh, Sholat Subuh, & Sedekah Subuh.',
+      };
+    }
+
+    if (timeInMinutes >= dhuhaMin && timeInMinutes < petangMin) {
+      return {
+        category: 'dhuha',
+        label: 'Waktu Dhuha & Siang',
+        timeRange: `${customTimes.dhuha} - ${customTimes.petang}`,
+        icon: '☀️',
+        message: 'Matahari mulai meninggi, saatnya Sholat Dhuha pembuka pintu rezeki & ikhtiar bumi profesional.',
+      };
+    }
+
+    if (timeInMinutes >= petangMin && timeInMinutes < malamMin) {
+      return {
+        category: 'petang',
+        label: 'Waktu Petang',
+        timeRange: `${customTimes.petang} - ${customTimes.malam}`,
+        icon: '🌇',
+        message: 'Waktu Ashar dan petang. Sempatkan membaca QS. Al-Waqi\'ah & Dzikir Petang.',
+      };
+    }
+
+    return {
+      category: 'malam',
+      label: 'Waktu Malam',
+      timeRange: `${customTimes.malam} - ${customTimes.dini_hari}`,
+      icon: '🌌',
+      message: 'Waktunya Sholat Maghrib, Isya, membaca QS. Al-Mulk pelindung kubur, & Muhasabah sebelum tidur.',
+    };
+  }
+
+  // Fallback standar statis jika customTimes belum dimuat
   if (timeInMinutes >= 150 && timeInMinutes < 270) {
     return {
       category: 'dini_hari',
@@ -72,7 +135,6 @@ export const getCurrentTimeCategory = (): ActiveTimeSlot => {
       message: 'Waktu sepertiga malam terakhir telah tiba. Saatnya Sholat Tahajjud, Witir, & Munajat Hajat!',
     };
   }
-  // 04:30 to 06:30 = 270 to 390
   if (timeInMinutes >= 270 && timeInMinutes < 390) {
     return {
       category: 'subuh',
@@ -82,7 +144,6 @@ export const getCurrentTimeCategory = (): ActiveTimeSlot => {
       message: 'Masuk waktu Subuh! Kerjakan Qobliyah Subuh, Sholat Subuh, & Sedekah Subuh.',
     };
   }
-  // 06:30 to 15:00 = 390 to 900
   if (timeInMinutes >= 390 && timeInMinutes < 900) {
     return {
       category: 'dhuha',
@@ -92,7 +153,6 @@ export const getCurrentTimeCategory = (): ActiveTimeSlot => {
       message: 'Matahari mulai meninggi, saatnya Sholat Dhuha pembuka pintu rezeki & ikhtiar bumi profesional.',
     };
   }
-  // 15:00 to 18:00 = 900 to 1080
   if (timeInMinutes >= 900 && timeInMinutes < 1080) {
     return {
       category: 'petang',
@@ -102,7 +162,6 @@ export const getCurrentTimeCategory = (): ActiveTimeSlot => {
       message: 'Waktu Ashar dan petang. Sempatkan membaca QS. Al-Waqi\'ah & Dzikir Petang.',
     };
   }
-  // 18:00 to 02:30 = 1080 to 1440 or 0 to 150
   return {
     category: 'malam',
     label: 'Waktu Malam',
