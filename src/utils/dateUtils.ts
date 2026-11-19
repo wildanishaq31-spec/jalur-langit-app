@@ -74,7 +74,7 @@ export const getCurrentTimeCategory = (customTimes?: Record<TimeCategory, string
     const subuhMin = parseHM(customTimes.subuh, 212);       // default 03:32
     const dhuhaMin = parseHM(customTimes.dhuha, 420);       // default 07:00
     const petangMin = parseHM(customTimes.petang, 872);     // default 14:32
-    const malamMin = parseHM(customTimes.malam, 1118);      // default 18:38 / 20:00
+    const malamMin = parseHM(customTimes.malam, 1044);      // default 17:24 (Maghrib)
 
     if (timeInMinutes >= diniHariMin && timeInMinutes < subuhMin) {
       return {

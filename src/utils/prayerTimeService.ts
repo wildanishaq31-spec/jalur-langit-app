@@ -279,7 +279,7 @@ export function mapPrayerTimesToAmalanCategories(
     subuh: prayers.fajr,         // ~03:32 (Qobliyah Subuh, Sholat Subuh & Sedekah Subuh)
     dhuha: prayers.dhuha,       // 07:00 (Sholat Dhuha pembuka rezeki)
     petang: prayers.asr,        // ~14:32 (Sholat Ashar & QS. Al-Waqi'ah)
-    malam: '20:00',             // 20:00 (QS. Al-Mulk & Istighfar sebelum tidur)
+    malam: prayers.maghrib,     // ~17:24 (Sholat Maghrib adalah awal masuk waktu Malam)
   };
 }
 
@@ -432,5 +432,100 @@ export function getDynamicAmalanTimeRange(
       if (category === 'petang') return `${p.asr} - ${p.maghrib} ${tz}`;
       if (category === 'malam') return `${p.maghrib} - ${p.tahajjud} ${tz}`;
       return `Sepanjang Hari ${tz}`;
+  }
+}
+
+/**
+ * Memeriksa apakah suatu amalan spesifik sedang aktif pada jam realtime saat ini
+ * berdasarkan jadwal sholat GPS / lokasi pengguna.
+ */
+export function isAmalanActiveNow(
+  amalanId: string,
+  category: TimeCategory,
+  prayerTimes?: RawPrayerTimes,
+  now = new Date()
+): boolean {
+  const p = prayerTimes || DEFAULT_USER_LOCATION.prayerTimes;
+  const curM = now.getHours() * 60 + now.getMinutes();
+
+  const parseHM = (timeStr?: string, defaultMin = 0): number => {
+    if (!timeStr || !timeStr.includes(':')) return defaultMin;
+    const [h, m] = timeStr.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
+  const tahajjudM = parseHM(p.tahajjud, 160); // ~02:40
+  const fajrM = parseHM(p.fajr, 212);         // ~03:32
+  const sunriseM = parseHM(p.sunrise, 295);   // ~04:55
+  const dhuhaM = parseHM(p.dhuha, 420);       // 07:00
+  const dhuhrM = parseHM(p.dhuhr, 669);       // ~11:09
+  const asrM = parseHM(p.asr, 872);           // ~14:32
+  const maghribM = parseHM(p.maghrib, 1044);  // ~17:24
+  const ishaM = parseHM(p.isha, 1118);        // ~18:38
+
+  switch (amalanId) {
+    // --- Dini Hari ---
+    case 'tahajjud':
+    case 'witir':
+    case 'hajat_dini_hari':
+      return curM >= tahajjudM && curM < fajrM;
+
+    case 'istighfar_sahur': {
+      const sahurStart = Math.max(0, fajrM - 35);
+      return curM >= sahurStart && curM < fajrM;
+    }
+
+    // --- Subuh ---
+    case 'qobliyah_subuh':
+      return curM >= fajrM && curM < fajrM + 20;
+
+    case 'sholat_subuh':
+      return curM >= fajrM && curM < sunriseM;
+
+    case 'sedekah_subuh':
+    case 'dzikir_pagi':
+      return curM >= fajrM && curM < 390; // sampai jam 06:30 pagi
+
+    // --- Dhuha & Siang ---
+    case 'sholat_dhuha':
+      return curM >= dhuhaM && curM < dhuhrM;
+
+    case 'sholat_dzuhur':
+      return curM >= dhuhrM && curM < asrM;
+
+    case 'ikhtiar_bumi':
+      return curM >= 480 && curM < 960; // 08:00 - 16:00
+
+    // --- Petang ---
+    case 'sholat_ashar':
+    case 'dzikir_petang':
+    case 'surah_waqiah':
+      return curM >= asrM && curM < maghribM;
+
+    // --- Malam ---
+    case 'sholat_maghrib':
+      return curM >= maghribM && curM < ishaM;
+
+    case 'sholat_isya':
+      return curM >= ishaM && curM < 1260; // Isya sampai jam 21:00
+
+    case 'surah_mulk':
+      return curM >= 1200 && curM < 1350; // 20:00 - 22:30
+
+    case 'sholawat_jibril':
+      return curM >= ishaM && curM < 1320; // 18:38 - 22:00
+
+    case 'sayyidul_istighfar':
+    case 'muhasabah_gratitude':
+      return curM >= 1260 && curM < 1410; // 21:00 - 23:30
+
+    default:
+      // Fallback per kategori
+      if (category === 'dini_hari') return curM >= tahajjudM && curM < fajrM;
+      if (category === 'subuh') return curM >= fajrM && curM < dhuhaM;
+      if (category === 'dhuha') return curM >= dhuhaM && curM < asrM;
+      if (category === 'petang') return curM >= asrM && curM < maghribM;
+      if (category === 'malam') return curM >= maghribM || curM < tahajjudM;
+      return false;
   }
 }

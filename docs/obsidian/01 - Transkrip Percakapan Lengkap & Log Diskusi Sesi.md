@@ -1347,4 +1347,44 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 54 - Sinkronisasi Realtime Badge "Waktu Sekarang" & Golden Outline Amalan Mengikuti Jam HP & Sholat GPS
+* **Permintaan Pengguna**:
+  - *"sekarang perbaiki tanda waktu sekarang dan outlinenya mengikuti jam realtime karena di gambar 1 tetap disini waktu sekarangnya tidak berubah, jadi nanti akan menikuti waktu real time sekarang waktunya apa"*
+  - Lampiran: Tangkapan layar saat jam 18:04 WIB yang menunjukkan amalan waktu Ashar/Petang (Sholat Ashar, Dzikir Petang, QS. Al-Waqi'ah 14:32 - 17:24 WIB) masih memiliki badge "Waktu Sekarang" dan garis tepi emas, padahal waktu petang sudah lewat dan seharusnya beralih ke Sholat Maghrib (17:24 - 18:38 WIB).
+* **Akar Masalah (Root Cause)**:
+  1. `isCurrentSlot` pada `AmalanTab.tsx` sebelumnya hanya mengecek kesamaan kategori global: `const isCurrentSlot = item.category === activeSlot.category;`. Akibatnya seluruh amalan yang berbagi kategori `'petang'` menyala bersamaan, dan tidak mengecek menit aktif tiap amalan secara presisi.
+  2. Kategori `'malam'` sebelumnya di-hardcode ke `'20:00'` pada `mapPrayerTimesToAmalanCategories` (`prayerTimeService.ts`) dan `useJalurLangitStore.ts`. Hal ini menyebabkan rentang pukul 14:32 hingga 20:00 diklasifikasikan sebagai waktu petang, padahal secara fiqih Islam dan jadwal resmi Kemenag RI, waktu petang berakhir tepat saat matahari terbenam (adzan Maghrib ~17:24).
+  3. Pengecekan tidak dibatasi hanya pada tanggal hari ini (`isToday = selectedDate === todayStr`), sehingga membuka hari lain dapat memicu badge waktu sekarang yang keliru.
+* **Solusi Teknis yang Diimplementasikan**:
+  1. **Layanan Cek Realtime `isAmalanActiveNow`**:
+     - Menambahkan fungsi helper `isAmalanActiveNow(amalanId, category, prayerTimes, now)` di `src/utils/prayerTimeService.ts`.
+     - Mengevaluasi jam dan menit (`curM = now.getHours() * 60 + now.getMinutes()`) terhadap jadwal sholat GPS secara akurat untuk setiap amalan:
+       - `tahajjud`, `witir`, `hajat_dini_hari`: `p.tahajjud` (~02:40) s/d `p.fajr` (~03:32).
+       - `istighfar_sahur`: `(p.fajr - 35m)` s/d `p.fajr`.
+       - `qobliyah_subuh`: `p.fajr` s/d `(p.fajr + 20m)`.
+       - `sholat_subuh`: `p.fajr` s/d `p.sunrise` (~04:55).
+       - `sedekah_subuh`, `dzikir_pagi`: `p.fajr` s/d 06:30 pagi.
+       - `sholat_dhuha`: `p.dhuha` (07:00) s/d `p.dhuhr` (~11:09).
+       - `sholat_dzuhur`: `p.dhuhr` s/d `p.asr` (~14:32).
+       - `ikhtiar_bumi`: 08:00 s/d 16:00.
+       - `sholat_ashar`, `dzikir_petang`, `surah_waqiah`: `p.asr` s/d `p.maghrib` (~17:24).
+       - `sholat_maghrib`: `p.maghrib` (~17:24) s/d `p.isha` (~18:38).
+       - `sholat_isya`: `p.isha` s/d 21:00.
+       - `surah_mulk`: 20:00 s/d 22:30.
+       - `sholawat_jibril`: ba'da Isya s/d 22:00.
+       - `sayyidul_istighfar`, `muhasabah_gratitude`: 21:00 s/d 23:30.
+  2. **Koreksi Waktu Kategori Malam Menjadi Maghrib**:
+     - Mengubah pemetaan kategori di `mapPrayerTimesToAmalanCategories`: `malam: prayers.maghrib` (~17:24).
+     - Mengubah nilai bawaan `notificationTimes.malam` pada `useJalurLangitStore.ts` dan batas fallback `dateUtils.ts` menjadi 17:24 (1044 menit).
+  3. **Ticking Real-Time 5 Detik & Proteksi Hari Ini**:
+     - Di `AmalanTab.tsx`, menambahkan state `nowClock = useState<Date>(new Date())` yang diperbarui setiap 5 detik tanpa perlu me-reload halaman.
+     - `isCurrentSlot` dievaluasi dengan syarat: `isToday && isAmalanActiveNow(...)`.
+     - Mempercantik outline emas aktif (`border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/50 dark:ring-amber-500/40`) dan badge animasi radar ping (`animate-ping`).
+* **Hasil Pengujian & Verifikasi**:
+  - Simulasi Python membuktikan jam 18:04 WIB hanya mengaktifkan `sholat_maghrib`.
+  - Next.js Turbopack build `npm run build` sukses 100% tanpa error (18/18 rute).
+  - Berhasil di-push ke GitHub remote `master` dan `main`.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

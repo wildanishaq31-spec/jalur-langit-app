@@ -33,7 +33,7 @@ import {
   getCurrentTimeCategory,
   ActiveTimeSlot
 } from '@/utils/dateUtils';
-import { getDynamicAmalanTimeRange } from '@/utils/prayerTimeService';
+import { getDynamicAmalanTimeRange, isAmalanActiveNow } from '@/utils/prayerTimeService';
 
 const CATEGORIES: { id: TimeCategory | 'semua'; label: string; icon: React.ReactNode }[] = [
   { id: 'semua', label: 'Semua Waktu', icon: <Sparkles className="w-3.5 h-3.5 shrink-0" /> },
@@ -65,6 +65,7 @@ export const AmalanTab: React.FC = () => {
 
   // Real-time clock & Active slot
   const [currentTimeStr, setCurrentTimeStr] = useState<string>('19:40 WIB');
+  const [nowClock, setNowClock] = useState<Date>(new Date());
   const [activeSlot, setActiveSlot] = useState<ActiveTimeSlot>({
     category: 'malam',
     label: 'Waktu Malam',
@@ -78,15 +79,20 @@ export const AmalanTab: React.FC = () => {
   const [todayStr, setTodayStr] = useState<string>('2026-11-17');
 
   useEffect(() => {
+    const now = new Date();
     setTodayStr(getTodayDateString());
     setCurrentTimeStr(getCurrentTimeString());
+    setNowClock(now);
     setActiveSlot(getCurrentTimeCategory(notificationTimes));
 
+    // Perbarui waktu HP dan amalan aktif setiap 5 detik secara realtime
     const timer = setInterval(() => {
+      const liveNow = new Date();
+      setNowClock(liveNow);
       setCurrentTimeStr(getCurrentTimeString());
       const slot = getCurrentTimeCategory(notificationTimes);
       setActiveSlot(slot);
-    }, 10000);
+    }, 5000);
 
     return () => clearInterval(timer);
   }, [notificationTimes]);
@@ -263,7 +269,13 @@ export const AmalanTab: React.FC = () => {
         {filteredAmalan.map((item) => {
           const isDone = isAmalanCompleted(selectedDate, item.id);
           const isVirtueExpanded = expandedVirtueId === item.id;
-          const isCurrentSlot = item.category === activeSlot.category;
+          const isToday = selectedDate === todayStr;
+          const isCurrentSlot = isToday && isAmalanActiveNow(
+            item.id,
+            item.category,
+            userLocation?.prayerTimes,
+            nowClock
+          );
           const dynamicTimeRange = getDynamicAmalanTimeRange(
             item.id,
             item.category,
@@ -278,7 +290,7 @@ export const AmalanTab: React.FC = () => {
                 isDone
                   ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/80 shadow-xs'
                   : isCurrentSlot
-                  ? 'bg-white dark:bg-emerald-950/30 border-amber-300 dark:border-amber-700/70 ring-1 ring-amber-300/60 dark:ring-amber-700/40 shadow-xs'
+                  ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/50 dark:ring-amber-500/40 shadow-sm'
                   : 'bg-white dark:bg-emerald-950/20 border-stone-200/80 dark:border-emerald-800/60 hover:border-emerald-300'
               }`}
             >
@@ -311,7 +323,8 @@ export const AmalanTab: React.FC = () => {
                       </h3>
 
                       {isCurrentSlot && !isDone && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 text-[10px] font-bold animate-pulse">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700 text-[10px] font-bold inline-flex items-center gap-1 shadow-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
                           Waktu Sekarang
                         </span>
                       )}

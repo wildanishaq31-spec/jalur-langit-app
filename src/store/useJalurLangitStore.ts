@@ -763,7 +763,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         subuh: '03:32',
         dhuha: '07:00',
         petang: '14:32',
-        malam: '20:00',
+        malam: '17:24',
       },
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
       toggleVibration: () => set((state) => ({ vibrationEnabled: !state.vibrationEnabled })),
