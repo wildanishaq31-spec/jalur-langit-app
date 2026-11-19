@@ -1528,4 +1528,23 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 60 - Pengembalian Ukuran & Tipografi Transliterasi Latin Utama Tasbih Menjadi Besar & Tegas
+* **Permintaan Pengguna**:
+  - *"kenapa ukuran latinnya berubah kecil,"*
+  - Lampiran: Tangkapan layar bacaan Doa Nabi Yunus di mana teks Latin `"Laa ilaaha illaa anta subhaanaka innii kuntu minazh-zhaalimiin"` tampil lebih kecil dan bertuliskan huruf kecil/title-case.
+* **Analisis & Solusi Teknis**:
+  1. **Akar Masalah (Root Cause)**:
+     - Pada Turn 59, ditambahkan pengecekan panjang karakter yang menurunkan ukuran teks menjadi `text-xs sm:text-sm font-bold tracking-wider normal-case` jika panjang teks > 30 karakter. Hal ini menyebabkan teks Latin pada bacaan seperti Doa Nabi Yunus dan Sholawat Jibril mengecil dan kehilangan kesan kapital tebal (*extrabold uppercase*) yang gagah.
+  2. **Pengembalian Tipografi Tegas & Menonjol**:
+     - Di `src/components/tabs/TasbihTab.tsx`, mengembalikan gaya transliterasi Latin menjadi standar penuh:
+       `<div className="text-base sm:text-lg font-extrabold uppercase tracking-wider text-white drop-shadow-sm px-2">{displayTransliteration}</div>`.
+     - Kaligrafi Arab dikembalikan ke ukuran besar dan megah:
+       `<div className="font-arabic text-3xl sm:text-5xl drop-shadow-[0_0_20px_rgba(251,191,36,0.4)] leading-relaxed select-none transition-all duration-300 px-2">`.
+     - Teks bacaan kini selalu tampil besar, tegas, kapital tebal, kontras tinggi, dan nyaman dibaca saat berdzikir.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: 100% sukses tanpa error di 18/18 rute Next.js Turbopack.
+  - Teks Latin di seluruh mode dzikir kembali besar, tebal, dan proporsional sesuai tampilan aslinya.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
