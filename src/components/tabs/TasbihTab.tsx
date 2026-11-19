@@ -146,14 +146,24 @@ export const TasbihTab: React.FC = () => {
   };
 
   const effectiveAmalanId = lastSourceAmalanId || PRESET_TO_AMALAN_MAP[tasbihPresetId];
+  const isDone = effectiveAmalanId ? isAmalanCompleted(selectedDate, effectiveAmalanId) : false;
+  const [localClicked, setLocalClicked] = useState(false);
+  const isChecked = isDone || localClicked;
+
+  // Reset status klik lokal ketika berpindah preset atau tanggal
+  useEffect(() => {
+    setLocalClicked(false);
+  }, [tasbihPresetId, selectedDate]);
 
   // Aksi ketika tombol lingkaran "Sudah" di sebelah kanan tasbih diklik:
-  // Tandai amalan selesai di checklist lalu kembali otomatis ke halaman amalan
+  // Ubah centang abu-abu menjadi kuning, tandai selesai di checklist lalu kembali otomatis ke amalan
   const handleCompleteAndReturn = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+
+    setLocalClicked(true);
 
     if (effectiveAmalanId) {
       markAmalanCompleted(selectedDate, effectiveAmalanId);
@@ -171,9 +181,11 @@ export const TasbihTab: React.FC = () => {
       navigator.vibrate([40, 60, 40]);
     }
 
-    // Navigasi langsung kembali ke amalan checklist
-    navigateToTab('amalan');
-    router.push('/amalan');
+    // Beri jeda halus ~350ms agar pengguna melihat centang berubah kuning dan konfeti muncul
+    setTimeout(() => {
+      navigateToTab('amalan');
+      router.push('/amalan');
+    }, 350);
   };
 
   // Synchronize when switching presets
@@ -563,26 +575,35 @@ export const TasbihTab: React.FC = () => {
             />
 
             {/* Tombol Lingkaran "Sudah" di Sebelah Kanan Tasbih */}
-            <div className="absolute right-2 sm:right-6 bottom-4 sm:bottom-8 z-30 flex flex-col items-center gap-1">
+            <div className="absolute right-2 sm:right-6 bottom-4 sm:bottom-8 z-30 flex flex-col items-center">
               <button
                 type="button"
                 onClick={handleCompleteAndReturn}
-                className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center p-1 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-800 border-2 border-amber-300 text-white shadow-[0_0_22px_rgba(16,185,129,0.55)] active:scale-90 hover:scale-105 transition-all cursor-pointer touch-manipulation select-none"
+                className={`group relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex flex-col items-center justify-center p-1 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-800 border-2 border-amber-300 text-white transition-all cursor-pointer touch-manipulation select-none active:scale-90 hover:scale-105 ${
+                  isChecked
+                    ? 'shadow-[0_0_24px_rgba(251,191,36,0.6)]'
+                    : 'shadow-[0_0_18px_rgba(16,185,129,0.45)]'
+                }`}
                 title="Tandai amalan ini sudah selesai dan kembali ke checklist"
                 aria-label="Tandai amalan sudah selesai dan kembali ke checklist"
               >
                 {/* Subtle pulsing background glow ring */}
-                <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-30 animate-ping pointer-events-none" />
+                <span className={`absolute inset-0 rounded-full animate-ping pointer-events-none ${
+                  isChecked ? 'bg-amber-400 opacity-40' : 'bg-emerald-400 opacity-25'
+                }`} />
                 <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-amber-400/50 to-emerald-400/50 blur-xs -z-10 opacity-70 group-hover:opacity-100 transition-opacity" />
 
-                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-amber-200 stroke-[3] drop-shadow-md group-hover:scale-110 transition-transform" />
+                <Check 
+                  className={`w-5 h-5 sm:w-6 sm:h-6 stroke-[3.5] drop-shadow-md group-hover:scale-110 transition-all duration-300 ${
+                    isChecked 
+                      ? 'text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] scale-110' 
+                      : 'text-stone-300'
+                  }`} 
+                />
                 <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-white drop-shadow-sm leading-none mt-0.5">
                   Sudah
                 </span>
               </button>
-              <span className="text-[9px] sm:text-[10px] font-bold text-amber-200/90 tracking-wide drop-shadow-sm select-none pointer-events-none">
-                Ke Checklist ↗
-              </span>
             </div>
           </div>
 
