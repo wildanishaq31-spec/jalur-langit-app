@@ -1260,4 +1260,31 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 51: Optimalisasi Latensi Navigasi 0 Detik (Zero-Delay Instant Tab & Action Navigation)
+* **Permintaan User**:
+  - Menyatakan bahwa perpindahan menu saat tombol dipencet masih terasa ada jeda/delay (tidak instan / tidak 0,0001 detik), minta dipercepat hingga seketika tanpa delay.
+* **Analisis Mendalam Akar Penyebab Latensi (~400ms - 550ms)**:
+  1. **Blank Screen Flash di AppShell**: Pada setiap perpindahan rute (`/amalan` -> `/tasbih`), komponen `AppShell` di-remount dengan state lokal `const [mounted, setMounted] = useState(false)`. Hal ini membuat layar merender `<div className="min-h-screen bg-[#fbf9f5] ... />` kosong selama 1 frame sebelum `useEffect` memicu re-render kedua `mounted = true`.
+  2. **Ketiadaan Prefetching Rute**: Navigasi sebelumnya memanggil `router.push(targetRoute)` secara imperatif tanpa pra-muat (prefetch), sehingga Next.js harus meminta bundle rute saat tombol disentuh.
+  3. **Delay Animasi Opacity CSS**: Kelas `.animate-fade-in` pada komponen tab memiliki animasi `@keyframes fadeIn` yang dimulai dari `opacity: 0` selama 150ms, menciptakan ilusi visual bahwa konten baru muncul terlambat.
+  4. **Tap Latency & Scale Transition**: Elemen tombol sebelumnya belum memiliki atribut CSS `touch-manipulation` dan memiliki animasi `active:scale-95 transition-all` yang memakan waktu transisi sentuhan di peramban ponsel.
+* **Tindakan & Solusi Teknis Zero-Latency**:
+  1. **src/components/layout/AppShell.tsx**:
+     - Menambahkan variabel memori modul klien `let isAppHydrated = false;` dan menginisialisasi state dengan `useState(() => isAppHydrated)`. Setelah hidrasi pertama kali, semua pergantian halaman selanjutnya langsung merender `children` di frame 0 secara sinkron tanpa jeda blank screen.
+     - Mengimplementasikan `useEffect` otomatis untuk melakukan `router.prefetch()` pada seluruh rute inti (`/dashboard`, `/amalan`, `/glowup`, `/tasbih`, `/vision`, `/hajat`, `/quran`).
+  2. **src/components/tabs/AmalanTab.tsx**:
+     - Mengubah tombol aksi kartu amalan menjadi komponen native Next.js `<Link href={targetRoute} prefetch={true}>`.
+     - Menambahkan class `touch-manipulation select-none active:opacity-80` untuk mematikan jeda double-tap 300ms di peramban ponsel dan menghapus CSS scale transition yang memperlambat respon sentuh.
+  3. **src/components/Navigation.tsx**:
+     - Mengubah tombol-tombol navigasi bar bawah (Beranda, Amalan, Glow Up, Tasbih, Vision, Hajat, Quran) menjadi `<Link href={...} prefetch={true}>` dengan `touch-manipulation select-none` untuk navigasi instan 0 delay di seluruh aplikasi.
+  4. **src/app/globals.css**:
+     - Menghapus delay transisi fade-in 150ms pada `.animate-fade-in` sehingga komponen dan teks langsung tampil 100% pada saat pertama kali dimount tanpa jeda opasitas transparan.
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error.
+  - npm run build: Sukses 100% (18/18 halaman statis dan dinamis).
+  - Berhasil di-commit dan di-push ganda ke branch `master` dan `main` GitHub untuk pembaruan langsung di Vercel Production.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

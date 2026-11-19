@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Home, 
   CheckCircle2, 
@@ -159,12 +160,14 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
         userEmail={currentUser?.email}
       />
 
-      {/* Bottom Floating Navigation Bar (Mobile & Desktop) */}
+      {/* Bottom Floating Navigation Bar (Mobile & Desktop - Instant Prefetched Links) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg border-t border-stone-200/80 dark:border-emerald-800/60 py-2 px-2 shadow-lg">
         <div className="max-w-xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => handleNavigate('home')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/dashboard"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('home')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'home'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -172,11 +175,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <Home className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Beranda</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleNavigate('amalan')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/amalan"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('amalan')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'amalan'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -184,11 +189,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Amalan</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleNavigate('glowup')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/glowup"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('glowup')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'glowup'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -196,12 +203,14 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <Droplets className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Glow Up</span>
-          </button>
+          </Link>
 
           {/* Center Tasbih */}
-          <button
-            onClick={() => handleNavigate('tasbih')}
-            className="flex flex-col items-center py-1 px-2 transition-all relative"
+          <Link
+            href="/tasbih"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('tasbih')}
+            className="touch-manipulation select-none flex flex-col items-center py-1 px-2 transition-transform relative"
           >
             <div className={`w-9 h-9 -mt-4 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white dark:border-emerald-950 transition-all ${
               currentTab === 'tasbih'
@@ -215,11 +224,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             }`}>
               Tasbih
             </span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleNavigate('vision')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/vision"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('vision')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'vision'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -227,11 +238,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Vision</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleNavigate('hajat')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/hajat"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('hajat')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'hajat'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -239,11 +252,13 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Hajat</span>
-          </button>
+          </Link>
 
-          <button
-            onClick={() => handleNavigate('quran')}
-            className={`flex flex-col items-center py-1 px-2 rounded-2xl transition-all ${
+          <Link
+            href="/quran"
+            prefetch={true}
+            onClick={() => onTabChange && onTabChange('quran')}
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
               currentTab === 'quran'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
@@ -251,7 +266,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
           >
             <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
             <span className="text-[10px]">Quran</span>
-          </button>
+          </Link>
         </div>
       </nav>
     </>

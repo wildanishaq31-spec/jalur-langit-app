@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import confetti from 'canvas-confetti';
 import { 
   ChevronLeft, 
@@ -369,46 +370,49 @@ export const AmalanTab: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Cross-Menu Action Link Button */}
-                  {item.linkedMenu && (
-                    <div className="w-full mt-2.5 pt-2.5 border-t border-stone-100 dark:border-emerald-900/40 flex items-center justify-end">
-                      <button
-                        onClick={() => {
-                          if (item.linkedMenu) {
-                            navigateToTab(
-                              item.linkedMenu.tab,
-                              item.linkedMenu.subTab,
-                              {
-                                presetId: item.linkedMenu.presetId,
-                                targetCount: item.targetCount,
-                              }
-                            );
-                            const targetRoute = item.linkedMenu.tab === 'home' ? '/dashboard' : `/${item.linkedMenu.tab}`;
-                            router.push(targetRoute);
-                          }
-                        }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs active:scale-95 ${
-                          isDone
-                            ? 'bg-stone-100 dark:bg-emerald-900/40 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-emerald-900/60'
-                            : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:text-amber-200 ring-1 ring-emerald-600/30'
-                        }`}
-                      >
-                        {isDone ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
-                            <span>Sudah Dikerjakan (Buka Menu ↗)</span>
-                          </>
-                        ) : (
-                          <>
-                            {item.linkedMenu.tab === 'tasbih' && <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
-                            {item.linkedMenu.tab === 'hajat' && <HeartHandshake className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
-                            {item.linkedMenu.tab === 'quran' && <BookOpen className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
-                            <span>{item.linkedMenu.actionLabel} →</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
+                  {/* Cross-Menu Action Link Button (Instant Prefetched Navigation) */}
+                  {item.linkedMenu && (() => {
+                    const targetRoute = item.linkedMenu.tab === 'home' ? '/dashboard' : `/${item.linkedMenu.tab}`;
+                    return (
+                      <div className="w-full mt-2.5 pt-2.5 border-t border-stone-100 dark:border-emerald-900/40 flex items-center justify-end">
+                        <Link
+                          href={targetRoute}
+                          prefetch={true}
+                          onClick={() => {
+                            if (item.linkedMenu) {
+                              navigateToTab(
+                                item.linkedMenu.tab,
+                                item.linkedMenu.subTab,
+                                {
+                                  presetId: item.linkedMenu.presetId,
+                                  targetCount: item.targetCount,
+                                }
+                              );
+                            }
+                          }}
+                          className={`touch-manipulation select-none px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs active:opacity-80 transition-opacity ${
+                            isDone
+                              ? 'bg-stone-100 dark:bg-emerald-900/40 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-emerald-900/60'
+                              : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:text-amber-200 ring-1 ring-emerald-600/30'
+                          }`}
+                        >
+                          {isDone ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
+                              <span>Sudah Dikerjakan (Buka Menu ↗)</span>
+                            </>
+                          ) : (
+                            <>
+                              {item.linkedMenu.tab === 'tasbih' && <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                              {item.linkedMenu.tab === 'hajat' && <HeartHandshake className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                              {item.linkedMenu.tab === 'quran' && <BookOpen className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                              <span>{item.linkedMenu.actionLabel} →</span>
+                            </>
+                          )}
+                        </Link>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

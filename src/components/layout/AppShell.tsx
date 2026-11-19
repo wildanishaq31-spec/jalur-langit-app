@@ -12,18 +12,34 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+// Variabel memori level-modul untuk menandai bahwa aplikasi sudah terhidrasi di sesi browser
+let isAppHydrated = false;
+
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const { appTheme } = useJalurLangitStore();
   const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  
+  // Jika sudah terhidrasi di sesi klien, langsung mounted = true tanpa flash blank screen
+  const [mounted, setMounted] = useState(() => isAppHydrated);
 
   useEffect(() => {
+    isAppHydrated = true;
     setMounted(true);
     if (isAuthenticated) {
       touchUserActivity();
     }
   }, [isAuthenticated, touchUserActivity]);
+
+  // Prefetch semua rute navigasi aplikasi agar perpindahan halaman 0 delay
+  useEffect(() => {
+    const routes = ['/dashboard', '/amalan', '/glowup', '/tasbih', '/vision', '/hajat', '/quran'];
+    routes.forEach((route) => {
+      try {
+        router.prefetch(route);
+      } catch {}
+    });
+  }, [router]);
 
   useEffect(() => {
     if (appTheme === 'dark') {
