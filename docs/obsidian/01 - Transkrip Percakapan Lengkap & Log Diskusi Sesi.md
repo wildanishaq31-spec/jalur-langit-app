@@ -1227,4 +1227,20 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 49: Pembersihan Label "Terhubung ke Menu..." pada Kartu Amalan
+* **Permintaan User**:
+  - Menghilangkan teks "Terhubung ke Menu ....." pada kartu amalan agar tampilan kartu lebih bersih, minimalis, dan tidak terlalu padat/ramai karena sudah ada tombol aksi langsungnya.
+* **Tindakan & Solusi Teknis**:
+  1. **Refactoring UI di src/components/tabs/AmalanTab.tsx**:
+     - Menghapus blok teks label keterangan Terhubung ke Menu ... beserta indikator titik pulsing.
+     - Menyusun ulang container tombol aksi menjadi flex items-center justify-end w-full mt-2.5 pt-2.5 border-t.
+     - Tombol aksi seperti "Kerjakan di Tasbih (100x) →" dan "Buka Papan Hajat & Doa →" kini tampil presisi di sisi kanan bawah kartu amalan secara rapi dan elegan.
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error (exit code 0).
+  - npm run build: Sukses 100% pada 18/18 rute halaman.
+  - Komit dan push ganda ke branch master dan main GitHub untuk pembaruan instan produksi Vercel.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

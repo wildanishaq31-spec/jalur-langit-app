@@ -371,29 +371,7 @@ export const AmalanTab: React.FC = () => {
 
                   {/* Cross-Menu Action Link Button */}
                   {item.linkedMenu && (
-                    <div className="w-full mt-3.5 pt-3 border-t border-stone-100 dark:border-emerald-900/40 flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">
-                        <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
-                        <span>
-                          {isDone ? (
-                            <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">Tersinkronisasi Selesai</strong>
-                          ) : (
-                            <>
-                              Terhubung ke{' '}
-                              <strong className="text-stone-700 dark:text-stone-300 font-semibold">
-                                {item.linkedMenu.tab === 'tasbih'
-                                  ? 'Menu Tasbih & Dzikir'
-                                  : item.linkedMenu.tab === 'hajat'
-                                  ? 'Menu Hajat & Sedekah'
-                                  : item.linkedMenu.tab === 'quran'
-                                  ? 'Menu Quran & Ilmu'
-                                  : 'Menu Terkait'}
-                              </strong>
-                            </>
-                          )}
-                        </span>
-                      </div>
-
+                    <div className="w-full mt-2.5 pt-2.5 border-t border-stone-100 dark:border-emerald-900/40 flex items-center justify-end">
                       <button
                         onClick={() => {
                           if (item.linkedMenu) {
