@@ -1243,4 +1243,21 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+
+### Putaran 50: Penghapusan Animasi Up / Scroll-Up Delay pada Tombol Aksi Lintas Menu
+* **Permintaan User**:
+  - Saat mengklik tombol "Kerjakan di Tasbih" atau tombol tautan amalan lainnya, masih ada animasi scroll up terlebih dahulu sebelum halaman berpindah sehingga terkesan loading atau freeze; minta dihapus animasi up tersebut agar saat tombol diklik langsung pindah seketika.
+* **Analisis Masalah & Akar Penyebab**:
+  1. Pada fungsi `navigateToTab` di `src/store/useJalurLangitStore.ts`, terdapat pemanggilan `window.scrollTo({ top: 0, behavior: 'smooth' })`. Saat pengguna berada di posisi kartu amalan bagian bawah dan mengklik tombol, browser mengeksekusi scroll halus ke atas secara perlahan (400-600ms) yang menimbulkan sensasi melompat ("animasi up") dan lag/freeze sebelum rute berganti.
+  2. Pada animasi `@keyframes fadeIn` di `src/app/globals.css`, terdapat `transform: translateY(4px)` yang membuat konten halaman baru meluncur ke atas dari posisi bawah saat ter-mount.
+* **Tindakan & Solusi Teknis**:
+  1. **src/store/useJalurLangitStore.ts**: Menghapus `window.scrollTo({ top: 0, behavior: 'smooth' })` dari dalam `navigateToTab` sehingga tidak ada delay scroll lambat saat navigasi diklik.
+  2. **src/app/globals.css**: Menghapus `transform: translateY(4px)` dari `@keyframes fadeIn` dan mempersingkat durasi transisi menjadi 0.15s murni pergantian opasitas (`opacity: 0` ke `opacity: 1`) tanpa pergeseran posisi vertikal.
+* **Hasil Pengujian & Verifikasi**:
+  - npm run lint: 0 error.
+  - npm run build: Sukses 100% pada 18/18 rute halaman Next.js.
+  - Navigasi antar menu dan tombol amalan kini berlangsung instan, responsif, dan tanpa jeda/freeze.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

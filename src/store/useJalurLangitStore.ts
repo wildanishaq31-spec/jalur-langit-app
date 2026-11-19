@@ -322,9 +322,6 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           set({ quranActiveSubTab: subTab });
         }
         set({ activeTab: tab });
-        if (typeof window !== 'undefined') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
       },
 
       calendarYear: 2026,
