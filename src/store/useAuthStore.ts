@@ -11,7 +11,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-VIP'
+    orderId: 'LYNK-OWNER-VIP',
+    lastActiveAt: new Date().toISOString()
   },
   {
     email: 'agung@gmail.com',
@@ -19,7 +20,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-001'
+    orderId: 'LYNK-OWNER-001',
+    lastActiveAt: new Date(Date.now() - 4 * 60 * 1000).toISOString()
   },
   {
     email: 'pembeli.ultimate@gmail.com',
@@ -27,7 +29,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'ultimate',
     tierLabel: TIER_CONFIG.ultimate.name,
     purchasedAt: '2026-11-18T10:30:00.000Z',
-    orderId: 'LYNK-ORD-89012'
+    orderId: 'LYNK-ORD-89012',
+    lastActiveAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
   },
   {
     email: 'pembeli.starter@gmail.com',
@@ -35,7 +38,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'starter',
     tierLabel: TIER_CONFIG.starter.name,
     purchasedAt: '2026-11-18T12:15:00.000Z',
-    orderId: 'LYNK-ORD-49033'
+    orderId: 'LYNK-ORD-49033',
+    lastActiveAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
   },
   {
     email: 'pembeli.vip@gmail.com',
@@ -43,7 +47,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T14:45:00.000Z',
-    orderId: 'LYNK-ORD-14908'
+    orderId: 'LYNK-ORD-14908',
+    lastActiveAt: new Date(Date.now() - 55 * 60 * 1000).toISOString()
   },
   {
     email: 'demo@jalurlangit.com',
@@ -51,7 +56,8 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
     tier: 'ultimate',
     tierLabel: TIER_CONFIG.ultimate.name,
     purchasedAt: '2026-11-18T08:00:00.000Z',
-    orderId: 'LYNK-DEMO-001'
+    orderId: 'LYNK-DEMO-001',
+    lastActiveAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString()
   }
 ];
 
@@ -71,6 +77,7 @@ interface AuthState {
   addBuyerToWhitelist: (buyer: AuthUser) => void;
   removeBuyerFromWhitelist: (email: string) => void;
   updateBuyerTier: (email: string, tier: UserTier) => void;
+  touchUserActivity: () => void;
   loginAsAdmin: () => void;
 }
 
@@ -102,14 +109,18 @@ export const useAuthStore = create<AuthState>()(
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.user) {
+              const activeUser: AuthUser = {
+                ...data.user,
+                lastActiveAt: new Date().toISOString()
+              };
               set((state) => ({
-                currentUser: data.user,
+                currentUser: activeUser,
                 authError: null,
                 deniedEmailAttempt: null,
                 isTransitioning: true,
                 // Simpan juga ke cache offline browser pembeli
                 whitelist: [
-                  data.user,
+                  activeUser,
                   ...state.whitelist.filter((b) => b.email.toLowerCase() !== cleaned)
                 ]
               }));
@@ -126,12 +137,19 @@ export const useAuthStore = create<AuthState>()(
         );
 
         if (match) {
-          set({
-            currentUser: match,
+          const activeMatch: AuthUser = {
+            ...match,
+            lastActiveAt: new Date().toISOString()
+          };
+          set((state) => ({
+            currentUser: activeMatch,
             authError: null,
             deniedEmailAttempt: null,
-            isTransitioning: true
-          });
+            isTransitioning: true,
+            whitelist: state.whitelist.map((b) =>
+              b.email.toLowerCase() === cleaned ? activeMatch : b
+            )
+          }));
           return true;
         } else {
           set({
@@ -198,6 +216,19 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
 
+      touchUserActivity: () => {
+        const current = get().currentUser;
+        if (!current) return;
+        const now = new Date().toISOString();
+        const updated = { ...current, lastActiveAt: now };
+        set((state) => ({
+          currentUser: updated,
+          whitelist: state.whitelist.map((b) =>
+            b.email.toLowerCase() === current.email.toLowerCase() ? updated : b
+          )
+        }));
+      },
+
       loginAsAdmin: () => {
         const adminUser: AuthUser = {
           email: 'agung.siswoyo14@gmail.com',
@@ -205,7 +236,8 @@ export const useAuthStore = create<AuthState>()(
           tier: 'vip',
           tierLabel: TIER_CONFIG.vip.name,
           purchasedAt: new Date().toISOString(),
-          orderId: 'LYNK-OWNER-VIP'
+          orderId: 'LYNK-OWNER-VIP',
+          lastActiveAt: new Date().toISOString()
         };
         set({
           currentUser: adminUser,

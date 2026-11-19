@@ -8,6 +8,7 @@ export interface AuthUser {
   purchasedAt: string;
   orderId: string;
   avatarUrl?: string;
+  lastActiveAt?: string; // ISO timestamp waktu terakhir aktif di aplikasi
 }
 
 export const TIER_CONFIG: Record<UserTier, {

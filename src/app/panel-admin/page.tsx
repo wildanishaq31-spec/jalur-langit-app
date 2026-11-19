@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -20,11 +20,37 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Clock,
+  Activity
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
 import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
+import ActiveUsersCard, { ActivityFilterType } from '@/components/admin/ActiveUsersCard';
+
+function formatLastActive(isoString?: string, baseTime = 0): { label: string; status: 'online' | 'today' | 'offline' } {
+  if (!isoString) return { label: 'Belum pernah login', status: 'offline' };
+  const diff = (baseTime || 0) - new Date(isoString).getTime();
+  if (diff < 0) return { label: 'Online Sekarang', status: 'online' };
+  const minutes = Math.floor(diff / (60 * 1000));
+  const hours = Math.floor(diff / (3600 * 1000));
+  const days = Math.floor(diff / (24 * 3600 * 1000));
+
+  if (minutes < 15) {
+    return { label: 'Online Sekarang', status: 'online' };
+  }
+  if (minutes < 60) {
+    return { label: `${minutes}m lalu`, status: 'today' };
+  }
+  if (hours < 24) {
+    return { label: `${hours} jam lalu`, status: 'today' };
+  }
+  if (days === 1) {
+    return { label: 'Kemarin', status: 'offline' };
+  }
+  return { label: `${days} hari lalu`, status: 'offline' };
+}
 
 export default function PanelAdminPage() {
   const router = useRouter();
@@ -48,8 +74,18 @@ export default function PanelAdminPage() {
   const [newTier, setNewTier] = useState<UserTier>('ultimate');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTierFilter, setSelectedTierFilter] = useState<UserTier | 'all'>('all');
+  const [activityFilter, setActivityFilter] = useState<ActivityFilterType>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const webhookEndpointUrl = 'https://jalur-langit-app.vercel.app/api/webhook/lynkid';
 
@@ -157,7 +193,24 @@ export default function PanelAdminPage() {
 
   const estimatedRevenue = (starterCount * 49000) + (ultimateCount * 89000) + (vipCount * 149000);
 
-  // Filtered buyers (search query + interactive chart bar tier filter)
+  // Active Users calculations
+  const referenceTime = now || 1763520000000;
+  const FIFTEEN_MINUTES = 15 * 60 * 1000;
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+
+  const onlineCount = whitelist.filter((b) => {
+    if (!b.lastActiveAt) return false;
+    const diff = referenceTime - new Date(b.lastActiveAt).getTime();
+    return diff >= 0 && diff <= FIFTEEN_MINUTES;
+  }).length;
+
+  const todayCount = whitelist.filter((b) => {
+    if (!b.lastActiveAt) return false;
+    const diff = referenceTime - new Date(b.lastActiveAt).getTime();
+    return diff >= 0 && diff <= ONE_DAY;
+  }).length;
+
+  // Filtered buyers (search query + tier filter + activity presence filter)
   const filteredBuyers = whitelist.filter((b) => {
     const matchesSearch =
       b.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -165,7 +218,23 @@ export default function PanelAdminPage() {
       b.orderId.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTier =
       selectedTierFilter === 'all' || b.tier === selectedTierFilter;
-    return matchesSearch && matchesTier;
+
+    let matchesActivity = true;
+    if (activityFilter === 'online') {
+      if (!b.lastActiveAt) matchesActivity = false;
+      else {
+        const diff = referenceTime - new Date(b.lastActiveAt).getTime();
+        matchesActivity = diff >= 0 && diff <= FIFTEEN_MINUTES;
+      }
+    } else if (activityFilter === 'today') {
+      if (!b.lastActiveAt) matchesActivity = false;
+      else {
+        const diff = referenceTime - new Date(b.lastActiveAt).getTime();
+        matchesActivity = diff >= 0 && diff <= ONE_DAY;
+      }
+    }
+
+    return matchesSearch && matchesTier && matchesActivity;
   });
 
   // Pagination calculation
@@ -269,11 +338,39 @@ export default function PanelAdminPage() {
           <div className="space-y-6 animate-fade-in">
             
             {/* Top Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
               <div className="p-4 rounded-2xl bg-white dark:bg-emerald-950/40 border border-stone-200 dark:border-emerald-800/70 shadow-xs space-y-1">
                 <span className="text-[11px] font-bold text-stone-500">Total Pembeli</span>
                 <div className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100">
                   {totalBuyers} <span className="text-xs font-normal text-stone-400">Akun</span>
+                </div>
+              </div>
+
+              {/* Stat Card: User Aktif Real-Time */}
+              <div 
+                onClick={() => {
+                  setActivityFilter(activityFilter === 'online' ? 'all' : 'online');
+                  setCurrentPage(1);
+                }}
+                className={`p-4 rounded-2xl border shadow-xs space-y-1 cursor-pointer transition-all ${
+                  activityFilter === 'online'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/60 border-emerald-400 ring-2 ring-emerald-400'
+                    : 'bg-white dark:bg-emerald-950/40 border-stone-200 dark:border-emerald-800/70 hover:border-emerald-400'
+                }`}
+                title="Klik untuk filter hanya user yang sedang online"
+              >
+                <div className="flex items-center justify-between text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    User Aktif
+                  </span>
+                  <Activity className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                  {onlineCount}{' '}
+                  <span className="text-xs font-normal text-stone-400">
+                    Online ({todayCount} Hari Ini)
+                  </span>
                 </div>
               </div>
 
@@ -332,6 +429,16 @@ export default function PanelAdminPage() {
                 </button>
               </div>
             </div>
+
+            {/* HERO CARD: PEMANTAU USER AKTIF (REAL-TIME PRESENCE & DAU) */}
+            <ActiveUsersCard
+              buyers={whitelist}
+              activeFilter={activityFilter}
+              onSelectFilter={(f) => {
+                setActivityFilter(f);
+                setCurrentPage(1);
+              }}
+            />
 
             {/* CHART BAR INTERAKTIF JUMLAH PEMBELIAN PAKET */}
             <PackageSalesBarChart
@@ -494,6 +601,21 @@ export default function PanelAdminPage() {
                       </button>
                     </span>
                   )}
+                  {activityFilter !== 'all' && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800">
+                      <span>Status: {activityFilter === 'online' ? '🟢 Online Sekarang' : '📅 Aktif Hari Ini'}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActivityFilter('all');
+                          setCurrentPage(1);
+                        }}
+                        className="hover:text-rose-600 font-black ml-0.5 cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )}
                 </div>
 
                 <div className="relative w-full sm:w-64">
@@ -514,6 +636,7 @@ export default function PanelAdminPage() {
                   <thead>
                     <tr className="border-b border-stone-200 dark:border-emerald-900/60 text-stone-400 font-bold uppercase text-[10px]">
                       <th className="py-2.5 px-3">Pembeli</th>
+                      <th className="py-2.5 px-3">Aktivitas Terakhir</th>
                       <th className="py-2.5 px-3">Paket Lisensi</th>
                       <th className="py-2.5 px-3">Order ID</th>
                       <th className="py-2.5 px-3 text-right">Aksi</th>
@@ -522,50 +645,70 @@ export default function PanelAdminPage() {
                   <tbody className="divide-y divide-stone-100 dark:divide-emerald-900/40">
                     {paginatedBuyers.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-8 text-center text-stone-400 italic">
-                          Tidak ada pembeli yang sesuai dengan kriteria pencarian atau filter.
+                        <td colSpan={5} className="py-8 text-center text-stone-400 italic">
+                          Tidak ada pembeli yang sesuai dengan kriteria pencarian atau filter yang dipilih.
                         </td>
                       </tr>
                     ) : (
-                      paginatedBuyers.map((buyer) => (
-                        <tr key={buyer.email} className="hover:bg-stone-50/60 dark:hover:bg-emerald-900/20 transition-colors">
-                          <td className="py-3 px-3">
-                            <div className="font-bold text-stone-900 dark:text-stone-100">
-                              {buyer.name}
-                            </div>
-                            <div className="text-[11px] text-stone-400 font-mono">
-                              {buyer.email}
-                            </div>
-                          </td>
-                          <td className="py-3 px-3">
-                            <select
-                              value={buyer.tier}
-                              onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
-                              className="px-2 py-1 rounded-lg border text-xs font-bold bg-white dark:bg-emerald-950 border-stone-200 dark:border-emerald-800 text-stone-800 dark:text-stone-200"
-                            >
-                              <option value="starter">Starter (Rp 49k)</option>
-                              <option value="ultimate">Ultimate (Rp 89k)</option>
-                              <option value="vip">VIP (Rp 149k)</option>
-                            </select>
-                          </td>
-                          <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
-                            {buyer.orderId}
-                          </td>
-                          <td className="py-3 px-3 text-right">
-                            <button
-                              onClick={() => {
-                                if (confirm(`Hapus akses untuk ${buyer.email}?`)) {
-                                  removeBuyerFromWhitelist(buyer.email);
-                                }
-                              }}
-                              className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
-                              title="Cabut Akses"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                      paginatedBuyers.map((buyer) => {
+                        const activity = formatLastActive(buyer.lastActiveAt, referenceTime);
+                        return (
+                          <tr key={buyer.email} className="hover:bg-stone-50/60 dark:hover:bg-emerald-900/20 transition-colors">
+                            <td className="py-3 px-3">
+                              <div className="font-bold text-stone-900 dark:text-stone-100">
+                                {buyer.name}
+                              </div>
+                              <div className="text-[11px] text-stone-400 font-mono">
+                                {buyer.email}
+                              </div>
+                            </td>
+                            <td className="py-3 px-3">
+                              {activity.status === 'online' ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-xs">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  Online Sekarang
+                                </span>
+                              ) : activity.status === 'today' ? (
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                  <Clock className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                                  {activity.label}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 dark:bg-stone-900/60 text-stone-500 border border-stone-200 dark:border-stone-800">
+                                  {activity.label}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-3">
+                              <select
+                                value={buyer.tier}
+                                onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
+                                className="px-2 py-1 rounded-lg border text-xs font-bold bg-white dark:bg-emerald-950 border-stone-200 dark:border-emerald-800 text-stone-800 dark:text-stone-200"
+                              >
+                                <option value="starter">Starter (Rp 49k)</option>
+                                <option value="ultimate">Ultimate (Rp 89k)</option>
+                                <option value="vip">VIP (Rp 149k)</option>
+                              </select>
+                            </td>
+                            <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
+                              {buyer.orderId}
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Hapus akses untuk ${buyer.email}?`)) {
+                                    removeBuyerFromWhitelist(buyer.email);
+                                  }
+                                }}
+                                className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
+                                title="Cabut Akses"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

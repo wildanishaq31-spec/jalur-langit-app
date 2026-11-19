@@ -14,12 +14,15 @@ interface AppShellProps {
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const { appTheme } = useJalurLangitStore();
-  const { isAuthenticated, isTransitioning, completeTransition } = useAuthStore();
+  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (isAuthenticated) {
+      touchUserActivity();
+    }
+  }, [isAuthenticated, touchUserActivity]);
 
   useEffect(() => {
     if (appTheme === 'dark') {

@@ -1009,4 +1009,36 @@ tags:
 
 ---
 
+### 🔹 Turn 42: Pembuatan Card Pemantau User Aktif (Real-Time Presence & DAU) di Panel Admin
+* **Pengguna**:
+  > *"kita kasih card untuk mengetahui berapa user yang aktif"*
+* **Latar Belakang & Analisis Fitur**:
+  - Untuk memantau keaktifan pengguna secara langsung (*real-time presence & retention*), sistem membutuhkan pelacakan waktu aktivitas terakhir (*last active timestamp*) dari para pembeli.
+  - Pengguna meminta pembuatan kartu khusus (*card*) di Panel Admin (`/panel-admin`) untuk mengetahui secara transparan berapa banyak pengguna yang sedang aktif/online saat ini serta pengguna yang aktif beramal hari ini (*Daily Active Users - DAU*).
+* **Solusi Rekayasa & Implementasi Kode**:
+  1. **Ekspansi Tipe Data & Store Autentikasi**:
+     - Menambahkan atribut `lastActiveAt?: string` pada model `AuthUser` ([src/types/auth.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/types/auth.ts)).
+     - Menambahkan aksi `touchUserActivity()` pada [src/store/useAuthStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useAuthStore.ts) dan dihubungkan ke [src/components/layout/AppShell.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/layout/AppShell.tsx) sehingga setiap kali pengguna membuka aplikasi, waktu aktifnya langsung diperbarui.
+  2. **Komponen Dedicated Active Users Card ([src/components/admin/ActiveUsersCard.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/admin/ActiveUsersCard.tsx))**:
+     - **3 Metrik Kunci Keaktifan**:
+       - 🟢 **Online Sekarang**: Pengguna yang membuka aplikasi dalam 15 menit terakhir, dilengkapi animasi beacon radar hijau menyala (*pulsing radar*).
+       - 📱 **Aktif Hari Ini (DAU)**: Jumlah pembeli yang beraktivitas dalam 24 jam terakhir.
+       - ⚡ **Tingkat Istiqomah (Active Retention Rate)**: Persentase rasio pembeli aktif dibanding total lisensi terdaftar.
+     - **Distribusi Visual Horizontal Multi-Segment**:
+       - Batang akumulasi status keaktifan (Hijau untuk Online, Kuning untuk Aktif Hari Ini, Abu-abu untuk Belum Aktif Hari Ini).
+     - **Filter Interaktif Cepat**:
+       - Tombol filter 1-klik: *Semua*, *Online Saja*, dan *Aktif Hari Ini*, yang langsung memfilter tabel daftar pembeli di bawahnya.
+  3. **Pembaruan Panel Admin ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - Memperluas Top Stat Cards menjadi 5 kolom termasuk lencana interaktif **User Aktif Online**.
+     - Menambahkan kolom **Aktivitas Terakhir** pada tabel pembeli dengan lencana status:
+       - 🟢 `Online Sekarang` (hijau berdenyut jika < 15 menit)
+       - 🟡 `X jam / menit lalu` (kuning jika hari ini)
+       - ⚪ `Kemarin / X hari lalu` (abu-abu jika sebelumnya)
+     - Menjamin kepatuhan standar React 19 / Next.js 16 SSG dengan waktu deterministik saat *prerendering* dan ticker interval 30 detik untuk *live presence*.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run lint`: 0 error (exit code 0).
+  - `npm run build`: 100% sukses, 18/18 halaman statis dan dynamic routes terkompilasi dengan lancar.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

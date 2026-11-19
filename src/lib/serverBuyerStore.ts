@@ -8,7 +8,8 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-VIP'
+    orderId: 'LYNK-OWNER-VIP',
+    lastActiveAt: new Date().toISOString()
   },
   {
     email: 'agung@gmail.com',
@@ -16,7 +17,8 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-001'
+    orderId: 'LYNK-OWNER-001',
+    lastActiveAt: new Date(Date.now() - 4 * 60 * 1000).toISOString()
   },
   {
     email: 'pembeli.ultimate@gmail.com',
@@ -24,7 +26,8 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tier: 'ultimate',
     tierLabel: TIER_CONFIG.ultimate.name,
     purchasedAt: '2026-11-18T10:30:00.000Z',
-    orderId: 'LYNK-ORD-89012'
+    orderId: 'LYNK-ORD-89012',
+    lastActiveAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
   },
   {
     email: 'pembeli.starter@gmail.com',
@@ -32,7 +35,8 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tier: 'starter',
     tierLabel: TIER_CONFIG.starter.name,
     purchasedAt: '2026-11-18T12:15:00.000Z',
-    orderId: 'LYNK-ORD-49033'
+    orderId: 'LYNK-ORD-49033',
+    lastActiveAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
   },
   {
     email: 'pembeli.vip@gmail.com',
@@ -40,7 +44,8 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T14:45:00.000Z',
-    orderId: 'LYNK-ORD-14908'
+    orderId: 'LYNK-ORD-14908',
+    lastActiveAt: new Date(Date.now() - 55 * 60 * 1000).toISOString()
   }
 ];
 
