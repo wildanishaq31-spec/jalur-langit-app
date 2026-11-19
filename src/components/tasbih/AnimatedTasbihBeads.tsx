@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 export type TasbihTheme = 'gold' | 'emerald' | 'sapphire' | 'amethyst' | 'rose';
 
@@ -8,7 +8,8 @@ export interface AnimatedTasbihBeadsProps {
   currentCount: number;
   targetCount: number;
   theme: TasbihTheme;
-  prevTheme?: TasbihTheme;
+  stageIndex?: number;
+  isPaketSholat?: boolean;
   isPressing: boolean;
   onTap: () => void;
 }
@@ -107,9 +108,9 @@ const THEME_CONFIG: Record<
 
 export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
   currentCount,
-  targetCount,
   theme,
-  prevTheme,
+  stageIndex,
+  isPaketSholat,
   isPressing,
   onTap,
 }) => {
@@ -156,13 +157,26 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
   }, [currentCount]);
 
   const cfg = THEME_CONFIG[theme] || THEME_CONFIG.gold;
-  const prevCfg = prevTheme ? THEME_CONFIG[prevTheme] : undefined;
-
-  const cycleSize = targetCount > 0 ? targetCount : 33;
 
   // We render visible beads along the string from i = -10 (bottom tail) up to i = 7 (incoming strand)
   // i = 0 is the bead in or passing through the focal ring.
   const BEAD_INDICES = Array.from({ length: 18 }, (_, idx) => idx - 10); // -10 to +7
+
+  // Calculate absolute position on the continuous 99-bead string
+  // 33 round beads (1..33) -> Separator 1 (pos 34) -> 33 round beads (35..67) -> Separator 2 (pos 68) -> 33 round beads (69..101)
+  let globalOffset: number;
+  if (isPaketSholat && stageIndex !== undefined) {
+    if (stageIndex === 0) {
+      globalOffset = currentCount;
+    } else if (stageIndex === 1) {
+      globalOffset = 34 + currentCount;
+    } else {
+      globalOffset = 68 + currentCount;
+    }
+  } else {
+    // Non-paket sholat (e.g. 100x, 1000x): insert 1 separator every 33 round beads
+    globalOffset = currentCount + Math.floor(currentCount / 33);
+  }
 
   return (
     <div
@@ -176,6 +190,43 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
         className="w-full h-auto drop-shadow-2xl overflow-visible"
       >
         <defs>
+          {/* Natural Pendulum Sway Keyframes for Realistic Hanging Tasbih */}
+          <style>{`
+            @keyframes tasbihTailSway {
+              0%, 100% {
+                transform: rotate(0deg);
+              }
+              25% {
+                transform: rotate(1.8deg);
+              }
+              75% {
+                transform: rotate(-1.8deg);
+              }
+            }
+            @keyframes tasbihBeadSway {
+              0%, 100% {
+                transform: translateX(0px);
+              }
+              25% {
+                transform: translateX(var(--sway-px, 0px));
+              }
+              75% {
+                transform: translateX(calc(var(--sway-px, 0px) * -1));
+              }
+            }
+            @keyframes tasbihTasselSway {
+              0%, 100% {
+                transform: rotate(0deg);
+              }
+              25% {
+                transform: rotate(2.8deg);
+              }
+              75% {
+                transform: rotate(-2.8deg);
+              }
+            }
+          `}</style>
+
           {/* Uncounted Polished Natural Walnut Wood Gradient */}
           <radialGradient id="bead-grad-wood" cx="35%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#d59b71" />
@@ -185,7 +236,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
             <stop offset="100%" stopColor="#221108" />
           </radialGradient>
 
-          {/* Counted 3D Golden Amber Jewel Gradient (Subhanallah) */}
+          {/* Counted 3D Golden Amber Jewel Gradient (Subhanallah: 1st 33 beads) */}
           <radialGradient id="bead-grad-gold" cx="35%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#fff9db" />
             <stop offset="22%" stopColor="#fde047" />
@@ -194,7 +245,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
             <stop offset="100%" stopColor="#451a03" />
           </radialGradient>
 
-          {/* Counted 3D Radiant Emerald Jewel Gradient (Alhamdulillah) */}
+          {/* Counted 3D Radiant Emerald Jewel Gradient (Alhamdulillah: 2nd 33 beads) */}
           <radialGradient id="bead-grad-emerald" cx="35%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#d1fae5" />
             <stop offset="22%" stopColor="#34d399" />
@@ -203,7 +254,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
             <stop offset="100%" stopColor="#022c22" />
           </radialGradient>
 
-          {/* Counted 3D Celestial Sapphire Jewel Gradient (Allahu Akbar) */}
+          {/* Counted 3D Celestial Sapphire Jewel Gradient (Allahu Akbar: 3rd 33 beads) */}
           <radialGradient id="bead-grad-sapphire" cx="35%" cy="30%" r="65%">
             <stop offset="0%" stopColor="#dbeafe" />
             <stop offset="22%" stopColor="#60a5fa" />
@@ -263,57 +314,89 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
         />
 
         {/* 2. SILK CONNECTING STRING (Braided cord connecting all beads) */}
+        {/* Upper diagonal & curve string (firm & anchored) */}
         <path
-          d="M 370 35 L 210 135 Q 188 142 165 175 L 165 355"
+          d="M 370 35 L 210 135 Q 188 142 165 175"
           fill="none"
           stroke="#452c1a"
           strokeWidth="3.5"
           strokeLinecap="round"
           className="opacity-75"
         />
+        {/* Lower vertical hanging string (gently swaying left and right with natural pendulum physics) */}
+        <path
+          d="M 165 175 L 165 355"
+          fill="none"
+          stroke="#452c1a"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          className="opacity-75"
+          style={{
+            transformOrigin: '165px 175px',
+            animation: 'tasbihTailSway 3.8s ease-in-out infinite',
+          }}
+        />
 
-        {/* 3. THE 3D SLIDING BEADS STREAM WITH AIRY 8PX GAPS & MOVING IMAM TASSEL */}
+        {/* 3. THE 3D SLIDING BEADS STREAM WITH 8PX GAPS, SEPARATORS & SWAY ANIMATION */}
         {BEAD_INDICES.map((beadIdx) => {
           // Distance along the analytical path:
-          // Moving forward as slideOffset goes 0 -> 1
           const dist = FOCAL_INDEX - beadIdx * BEAD_SPACING + slideOffset * BEAD_SPACING;
           const clampedDist = Math.max(0, Math.min(DEFAULT_POINTS.length - 1, Math.round(dist)));
           const pt = DEFAULT_POINTS[clampedDist] || { x: 0, y: 0 };
 
           const isFocalBead = beadIdx === 0;
 
-          // Check if this bead is the Imam Bead (with Tassel) in the active cycle
-          // At count = 0: Imam bead is at beadIdx = 0.
-          // At count = 1: Imam bead has moved to beadIdx = -1, etc.
-          const isImamBead = ((currentCount + beadIdx) % cycleSize + cycleSize) % cycleSize === 0;
+          // Item index along the continuous tasbih chain
+          const itemPos = globalOffset + beadIdx;
 
-          // Active count within the current cycle (e.g. 0 to 33)
-          const activeCycleCount = cycleSize > 0 
-            ? (currentCount > 0 && currentCount % cycleSize === 0 ? cycleSize : currentCount % cycleSize) 
-            : currentCount;
+          // Is this item a Separator / Pembatas (biji lonjong dengan rumbai emas)?
+          // Located at pos 34 (after 33 Subhanallah), pos 68 (after 33 Alhamdulillah), pos 102...
+          // or pos 0 at the very start of tasbih
+          const isImamBead =
+            (itemPos > 0 && itemPos % 34 === 0) ||
+            (itemPos === 0 && (!isPaketSholat || stageIndex === 0) && currentCount === 0 && beadIdx === 0);
 
-          // 1. Is this bead counted in the CURRENT stage/cycle?
-          // Only beads between the focal ring (beadIdx <= 0) and before the imam bead (-beadIdx < activeCycleCount)
-          const isCurrentCounted = beadIdx <= 0 && -beadIdx < activeCycleCount && !isImamBead;
+          // Has this bead reached or passed the focal ring?
+          const isCounted = beadIdx <= 0;
 
-          // 2. Is this bead from the PREVIOUS stage/cycle (trailing behind the imam bead)?
-          const isPrevCounted = Boolean(
-            prevTheme &&
-            beadIdx <= 0 &&
-            -beadIdx > activeCycleCount &&
-            -beadIdx <= activeCycleCount + cycleSize &&
-            !isImamBead
-          );
+          // Determine stage color for counted beads:
+          // 33 Pertama (pos 1..33): ORANGE / GOLD (Subhanallah)
+          // 33 Kedua (pos 35..67): HIJAU (Alhamdulillah)
+          // 33 Ketiga (pos 69..101): BIRU (Allahu Akbar)
+          let beadTheme: TasbihTheme = theme;
+          if (isPaketSholat) {
+            if (itemPos >= 1 && itemPos <= 33) {
+              beadTheme = 'gold'; // orange / amber
+            } else if (itemPos >= 35 && itemPos <= 67) {
+              beadTheme = 'emerald'; // green
+            } else if (itemPos >= 69 && itemPos <= 101) {
+              beadTheme = 'sapphire'; // blue
+            } else {
+              beadTheme = theme;
+            }
+          } else {
+            // General presets: cycle gold -> emerald -> sapphire every 33 beads
+            const section = Math.floor(Math.max(0, itemPos - 1) / 34) % 3;
+            if (section === 0) beadTheme = 'gold';
+            else if (section === 1) beadTheme = 'emerald';
+            else beadTheme = 'sapphire';
+          }
 
-          const isCounted = isCurrentCounted || isPrevCounted;
-          const activeCfg = isCurrentCounted ? cfg : isPrevCounted && prevCfg ? prevCfg : cfg;
-          const gradId = isCurrentCounted 
-            ? cfg.beadGradId 
-            : isPrevCounted && prevCfg 
-            ? prevCfg.beadGradId 
+          const activeCfg = THEME_CONFIG[beadTheme] || THEME_CONFIG.gold;
+          const gradId = isCounted
+            ? isImamBead
+              ? 'bead-grad-wood'
+              : activeCfg.beadGradId
             : 'bead-grad-wood';
 
           const beadRadius = isFocalBead ? 11.5 : NORMAL_BEAD_RADIUS;
+
+          // Calculate horizontal sway offset for beads hanging along the vertical tail (y > 165)
+          let swayPx = '0px';
+          if (pt.y > 165) {
+            const depthRatio = Math.min(1, Math.max(0, (pt.y - 165) / 180));
+            swayPx = `${(depthRatio * 5.0).toFixed(2)}px`;
+          }
 
           // Opacity fade at the far ends of the strand
           const opacity =
@@ -330,132 +413,148 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
               opacity={opacity}
               className="transition-transform duration-75"
             >
-              {/* Drop Shadow */}
-              <ellipse
-                cx="1"
-                cy="3"
-                rx={isImamBead ? 10 : beadRadius}
-                ry={isImamBead ? 14 : beadRadius}
-                fill="rgba(0,0,0,0.38)"
-                filter="blur(2px)"
-              />
-
-              {/* Glowing Aura if Counted */}
-              {isCounted && (
+              {/* Inner container with realistic left-right pendulum sway */}
+              <g
+                style={
+                  {
+                    '--sway-px': swayPx,
+                    animation: pt.y > 165 ? 'tasbihBeadSway 3.8s ease-in-out infinite' : undefined,
+                  } as React.CSSProperties
+                }
+              >
+                {/* Drop Shadow */}
                 <ellipse
-                  cx="0"
-                  cy="0"
-                  rx={isImamBead ? 12 : beadRadius + 2}
-                  ry={isImamBead ? 17 : beadRadius + 2}
-                  fill="none"
-                  stroke={activeCfg.ringStroke}
-                  strokeWidth="1.5"
-                  opacity={isFocalBead ? 0.8 : 0.25}
+                  cx="1"
+                  cy="3"
+                  rx={isImamBead ? 10 : beadRadius}
+                  ry={isImamBead ? 14 : beadRadius}
+                  fill="rgba(0,0,0,0.38)"
+                  filter="blur(2px)"
                 />
-              )}
 
-              {isImamBead ? (
-                /* === IMAM BEAD (OVAL) + GOLDEN TASSEL AS SHOWN IN USER IMAGE === */
-                <g>
-                  {/* Elongated Oval Bead Body - Polished Natural Walnut Wood */}
+                {/* Glowing Aura if Counted Round Bead */}
+                {isCounted && !isImamBead && (
                   <ellipse
                     cx="0"
                     cy="0"
-                    rx="10"
-                    ry="15"
-                    fill="url(#bead-grad-wood)"
+                    rx={beadRadius + 2}
+                    ry={beadRadius + 2}
+                    fill="none"
+                    stroke={activeCfg.ringStroke}
+                    strokeWidth="1.5"
+                    opacity={isFocalBead ? 0.8 : 0.25}
                   />
+                )}
 
-                  {/* Specular White Gloss Glint on Oval */}
-                  <ellipse
-                    cx="-3"
-                    cy="-5"
-                    rx="3.2"
-                    ry="5"
-                    fill="white"
-                    opacity={0.65}
-                    transform="rotate(-20, -3, -5)"
-                  />
+                {isImamBead ? (
+                  /* === IMAM BEAD (OVAL PEMBATAS) + GOLDEN TASSEL (NOT COUNTED AS ONE OF THE 33) === */
+                  <g>
+                    {/* Elongated Oval Bead Body - Polished Natural Walnut Wood Separator */}
+                    <ellipse
+                      cx="0"
+                      cy="0"
+                      rx="10"
+                      ry="15"
+                      fill="url(#bead-grad-wood)"
+                    />
 
-                  {/* Ambient Rim Light */}
-                  <ellipse
-                    cx="1.5"
-                    cy="7"
-                    rx="4"
-                    ry="3"
-                    fill="#d59b71"
-                    opacity={0.25}
-                  />
+                    {/* Specular White Gloss Glint on Oval */}
+                    <ellipse
+                      cx="-3"
+                      cy="-5"
+                      rx="3.2"
+                      ry="5"
+                      fill="white"
+                      opacity={0.65}
+                      transform="rotate(-20, -3, -5)"
+                    />
 
-                  {/* Golden Connector Oval Cap (Directly attached to bottom of oval bead) */}
-                  <ellipse
-                    cx="0"
-                    cy="18"
-                    rx="5.5"
-                    ry="7"
-                    fill="url(#tassel-gold-grad)"
-                    stroke="#78350f"
-                    strokeWidth="0.5"
-                  />
-                  {/* Cap highlight */}
-                  <ellipse
-                    cx="-1.5"
-                    cy="16"
-                    rx="2"
-                    ry="2.5"
-                    fill="white"
-                    opacity="0.75"
-                  />
+                    {/* Ambient Rim Light */}
+                    <ellipse
+                      cx="1.5"
+                      cy="7"
+                      rx="4"
+                      ry="3"
+                      fill="#d59b71"
+                      opacity={0.25}
+                    />
 
-                  {/* Silken Golden Tassel Threads (Fanning Downwards with Gravity) */}
-                  <g className="pointer-events-none">
-                    <path d="M 0 24 Q -4 44 -9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
-                    <path d="M 0 24 Q -2.5 45 -6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-                    <path d="M 0 24 Q -1 46 -2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
-                    <path d="M 0 24 L 0 68" stroke="#fde047" strokeWidth="1.6" strokeLinecap="round" />
-                    <path d="M 0 24 Q 1 46 2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
-                    <path d="M 0 24 Q 2.5 45 6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-                    <path d="M 0 24 Q 4 44 9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
-                    {/* Inner fine threads */}
-                    <path d="M 0 24 L -4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
-                    <path d="M 0 24 L 4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
-                    {/* Golden neck ring */}
-                    <rect x="-3" y="24" width="6" height="2" rx="1" fill="#78350f" opacity="0.7" />
+                    {/* Golden Connector Oval Cap (Directly attached to bottom of oval bead) */}
+                    <ellipse
+                      cx="0"
+                      cy="18"
+                      rx="5.5"
+                      ry="7"
+                      fill="url(#tassel-gold-grad)"
+                      stroke="#78350f"
+                      strokeWidth="0.5"
+                    />
+                    {/* Cap highlight */}
+                    <ellipse
+                      cx="-1.5"
+                      cy="16"
+                      rx="2"
+                      ry="2.5"
+                      fill="white"
+                      opacity="0.75"
+                    />
+
+                    {/* Silken Golden Tassel Threads (Fanning Downwards with Gravity & Gentle Sway) */}
+                    <g
+                      className="pointer-events-none"
+                      style={{
+                        transformOrigin: '0px 24px',
+                        animation: 'tasbihTasselSway 3.8s ease-in-out infinite',
+                      }}
+                    >
+                      <path d="M 0 24 Q -4 44 -9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
+                      <path d="M 0 24 Q -2.5 45 -6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                      <path d="M 0 24 Q -1 46 -2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
+                      <path d="M 0 24 L 0 68" stroke="#fde047" strokeWidth="1.6" strokeLinecap="round" />
+                      <path d="M 0 24 Q 1 46 2.5 67" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" />
+                      <path d="M 0 24 Q 2.5 45 6 65" stroke="#fde047" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                      <path d="M 0 24 Q 4 44 9 62" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
+                      {/* Inner fine threads */}
+                      <path d="M 0 24 L -4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
+                      <path d="M 0 24 L 4 60" stroke="#fbbf24" strokeWidth="0.8" strokeLinecap="round" opacity="0.75" />
+                      {/* Golden neck ring */}
+                      <rect x="-3" y="24" width="6" height="2" rx="1" fill="#78350f" opacity="0.7" />
+                    </g>
                   </g>
-                </g>
-              ) : (
-                /* === REGULAR ROUND BEAD (WITH CLEAR 8PX AIRY GAP) === */
-                <g>
-                  {/* 3D Shaded Bead Body */}
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r={beadRadius}
-                    fill={`url(#${gradId})`}
-                  />
+                ) : (
+                  /* === REGULAR ROUND BEAD (WITH CLEAR 8PX AIRY GAP) === */
+                  <g>
+                    {/* 3D Shaded Bead Body */}
+                    <circle
+                      cx="0"
+                      cy="0"
+                      r={beadRadius}
+                      fill={`url(#${gradId})`}
+                    />
 
-                  {/* Specular White Gloss Glint (Realistic 3D Reflection) */}
-                  <ellipse
-                    cx={-beadRadius * 0.3}
-                    cy={-beadRadius * 0.32}
-                    rx={beadRadius * 0.33}
-                    ry={beadRadius * 0.2}
-                    fill="white"
-                    opacity={isCounted ? 0.75 : 0.55}
-                    transform={`rotate(-28, ${-beadRadius * 0.3}, ${-beadRadius * 0.32})`}
-                  />
+                    {/* Specular White Gloss Glint (Realistic 3D Reflection) */}
+                    <ellipse
+                      cx={-beadRadius * 0.3}
+                      cy={-beadRadius * 0.32}
+                      rx={beadRadius * 0.33}
+                      ry={beadRadius * 0.2}
+                      fill="white"
+                      opacity={isCounted ? 0.75 : 0.55}
+                      transform={`rotate(-28, ${-beadRadius * 0.3}, ${-beadRadius * 0.32})`}
+                    />
 
-                  {/* Ambient Rim Light at Bottom */}
-                  <ellipse
-                    cx={beadRadius * 0.15}
-                    cy={beadRadius * 0.42}
-                    rx={beadRadius * 0.4}
-                    ry={beadRadius * 0.18}
-                    fill={isCounted ? activeCfg.ringStroke : '#d59b71'}
-                    opacity={isCounted ? 0.35 : 0.18}
-                  />
-                </g>
-              )}
+                    {/* Ambient Rim Light at Bottom */}
+                    <ellipse
+                      cx={beadRadius * 0.15}
+                      cy={beadRadius * 0.42}
+                      rx={beadRadius * 0.4}
+                      ry={beadRadius * 0.18}
+                      fill={isCounted ? activeCfg.ringStroke : '#d59b71'}
+                      opacity={isCounted ? 0.35 : 0.18}
+                    />
+                  </g>
+                )}
+              </g>
             </g>
           );
         })}

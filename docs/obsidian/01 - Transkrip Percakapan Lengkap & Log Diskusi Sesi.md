@@ -1473,4 +1473,35 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 58 - Penyelarasan Biji Bulat Utuh 33x, Biji Lonjong Pembatas Murni, Suara Gelas "Ting-Ting" & Animasi Goyang Alami
+* **Permintaan Pengguna**:
+  - *"bijinya kurang di gambar 1 menunjukkan hanya ada 32 biji bulat dan biji lonjong di hitung menjadi biji 33 , padahal biji lonjong kan pembatas dengan rumbai dan tidak di hitung ke 33x biji, lalu ada bug di suara tasbihnya kadang tidak berbunyi, buat suaranya seperti video yang saya kirim tadi , jadi 1 biji 1 suara seperti suara gelas yang di adu ting-ting, dan warnanya jangan lupa 33 pertama itu warna orange lalu setelah biji lonjong atau pembatas akan berubah warna hijau dan 33 terakhir menjadi warna bitu , dan untuk tasbih yang ke bawah atau sudah terhitung di beri animasi bergerak ke kanan dan kiri secara perlahan seakan-akan seperti tasbih real"*
+  - Lampiran: Tangkapan layar untaian tasbih di mana biji lonjong pembatas sebelumnya menggantikan posisi biji bulat ke-33.
+* **Analisis & Solusi Teknis**:
+  1. **Struktur Fisik Untaian 33 Biji Bulat + Biji Lonjong Pembatas Terpisah**:
+     - Memperbaiki pemetaan indeks untaian tasbih: Biji lonjong pembatas (Imam Bead dengan rumbai emas) tidak lagi menggantikan posisi salah satu dari 33 biji bulat.
+     - Setiap segmen dzikir kini memiliki **33 biji bulat utuh**, disusul oleh **1 biji lonjong pembatas** di posisi ke-34:
+       - Posisi 1..33: 33 Biji Bulat Tahap 1 (Subhanallah) ➔ Warna Emas / Oranye (`gold`).
+       - Posisi 34: Pembatas 1 (Biji Lonjong Kayu + Rumbai Emas).
+       - Posisi 35..67: 33 Biji Bulat Tahap 2 (Alhamdulillah) ➔ Warna Hijau Zamrud (`emerald`).
+       - Posisi 68: Pembatas 2 (Biji Lonjong Kayu + Rumbai Emas).
+       - Posisi 69..101: 33 Biji Bulat Tahap 3 (Allahu Akbar) ➔ Warna Biru Safir (`sapphire`).
+     - Dengan pemetaan `globalOffset = stageIndex * 34 + currentCount`, pada hitungan ke-32 atau ke-33 seluruh 33 biji bulat tetap tampil penuh, dan biji lonjong pembatas baru akan lewat setelah hitungan ke-33 selesai.
+  2. **Perbaikan Total Bug Suara & Sintesis Suara Gelas "Ting-Ting" (*Crystal Clink*)**:
+     - **Penyebab Suara Kadang Hilang**: Sebelumnya kode menginstansiasi `new AudioContext()` di setiap ketukan, sehingga browser mobile (Chrome/Safari) langsung memblokir audio setelah melebihi kuota 6 konteks perangkat keras (`DOMException`).
+     - **Solusi Audio Handal**:
+       - Dibuat utilitas khusus `src/utils/tasbihAudio.ts` menggunakan pola **Singleton AudioContext** yang di-resume secara reaktif saat ada interaksi pengguna tanpa pernah dibuat berulang-ulang.
+       - Mengekstrak audio asli dari video TikTok referensi pengguna menjadi file audio bersih `public/sounds/tasbih_click.mp3` dan `tasbih_click.wav`.
+       - Menyediakan synthesizer harmonik kaca kristal (*dual glass sine overtone* 1920 Hz & 3050 Hz + metallic transient 4800 Hz) dengan variasi mikro-pitch ±2% per ketukan sehingga setiap ketukan berbunyi renyah, nyaring seperti aduan gelas "ting-ting", berlatensi 0ms, dan anti-mati/anti-hilang.
+  3. **Animasi Berayun Alami Kiri-Kanan (*Realistic Hanging Pendulum Sway*)**:
+     - Menambahkan animasi CSS pendulum organik GPU-accelerated pada untaian tasbih yang tergantung di bawah cincin fokus:
+       - Titik tumpu (*pivot origin*) berada di `(165px, 175px)` sehingga cincin fokus dan biji yang akan masuk tetap kokoh dan stabil.
+       - Tali vertikal dan biji-biji yang tergantung berayun lembut ke kiri dan ke kanan sebesar ±1.8° / ±5px dengan periode tenang 3.8 detik (`tasbihTailSway` & `tasbihBeadSway`).
+       - Rumbai benang emas pada biji lonjong pembatas turut bergoyang harmonis mengikuti gravitasi dan ayunan tasbih (`tasbihTasselSway`).
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: 100% lolos kompilasi tanpa peringatan maupun error di 18/18 rute Turbopack.
+  - Simulasi matematika Python membuktikan hitungan 32/33, 33/33, dan transisi ke Alhamdulillah menampilkan tepat 33 biji bulat tanpa terpotong biji lonjong.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
