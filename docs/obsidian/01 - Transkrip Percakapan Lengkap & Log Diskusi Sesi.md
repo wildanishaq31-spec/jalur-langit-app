@@ -1,4 +1,4 @@
-﻿---
+---
 title: "Transkrip Percakapan Lengkap & Log Diskusi Sesi Jalur Langit"
 date: 2026-11-17
 category: "Log Transkrip Chat"
