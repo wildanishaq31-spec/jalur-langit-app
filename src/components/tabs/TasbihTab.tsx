@@ -570,6 +570,15 @@ export const TasbihTab: React.FC = () => {
               currentCount={currentCounter}
               targetCount={activeTarget}
               theme={stageTheme.theme}
+              prevTheme={
+                isPaketSholat
+                  ? stageIndex === 1
+                    ? 'gold'
+                    : stageIndex === 2
+                    ? 'emerald'
+                    : undefined
+                  : undefined
+              }
               isPressing={isPressing}
               onTap={handleTap}
             />

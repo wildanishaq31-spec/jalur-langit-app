@@ -1433,4 +1433,44 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 57 - Perbaikan Alur Pewarnaan Biji Tasbih Bertahap & Penanda Pembatas 33x (Imam Bead)
+* **Permintaan Pengguna**:
+  - *"warna tasbihnya salah setelah subanallah selesai tasbih yang sudah ikod berubah warnanya , kan sampai tanda 33x warna orange seperti gambar 1 lalu berubah warna hijau mulai dari 1 lagi bukan yang 33x ikud berubah warna seperti gambar 2, seharusnya seperti gambar 3 yang berubah warna setelah tanda setelah 33x"*
+  - Lampiran:
+    - Gambar 1 (`32/33` Subhanallah): Biji tasbih berwarna oranye/emas hingga mendekati penanda 33x.
+    - Gambar 2 (`0/33` Alhamdulillah): Bug sebelumnya di mana semua 33 biji di bawah cincin fokus langsung berubah menjadi hijau zamrud sekaligus.
+    - Gambar 3 (`6/33` Alhamdulillah): Ilustrasi target yang benar dari video referensi, di mana biji sebelum penanda 33x tetap mempertahankan warna siklus sebelumnya (oranye/kayu), dan biji warna hijau zamrud hanya terhitung mulai dari 1 sampai 6 setelah penanda 33x (Imam Bead).
+* **Analisis & Solusi Teknis**:
+  1. **Akar Permasalahan (Root Cause)**:
+     - Di `AnimatedTasbihBeads.tsx`, logika pewarnaan sebelumnya menggunakan `const isCounted = beadIdx <= 0`.
+     - Karena semua biji di untaian vertikal bawah cincin fokus memiliki `beadIdx <= 0`, saat tahap berpindah ke Alhamdulillah (`theme='emerald'`), seluruh biji di bawah cincin fokus langsung dicat dengan gradien hijau zamrud, padahal hitungan tahap baru masih `0/33`.
+  2. **Pemisahan Siklus Biji Aktif vs Biji Siklus Sebelumnya**:
+     - Menambahkan properti `prevTheme?: TasbihTheme` pada `AnimatedTasbihBeadsProps`.
+     - Menghitung hitungan siklus aktif:
+       ```ts
+       const activeCycleCount = cycleSize > 0 
+         ? (currentCount > 0 && currentCount % cycleSize === 0 ? cycleSize : currentCount % cycleSize) 
+         : currentCount;
+       ```
+     - **Biji Terhitung Siklus Berjalan (`isCurrentCounted`)**:
+       - Hanya biji antara cincin fokus dan pembatas Imam Bead: `beadIdx <= 0 && -beadIdx < activeCycleCount && !isImamBead`.
+       - Diberi warna gradien tema aktif (misal hijau zamrud pada Alhamdulillah).
+     - **Biji Siklus Sebelumnya di Bawah Penanda (`isPrevCounted`)**:
+       - Biji yang berada di bawah Imam Bead: `prevTheme && beadIdx <= 0 && -beadIdx > activeCycleCount && -beadIdx <= activeCycleCount + cycleSize && !isImamBead`.
+       - Mempertahankan gradien siklus sebelumnya (`prevTheme`, misal emas/oranye dari Subhanallah).
+     - **Biji Belum Terhitung (Di Atas Cincin Fokus)**:
+       - Tetap berwujud kayu kenari alami (`bead-grad-wood`).
+  3. **Penanda Pembatas Imam Bead & Rumbai Emas**:
+     - Biji lonjong Imam Bead pembatas 33x selalu dirender konsisten dengan tekstur kayu kenari berpolitur halus (`fill="url(#bead-grad-wood)"`) lengkap dengan ring cincin emas dan rumbai keemasan, berperan sebagai batas fisik penanda 33 hitungan.
+  4. **Penerusan `prevTheme` dari Paket Sholat**:
+     - Di `TasbihTab.tsx`, saat `isPaketSholat`:
+       - Tahap 1 (Alhamdulillah): `prevTheme = 'gold'` (warna Subhanallah).
+       - Tahap 2 (Allahu Akbar): `prevTheme = 'emerald'` (warna Alhamdulillah).
+* **Hasil Pengujian & Verifikasi**:
+  - Simulasi kalkulasi gradien biji pada count 0, 1, 6, 32, 33 membuktikan pemetaan warna 100% akurat sesuai gambar referensi pengguna.
+  - `npm run build` Turbopack: Berhasil 100% tanpa error (18/18 routes terkompilasi optimal).
+  - Berhasil di-commit dan di-push ganda ke remote `master` dan `main` GitHub untuk live deployment di Vercel.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

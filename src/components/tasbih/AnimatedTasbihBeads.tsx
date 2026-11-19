@@ -4,10 +4,11 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 export type TasbihTheme = 'gold' | 'emerald' | 'sapphire' | 'amethyst' | 'rose';
 
-interface AnimatedTasbihBeadsProps {
+export interface AnimatedTasbihBeadsProps {
   currentCount: number;
   targetCount: number;
   theme: TasbihTheme;
+  prevTheme?: TasbihTheme;
   isPressing: boolean;
   onTap: () => void;
 }
@@ -108,6 +109,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
   currentCount,
   targetCount,
   theme,
+  prevTheme,
   isPressing,
   onTap,
 }) => {
@@ -154,6 +156,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
   }, [currentCount]);
 
   const cfg = THEME_CONFIG[theme] || THEME_CONFIG.gold;
+  const prevCfg = prevTheme ? THEME_CONFIG[prevTheme] : undefined;
 
   const cycleSize = targetCount > 0 ? targetCount : 33;
 
@@ -277,9 +280,6 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
           const clampedDist = Math.max(0, Math.min(DEFAULT_POINTS.length - 1, Math.round(dist)));
           const pt = DEFAULT_POINTS[clampedDist] || { x: 0, y: 0 };
 
-          // Is this bead counted?
-          // Beads with index <= 0 have reached or passed the focal ring!
-          const isCounted = beadIdx <= 0;
           const isFocalBead = beadIdx === 0;
 
           // Check if this bead is the Imam Bead (with Tassel) in the active cycle
@@ -287,8 +287,33 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
           // At count = 1: Imam bead has moved to beadIdx = -1, etc.
           const isImamBead = ((currentCount + beadIdx) % cycleSize + cycleSize) % cycleSize === 0;
 
+          // Active count within the current cycle (e.g. 0 to 33)
+          const activeCycleCount = cycleSize > 0 
+            ? (currentCount > 0 && currentCount % cycleSize === 0 ? cycleSize : currentCount % cycleSize) 
+            : currentCount;
+
+          // 1. Is this bead counted in the CURRENT stage/cycle?
+          // Only beads between the focal ring (beadIdx <= 0) and before the imam bead (-beadIdx < activeCycleCount)
+          const isCurrentCounted = beadIdx <= 0 && -beadIdx < activeCycleCount && !isImamBead;
+
+          // 2. Is this bead from the PREVIOUS stage/cycle (trailing behind the imam bead)?
+          const isPrevCounted = Boolean(
+            prevTheme &&
+            beadIdx <= 0 &&
+            -beadIdx > activeCycleCount &&
+            -beadIdx <= activeCycleCount + cycleSize &&
+            !isImamBead
+          );
+
+          const isCounted = isCurrentCounted || isPrevCounted;
+          const activeCfg = isCurrentCounted ? cfg : isPrevCounted && prevCfg ? prevCfg : cfg;
+          const gradId = isCurrentCounted 
+            ? cfg.beadGradId 
+            : isPrevCounted && prevCfg 
+            ? prevCfg.beadGradId 
+            : 'bead-grad-wood';
+
           const beadRadius = isFocalBead ? 11.5 : NORMAL_BEAD_RADIUS;
-          const gradId = isCounted ? cfg.beadGradId : 'bead-grad-wood';
 
           // Opacity fade at the far ends of the strand
           const opacity =
@@ -323,7 +348,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
                   rx={isImamBead ? 12 : beadRadius + 2}
                   ry={isImamBead ? 17 : beadRadius + 2}
                   fill="none"
-                  stroke={cfg.ringStroke}
+                  stroke={activeCfg.ringStroke}
                   strokeWidth="1.5"
                   opacity={isFocalBead ? 0.8 : 0.25}
                 />
@@ -332,13 +357,13 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
               {isImamBead ? (
                 /* === IMAM BEAD (OVAL) + GOLDEN TASSEL AS SHOWN IN USER IMAGE === */
                 <g>
-                  {/* Elongated Oval Bead Body */}
+                  {/* Elongated Oval Bead Body - Polished Natural Walnut Wood */}
                   <ellipse
                     cx="0"
                     cy="0"
                     rx="10"
                     ry="15"
-                    fill={`url(#${gradId})`}
+                    fill="url(#bead-grad-wood)"
                   />
 
                   {/* Specular White Gloss Glint on Oval */}
@@ -348,7 +373,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
                     rx="3.2"
                     ry="5"
                     fill="white"
-                    opacity={isCounted ? 0.75 : 0.55}
+                    opacity={0.65}
                     transform="rotate(-20, -3, -5)"
                   />
 
@@ -358,8 +383,8 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
                     cy="7"
                     rx="4"
                     ry="3"
-                    fill={isCounted ? cfg.ringStroke : '#d59b71'}
-                    opacity={isCounted ? 0.35 : 0.18}
+                    fill="#d59b71"
+                    opacity={0.25}
                   />
 
                   {/* Golden Connector Oval Cap (Directly attached to bottom of oval bead) */}
@@ -426,7 +451,7 @@ export const AnimatedTasbihBeads: React.FC<AnimatedTasbihBeadsProps> = ({
                     cy={beadRadius * 0.42}
                     rx={beadRadius * 0.4}
                     ry={beadRadius * 0.18}
-                    fill={isCounted ? cfg.ringStroke : '#d59b71'}
+                    fill={isCounted ? activeCfg.ringStroke : '#d59b71'}
                     opacity={isCounted ? 0.35 : 0.18}
                   />
                 </g>
