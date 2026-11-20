@@ -26,6 +26,7 @@ tags:
 | **01** | [[01 - Transkrip Percakapan Lengkap & Log Diskusi Sesi.md\|Transkrip Sesi & Log Diskusi]] | Rekaman kronologis seluruh instruksi pengguna, analisis gambar spreadsheet, dan pemecahan masalah teknis. |
 | **02** | [[02 - Arsitektur Sistem, State Store & Komponen PWA.md\|Arsitektur Sistem & State Store]] | Arsitektur teknis Next.js 16, persistensi Zustand, skema data TypeScript, audio synthesizer Web Audio API, dan date utilities. |
 | **03** | [[03 - Spesifikasi Lengkap 8 Modul & Panduan Pengguna.md\|Spesifikasi 8 Modul & Panduan]] | Spesifikasi detail 8 pilar amalan, visual workflow, dual tema (*Blush Rose* & *Emerald Sage*), dan panduan instalasi PWA. |
+| **04** | [[04 - Product Requirement Document (PRD) Jalur Langit PWA.md\|Product Requirement Document (PRD)]] | Dokumen PRD resmi: alur autentikasi login Lynk.id, tier pembeli, 8 modul fitur lengkap, tasbih 3D, panel admin, webhook, hingga logout. |
 
 ---
 
