@@ -1547,4 +1547,28 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 61 - Penyelarasan Total Seluruh Dzikir Menjadi Berbasis Tanggal Terpilih (Harian)
+* **Permintaan Pengguna**:
+  - *"untuk total seluruh dzikir ini hanya menghitung pertanggal atau 1 hari saja, sekarang masih terbaca semua"*
+  - Lampiran: Tangkapan layar panel kontrol tasbih di mana *"TOTAL SELURUH DZIKIR"* menampilkan akumulasi seluruh hari (`228x`), sedangkan *"Hasil Dzikir Tanggal Ini"* menunjukkan `198x ketukan`.
+* **Analisis & Solusi Teknis**:
+  1. **Akar Masalah (Root Cause)**:
+     - Elemen counter di antara tombol `- Kurang 1` dan `Reset ke 0` sebelumnya mengambil state `tasbihTotalLifetime`, yaitu total kumulatif sepanjang masa lintas seluruh tanggal sejak awal aplikasi digunakan.
+     - Akibatnya, angka yang tampil (`228x`) mencakup dzikir hari-hari sebelumnya, tidak cocok dengan progres harian tanggal aktif (`198x`).
+  2. **Penyelarasan ke Penghitungan Harian Berbasis Tanggal Terpilih**:
+     - Di `src/components/tabs/TasbihTab.tsx`:
+       - Mengganti sumber data counter tengah dari `tasbihTotalLifetime` menjadi `currentDaily.totalCount` (diambil dari `dailyTasbihMap[selectedDate]`).
+       - Label counter dibuat dinamis: jika tanggal hari ini dipilih maka berlabel `"TOTAL DZIKIR HARI INI"`, sedangkan jika tanggal lain dari kalender dipilih maka berlabel `"TOTAL DZIKIR TANGGAL INI"`.
+       - Counter tengah kini selalu tepat 100% selaras dengan box rincian di bawahnya (`Hasil Dzikir Tanggal Ini: {currentDaily.totalCount}x ketukan`).
+  3. **Sinkronisasi Tombol Kurang 1 (`decrementTasbih`)**:
+     - Di `src/store/useJalurLangitStore.ts`:
+       - Memperbarui fungsi `decrementTasbih()` agar turut mengurangi `currentDaily.totalCount` pada `dailyTasbihMap[dateStr]` dan `tasbihTotalLifetime` saat tombol `- Kurang 1` ditekan.
+     - Di `src/components/tabs/TasbihTab.tsx`:
+       - Fungsi `handleDecrement` kini memanggil `decrementTasbih()` bersamaan dengan `setCurrentCounter`, menjaga konsistensi data saat pengguna mengoreksi ketukan.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: Berhasil 100% tanpa error di 18/18 rute Next.js Turbopack.
+  - Counter tengah kini menghitung murni per tanggal terpilih (1 hari saja) tanpa mencampuradukkan riwayat hari-hari lain.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

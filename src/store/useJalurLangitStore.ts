@@ -744,9 +744,22 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         return reachedTarget;
       },
       decrementTasbih: () => {
-        set((state) => ({
+        const state = get();
+        const dateStr = state.selectedDate;
+        const currentDaily = state.dailyTasbihMap[dateStr] || { totalCount: 0, completedPresetIds: [] };
+        const updatedDaily: DailyTasbihProgress = {
+          ...currentDaily,
+          totalCount: Math.max(0, currentDaily.totalCount - 1),
+        };
+
+        set({
           tasbihCount: Math.max(0, state.tasbihCount - 1),
-        }));
+          tasbihTotalLifetime: Math.max(0, state.tasbihTotalLifetime - 1),
+          dailyTasbihMap: {
+            ...state.dailyTasbihMap,
+            [dateStr]: updatedDaily,
+          },
+        });
       },
       resetTasbih: () => set({ tasbihCount: 0 }),
       setTasbihPreset: (presetId) => {

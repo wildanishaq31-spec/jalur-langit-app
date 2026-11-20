@@ -56,11 +56,11 @@ export const TasbihTab: React.FC = () => {
     selectedDate,
     tasbihPresetId,
     tasbihTarget,
-    tasbihTotalLifetime,
     dailyTasbihMap,
     soundEnabled,
     vibrationEnabled,
     incrementTasbih,
+    decrementTasbih,
     setTasbihPreset,
     setCustomTarget,
     toggleSound,
@@ -92,6 +92,8 @@ export const TasbihTab: React.FC = () => {
   const activePreset = TASBIH_PRESETS.find((p) => p.id === tasbihPresetId) || TASBIH_PRESETS[0];
 
   const currentDaily = dailyTasbihMap[selectedDate] || { totalCount: 0, completedPresetIds: [] };
+  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+  const totalDzikirLabel = isToday ? 'Total Dzikir Hari Ini' : 'Total Dzikir Tanggal Ini';
 
   const filteredPresets = selectedCategory === 'semua'
     ? TASBIH_PRESETS
@@ -281,7 +283,10 @@ export const TasbihTab: React.FC = () => {
   };
 
   const handleDecrement = () => {
-    setCurrentCounter((prev) => Math.max(0, prev - 1));
+    if (currentCounter > 0) {
+      setCurrentCounter((prev) => Math.max(0, prev - 1));
+      decrementTasbih();
+    }
   };
 
   // Determine active texts to display
@@ -629,9 +634,11 @@ export const TasbihTab: React.FC = () => {
           </button>
 
           <div className="text-center">
-            <div className="text-[10px] text-stone-400 uppercase font-semibold">Total Seluruh Dzikir</div>
+            <div className="text-[10px] text-stone-400 uppercase font-semibold tracking-wider">
+              {totalDzikirLabel}
+            </div>
             <div className="text-sm font-bold text-stone-800 dark:text-stone-200">
-              {tasbihTotalLifetime}x
+              {currentDaily.totalCount}x
             </div>
           </div>
 
