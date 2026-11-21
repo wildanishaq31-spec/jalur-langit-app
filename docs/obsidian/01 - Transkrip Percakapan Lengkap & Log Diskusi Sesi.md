@@ -1599,4 +1599,51 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 63 - Audit v2.5.0, Roadmap Implementasi v3.0, dan Evaluasi Arsitektur Cloud Backup Data Pengguna
+* **Permintaan Pengguna**:
+  1. *"Saya ingin mengembangkan Jalur Langit dari versi 2.5.0 menuju versi 3.0. Untuk sekarang, JANGAN mengubah atau menulis kode apa pun. Lakukan audit terlebih dahulu terhadap seluruh project yang sedang terbuka..."*
+     - Arah pengembangan baru:
+       - Target audiens meluas ke seluruh umat Islam (laki-laki dan perempuan).
+       - Pendekatan materi ibadah berlandaskan Al-Qur'an dan Sunnah dengan menghargai adab ikhtilaf.
+       - Sistem preferensi mazhab (Hanafi, Maliki, Syafi'i, Hanbali, Panduan Umum).
+       - Materi ibadah dilengkapi tata cara, teks Arab berharakat, transliterasi Latin, terjemahan, referensi hadis, nomor hadis, derajat hadis (Shahih/Hasan), dan penjelasan hukum fikih.
+       - Fitur perbandingan 4 mazhab untuk materi yang memiliki perbedaan pendapat ulama.
+       - Sistem Islamic Content Management (ICM) dengan penandaan status telaah (`VERIFIED` vs `NEEDS_REVIEW`).
+       - Penyempurnaan modul Qiyamul Lail (alur terpadu taubat, tahajud, hajat opsional, witir, dzikir sahur, doa).
+       - Pertahankan seluruh fitur yang sudah ada (Jadwal GPS beku/untouched, tasbih 3D, hajat, sedekah, quran, vision board, PWA, lisensi Lynk.id).
+  2. *"Roadmap v3.0 pada dasarnya saya setujui, tetapi sebelum Tahap 1 dimulai, saya ingin mengamankan penyimpanan data pengguna. Saya berencana menggunakan Supabase dengan ketentuan data lokal tidak hilang/reset, cloud backup, offline-first, pencegahan data ganda, dan jangan hapus data lokal sebelum migrasi terverifikasi..."*
+  3. *"sebelumnya saran selain supabase apa yang aman, kan datanya hanya text, dan foto vision"*
+  4. *"simpan chatnya dulu"*
+* **Analisis & Solusi Teknis**:
+  1. **Audit Lengkap v2.5.0 (8 Sektor)**:
+     - Kondisi project Next.js 16 App Router, React 19, Zustand v5 persist, offline-first PWA, tree git bersih di branch `master`.
+     - Peta 10 fitur berjalan stabil: Jadwal GPS offline-first, checklist 30 hari, tasbih 3D (33-33-33 beads, audio ting-ting, tombol centang "Sudah", filter dzikir per tanggal), hajat, sedekah subuh, quran 30 juz, vision board, glow up habits, sistem lisensi Lynk.id, panel admin superuser.
+     - Penegasan fitur non-negotiable: Mesin jadwal salat GPS (`prayerTimeService.ts`) dan fisika tasbih 3D dibekukan total tanpa modifikasi.
+     - Identifikasi revisi: Re-branding inklusif gender (Glow Up Syar'i menjadi Adab & Self-Care Nabawi), restrukturisasi alur Qiyamul Lail, dan ekspansi skema detail amalan berdalil.
+  2. **Roadmap Implementasi Bertahap Jalur Langit v3.0 (7 Tahap)**:
+     - **Tahap 1**: Fondasi Tipe Data Fikih (`src/types/islamic.ts`), Preferensi Mazhab (`userMazhabPreference`), dan Safe State Migration Zustand (`version: 2`).
+     - **Tahap 2**: Dataset Materi Ibadah Berdalil Valid & Standar Verifikasi ICM Core (`reviewStatus: 'VERIFIED'` | `'NEEDS_REVIEW'`).
+     - **Tahap 3**: Desain & Pembangunan Modal Detail Ibadah 3 Tab (Tata Cara, Bacaan & Dalil Hadits, Perbandingan 4 Mazhab).
+     - **Tahap 4**: Modul Terpadu Qiyamul Lail Guided Workflow (Taubat -> Tahajjud -> Hajat -> Witir -> Sayyidul Istighfar -> Munajat).
+     - **Tahap 5**: Re-branding Inklusif Universal (Adab & Self-Care Nabawi untuk Ikhwan & Akhwat).
+     - **Tahap 6**: Islamic Content Management (ICM) di Panel Admin `/panel-admin` untuk penelaah agama.
+     - **Tahap 7**: Pengujian Regresi Total, PWA Offline Verification, dan Rilis v3.0.0.
+  3. **Evaluasi Arsitektur Cloud Backup & Alternatif Supabase**:
+     - *Kebutuhan Pengguna*: Data hanya teks (amalan, doa, tasbih) dan foto untuk Vision Board; offline-first murni; data lokal v2.5.0 tidak boleh hilang/ter-reset; tidak boleh ada data ganda.
+     - *Evaluasi Supabase*: Sangat aman via PostgreSQL RLS & Compound Unique Constraints `UNIQUE(user_id, date, amalan_id)` untuk mencegah data ganda. Namun pada paket gratis (*Free Tier*), Supabase memiliki kelemahan di mana database otomatis di-*pause* jika tidak aktif selama 7 hari berturut-turut, serta storage foto hanya 1 GB.
+     - *Evaluasi Alternatif Terbaik (Firebase Google Cloud)*:
+       - **Cloud Firestore**: Model dokumen NoSQL identik 100% dengan format state JSON Zustand (`users/{email}/amalan/{date}`, dsb.).
+       - **Firebase Storage**: Kuota gratis foto **5 GB** (5x lebih besar dari Supabase).
+       - **Zero Pause Risk**: Paket Spark (Free) **selalu aktif 24/7/365 selamanya** tanpa pernah di-*pause*.
+       - **Native Offline Persistence**: SDK Firebase memiliki fitur `persistentLocalCache` bawaan yang otomatis menjaga persistensi saat HP offline.
+     - *Evaluasi Alternatif Kedua (Cloudflare D1 + R2)*:
+       - 10 GB storage foto gratis dengan **Zero Egress Fee** (unduh foto bebas batas kuota bandwidth) dan 5 GB D1 SQLite, tanpa risiko di-pause.
+  4. **Pencatatan Dokumentasi Permanen**:
+     - Seluruh hasil audit, roadmap tahapan, rancangan skema database, strategi migrasi aman tanpa penghapusan lokal, dan perbandingan cloud didokumentasikan ke Obsidian Vault internal dan disinkronkan ke vault eksternal.
+* **Hasil Pengujian & Verifikasi**:
+  - Seluruh riwayat percakapan, keputusan arsitektur, dan rencana strategis telah terdokumentasi rapi dan persisten.
+  - Kode program dan konfigurasi aplikasi tetap berada dalam kondisi aman (*clean read-only*, belum ada modifikasi kode).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

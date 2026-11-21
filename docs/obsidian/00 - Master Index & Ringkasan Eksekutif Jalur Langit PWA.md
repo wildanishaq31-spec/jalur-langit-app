@@ -89,6 +89,7 @@ tags:
 * **Notification**: Web Notification API (sinkron jadwal waktu HP)
 * **Local Server Port**: `http://localhost:3005`
 * **Status Kompilasi**: **PASS (Exit Code 0)** — `npm run build` sukses 100% tanpa galat TypeScript atau hidrasi.
+* **Status Pengembangan Terkini**: **Fase Transisi v2.5.0 Menuju v3.0** — Audit arsitektur selesai, Roadmap 7 tahap dirumuskan, serta evaluasi Cloud Storage & Safe Migration (Firebase / Cloudflare) telah terdokumentasi.
 
 ---
-> Catatan: Berkas ini diperbarui otomatis pada sesi pengembangan tanggal **17 November 2026**.
+> Catatan: Berkas ini diperbarui otomatis pada sesi pengembangan tanggal **21 November 2026**.
