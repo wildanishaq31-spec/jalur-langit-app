@@ -349,7 +349,7 @@ export const QuranJournalTab: React.FC = () => {
               className="w-full py-3 px-4 bg-teal-700 hover:bg-teal-800 active:scale-98 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ Tulis Lembar Tadabbur Baru</span>
+              <span>Tulis Lembar Tadabbur Baru</span>
             </button>
           </div>
 
