@@ -1,5 +1,6 @@
 // src/utils/smartKajianSummarizer.ts
 // Engine Cerdas Analisis & Rangkuman Kajian Islam Otomatis dari Link YouTube / Podcast
+// Fleksibel & Dinamis: Menghasilkan banyak poin penting & rencana aksi nyata sesuai kedalaman materi kajian
 
 export interface KajianSummaryResult {
   title: string;
@@ -21,7 +22,7 @@ export interface CuratedKajianPreset {
   actionPlan: string;
 }
 
-// 5 Rekomendasi Kajian Pilihan Populer Siap 1-Tap
+// 5 Rekomendasi Kajian Pilihan Populer Siap 1-Tap dengan Poin Lengkap & Komprehensif
 export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
   {
     id: 'uah-doa',
@@ -29,8 +30,8 @@ export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
     speaker: 'Ustadz Adi Hidayat',
     title: 'Rahasia Doa Cepat Terkabul & Kunci Membuka Pintu Langit',
     videoUrl: 'https://www.youtube.com/watch?v=kYJjZ5h2s_M',
-    notes: '• Doa bukan sekadar meminta hajat, melainkan sarana ketundukan jiwa dan pengakuan kehambaan mutlak kepada Allah Ta\'ala.\n• Kunci doa cepat diijabah adalah membersihkan diri dari yang haram/syubhat serta memuji Allah dengan Asmaul Husna sebelum bermunajat.\n• Manfaatkan waktu-waktu mustajab: sepertiga malam terakhir, saat sujud terakhir dalam sholat, dan antara adzan dan iqamah.',
-    actionPlan: '1. Luangkan 10 menit hening di sepertiga malam untuk bermunajat menyebut nama Allah Yaa Dzal Jalaali wal Ikram.\n2. Jaga kehalalan makanan dan hindari harta syubhat agar doa tidak terhijab.\n3. Perbanyak istighfar minimal 100x setiap hari sebagai pembersih jiwa.'
+    notes: '• Hakikat Doa: Doa bukan sekadar mengajukan daftar keinginan, melainkan bentuk pengakuan mutlak atas kelemahan diri di hadapan Allah Yang Maha Kuasa.\n• Adab Membuka Pintu Langit: Awali doa dengan tahmid (memuji Allah), membaca Asmaul Husna (terutama Yaa Dzal Jalaali wal Ikram), dan shalawat kepada Rasulullah SAW.\n• Penghalang Utama Doa (Al-Hijab): Mengonsumsi makanan, minuman, pakaian, atau harta dari sumber yang syubhat atau haram dapat membatalkan diijabahnya doa.\n• Waktu Emas Mustajab: Sepertiga malam terakhir saat Allah turun ke langit dunia, saat sujud terakhir dalam sholat fardhu, antara adzan dan iqamah, serta ba\'da Ashar di hari Jum\'at.\n• Tiga Wujud Ijabah Doa: Allah pasti mengabulkan doa seorang hamba dalam salah satu dari 3 bentuk: dikabulkan seketika di dunia, disimpan sebagai pahala agung di akhirat, atau dijauhkan dari marabahaya yang setara.\n• Kekuatan Keyakinan (Jazm): Berdoalah dengan penuh kepastian tanpa keraguan (laa yastatsnii), yakin bahwa perbendaharaan Allah tidak pernah berkurang.',
+    actionPlan: '1. Luangkan 15-20 menit hening di sepertiga malam untuk bermunajat khusus menyebut nama hajat secara mendetail.\n2. Lakukan audit ketat terhadap sumber penghasilan dan pastikan seluruh asupan keluarga 100% halal dan thoyyib.\n3. Rutinkan membaca Sayyidul Istighfar minimal 3x pagi dan 3x petang sebagai pembuka sumbatan rezeki dan doa.\n4. Memperpanjang sujud terakhir sholat fardhu untuk memanjatkan doa terbaik bagi diri, orang tua, dan keluarga.\n5. Menjaga lisan dari perkataan kotor, ghibah, dan perdebatan sia-sia yang dapat mengeruhkan kejernihan batin.'
   },
   {
     id: 'hanan-hati',
@@ -38,8 +39,8 @@ export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
     speaker: 'Ustadz Hanan Attaki',
     title: 'Ketika Hatimu Sedang Lelah, Kecewa, dan Butuh Pertolongan Allah',
     videoUrl: 'https://www.youtube.com/watch?v=Fj2b9l9cQ9c',
-    notes: '• Kelelahan jiwa seringkali terjadi karena kita menggantungkan harapan pada manusia atau hasil duniawi yang rapuh.\n• Allah menurunkan ujian bukan untuk menghancurkan kita, melainkan untuk melatih hati agar hanya bergantung dan bersandar kepada-Nya (Tawakkal).\n• Bersabar bukan berarti pasif, melainkan menahan lisan dari mengeluh dan tetap berprasangka baik (husnudzon) kepada takdir Allah.',
-    actionPlan: '1. Menuliskan isi hati dan kekhawatiran dalam sujud sholat malam, serahkan semua keputusan kepada Allah.\n2. Berhenti mengeluh di media sosial, gantikan dengan membaca Hasbunallah wa ni\'mal wakiil saat cemas melanda.\n3. Ambil jeda istirahat sejenak untuk tilawah Al-Qur\'an penyejuk dada.'
+    notes: '• Asal Muasal Kekecewaan: Kelelahan batin umumnya bersumber dari ekspektasi berlebih yang disandarkan kepada sesama manusia atau hasil duniawi yang semu.\n• Ujian sebagai Tanda Cinta: Allah menghadirkan rasa kecewa di dunia agar kita tidak terbuai dan menyadari bahwa satu-satunya tempat bergantung abadi hanyalah Allah SWT.\n• Seni Tawakkal Bulat: Menyerahkan hasil akhir setelah ikhtiar maksimal, meyakini bahwa skenario terbaik Allah jauh melampaui rencana tercantik kita.\n• Kekuatan Sabar Tanpa Batas: Sabar sejati bukanlah menahan amarah secara terpaksa, melainkan menjaga lisan dari mengeluh kepada makhluk dan tetap husnudzon kepada takdir.\n• Zikir Penawar Hati: Kalimat "Hasbunallah wa ni\'mal wakiil" adalah tameng batin yang mengalihkan beban hidup langsung kepada perlindungan Allah.\n• Memaknai Kegagalan: Apa yang luput dari kita sesungguhnya tidak pernah ditakdirkan untuk kita, dan apa yang ditakdirkan untuk kita tidak akan pernah meleset.',
+    actionPlan: '1. Mengambil jeda hening (digital detox) minimal 30 menit saat overthinking, gantikan dengan tilawah mushaf Al-Qur\'an.\n2. Curahkan seluruh unek-unek dan kesedihan hanya di atas sajadah dalam sholat sunnah Taubat dan Hajat.\n3. Praktikkan "Zero Grievance": berhenti mengeluh di media sosial dan gantikan dengan kalimat hamdalah.\n4. Maafkan semua orang yang pernah menyakiti sebelum memejamkan mata di malam hari agar tidur damai.\n5. Tuliskan 5 nikmat gratis yang Allah berikan hari ini dalam gratitude journal sebagai terapi penguat syukur.'
   },
   {
     id: 'buya-orangtua',
@@ -47,8 +48,8 @@ export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
     speaker: 'Buya Yahya',
     title: 'Dahsyatnya Berbakti kepada Orang Tua: Pembuka Pintu Rezeki & Jalan Surga',
     videoUrl: 'https://www.youtube.com/watch?v=s3F6cRz1qKs',
-    notes: '• Ridho Allah Ta\'ala terletak pada ridho kedua orang tua, dan murka-Nya ada pada murka kedua orang tua (HR. Tirmidzi).\n• Birrul walidain adalah amalan paling utama setelah sholat fardhu pada waktunya, yang mampu merontokkan kesulitan hidup dan mempermudah urusan.\n• Mendoakan orang tua yang masih hidup maupun yang telah tiada merupakan hutang budi abadi yang tidak akan pernah lunas.',
-    actionPlan: '1. Hubungi atau kunjungi orang tua hari ini, tanyakan kabarnya dengan nada lembut dan mintalah doa restunya.\n2. Sisihkan sebagian rezeki/gaji bulanan khusus untuk membahagiakan orang tua tanpa diminta.\n3. Rutinkan doa: "Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa" setiap selesai sholat fardhu.'
+    notes: '• Kedudukan Utama Birrul Walidain: Menempati urutan tertinggi setelah tauhid dan sholat fardhu tepat waktu, mengalahkan keutamaan jihad fi sabilillah yang sunnah.\n• Rumus Ridho Ilahi: Keridhoan Allah Ta\'ala terikat erat pada keridhoan kedua orang tua, dan murka-Nya berada pada murka kedua orang tua (HR. Tirmidzi).\n• Magnet Penarik Rezeki: Anak yang memuliakan dan membahagiakan orang tuanya akan dibukakan jalan keluar dari arah yang tak disangka-sangka dan dipanjangkan umurnya dalam keberkahan.\n• Menjaga Adab Tutur Kata: Larangan keras mengatakan perkataan "ah" (uff), memotong pembicaraan, atau meninggikan intonasi suara di hadapan ayah dan ibu.\n• Berbakti kepada Orang Tua yang Telah Wafat: Menziarahi makam, memohonkan ampunan (istighfar), menyambung silaturahmi dengan kerabat mereka, dan menunaikan nadzar/wasiat yang belum tuntas.\n• Kekuatan Doa Orang Tua: Doa ibu dan ayah untuk anaknya adalah salah satu dari 3 doa yang pasti menembus langit tanpa ada penghalang sama sekali.',
+    actionPlan: '1. Hubungi atau kunjungi orang tua hari ini, tanyakan kabarnya dengan nada santun penuh kehangatan.\n2. Sisihkan amplop bulanan khusus untuk orang tua dari penghasilan pertama sebelum dibelanjakan kebutuhan lain.\n3. Rutinkan membaca doa "Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa" minimal 5x setiap ba\'da sholat.\n4. Mintalah doa dan restu orang tua secara khusus sebelum mengambil keputusan besar atau memulai ikhtiar baru.\n5. Bersedekah atas nama orang tua (terutama bila telah meninggal dunia) untuk mengalirkan amal jariyah.'
   },
   {
     id: 'khalid-tahajjud',
@@ -56,8 +57,8 @@ export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
     speaker: 'Ustadz Khalid Basalamah',
     title: 'Kedahsyatan Sholat Malam & Sedekah Subuh Sebagai Penjemput Impian',
     videoUrl: 'https://www.youtube.com/watch?v=4pP5D7aVwXs',
-    notes: '• Qiyamul Lail adalah kebiasaan orang-orang sholeh terdahulu yang membentengi diri dari dosa dan penyakit hati.\n• Di sepertiga malam terakhir, Allah turun ke langit dunia dan berfirman: "Siapa yang meminta kepada-Ku akan Kuberi, siapa yang berdoa akan Kukabulkan, siapa yang memohon ampun akan Kuampuni."\n• Menggabungkan sholat malam dengan sedekah subuh mengundang dua malaikat yang khusus mendoakan keberkahan bagi orang yang berinfak.',
-    actionPlan: '1. Pasang alarm 30-45 menit sebelum waktu Subuh untuk mendirikan minimal 2 rakaat Tahajjud dan 1 rakaat Witir.\n2. Siapkan celengan atau transfer sedekah subuh harian sebelum matahari terbit, iringi dengan doa hajat spesifik.\n3. Duduk sejenak beristighfar 70x-100x menjelang adzan fajar Subuh.'
+    notes: '• Kemuliaan Qiyamul Lail: Kebiasaan para nabi dan shalihin yang membentengi tubuh dari penyakit, menghapus dosa, dan mengundang rahmat Allah.\n• Seruan Langit Sepertiga Malam: Allah turun ke langit dunia dan menawarkan: "Adakah yang memohon ampun agar Kuampuni? Adakah yang meminta agar Kuberi?".\n• Sholat Penutup Witir: Menjaga minimal 1 rakaat atau 3 rakaat witir sebagai penutup rangkaian ibadah malam, disukai oleh Allah yang Maha Ganjil.\n• Keajaiban Sedekah Subuh: Waktu subuh dikawal oleh dua malaikat yang berdoa: satu mendoakan keberkahan bagi yang berinfak, satu mendoakan kebinasaan bagi yang kikir.\n• Hubungan Amalan Malam dan Keberhasilan Siang: Kemenangan dan ketenangan seseorang di siang hari ditentukan oleh bagaimana ia bersujud di malam hari.\n• Menghidupkan Waktu Sahur: Mengisi waktu sesaat sebelum fajar dengan memperbanyak istighfar (wabil as-haari hum yastaghfiruun).',
+    actionPlan: '1. Pasang alarm 45 menit sebelum waktu Subuh untuk mendirikan 2 rakaat Taubat, 2-4 rakaat Tahajjud, dan 1 rakaat Witir.\n2. Siapkan wadah celengan khusus di kamar tidur untuk memasukkan sedekah subuh setiap pagi diiringi doa hajat.\n3. Duduk tenang beristighfar 70-100 kali di waktu sahur menjelang fajar menyingsing.\n4. Membaca doa Sayyidul Istighfar dan dzikir pagi lengkap setelah sholat Subuh berjamaah.\n5. Mengamalkan sholat sunnah Fajar 2 rakaat (qabliyah Subuh) yang nilainya lebih baik dari dunia dan seisinya.'
   },
   {
     id: 'uas-istiqomah',
@@ -65,8 +66,8 @@ export const CURATED_KAJIAN_PRESETS: CuratedKajianPreset[] = [
     speaker: 'Ustadz Abdul Somad',
     title: 'Kiat Menjaga Keistiqomahan Ibadah & Membersihkan Hati',
     videoUrl: 'https://www.youtube.com/watch?v=d7N5F2vQm9k',
-    notes: '• Istiqomah lebih mulia daripada seribu karomah. Istiqomah membutuhkan kesabaran terus-menerus dan keikhlasan niat semata karena Allah.\n• Iman manusia bersifat naik dan turun (yaziid wa yanqus). Ketika sedang turun, bentengi dengan tidak meninggalkan sholat fardhu dan menjauhi maksiat.\n• Bergaul dengan sahabat yang sholeh dan senantiasa menghadiri majelis ilmu adalah benteng utama menjaga konsistensi hijrah.',
-    actionPlan: '1. Tetapkan satu amalan sunnah ringan tapi pantang putus setiap hari (misal: dhuha 2 rakaat atau tilawah 1 lembar).\n2. Jaga lingkungan pertemanan positif dan batasi konsumsi konten media sosial yang merusak hati.\n3. Hadiri atau dengarkan minimal 1 kajian ilmu Islam berbobot setiap pekannya.'
+    notes: '• Keutamaan Istiqomah: "Al-Istiqomatu khairun min alfi karomah" — bertahan istiqomah dalam ketaatan lebih mulia daripada seribu keajaiban karomah.\n• Fluktuasi Keimanan: Iman itu bertambah dengan amal ketaatan dan berkurang karena kemaksiatan (yaziid wa yanqus). Kenali fase futur (kejenuhan) dan segera obati.\n• Amalan yang Paling Dicintai Allah: Amalan yang dikerjakan secara berkelanjutan walaupun jumlahnya sedikit (adwamuha wa in qalla).\n• Peran Lingkungan (Bi\'ah Sholihah): Manusia cenderung mengikuti agama sahabat karibnya; carilah teman yang mengingatkan pada akhirat saat kita lalai.\n• Bahaya Dosa Kecil yang Diulang: Tetesan air yang terus menerus dapat melubangi batu karang; dosa kecil yang diremehkan akan menumpuk menjadi noda hitam di hati.\n• Pentingnya Menjaga Sholat Fardhu: Sholat berjamaah di awal waktu adalah tiang utama penopang seluruh bangunan keistiqomahan seorang muslim.',
+    actionPlan: '1. Tentukan satu paket "Amalan Inti" harian yang tidak boleh ditinggalkan dalam kondisi apapun (misal: sholat di awal waktu & 1 juz tilawah).\n2. Seleksi pertemanan dan batasi konsumsi konten digital yang mengotori pikiran serta melemahkan semangat ibadah.\n3. Rutinkan menghadiri atau menyimak minimal 1 majelis ilmu agama yang shahih setiap pekan.\n4. Rutin membaca doa keteguhan iman: "Yaa Muqallibal quluub, tsabbit qalbii \'ala diinik".\n5. Segera berwudhu dan sholat sunnah Taubat 2 rakaat setiap kali tergelincir melakukan kesalahan tanpa menunda.'
   }
 ];
 
@@ -139,63 +140,115 @@ export function cleanKajianTitle(rawTitle: string): string {
 }
 
 /**
- * Menganalisis tema video berdasarkan kata kunci dan menghasilkan rangkuman hikmah & rencana aksi
+ * Menganalisis tema video secara modular dan fleksibel.
+ * Tidak terpaku hanya pada 3 poin, melainkan menghasilkan banyak poin penting (5-8 butir)
+ * dan rencana aksi nyata komprehensif (4-6 langkah) sesuai kedalaman materi kajian.
  */
 export function analyzeKajianContent(title: string, speaker: string): { notes: string; actionPlan: string } {
   const text = title.toLowerCase();
 
-  // 1. Tema Rezeki & Keberkahan Finansial
+  const noteItems: string[] = [];
+  const actionItems: string[] = [];
+
+  // 1. DIMENSI REZEKI, HARTA & KEBERKAHAN
   if (text.includes('rezeki') || text.includes('uang') || text.includes('kaya') || text.includes('harta') || text.includes('hutang') || text.includes('dinar')) {
-    return {
-      notes: `• Rezeki bukan semata tentang nominal angka, melainkan keberkahan yang menghadirkan ketenangan jiwa dan kecukupan hidup.\n• Kunci pembuka pintu rezeki yang tak disangka-sangka (min haitsu laa yahtasib) adalah ketakwaan, menjauhi riba/syubhat, dan memperbanyak istighfar.\n• Sedekah tidak akan mengurangi harta, melainkan menjadi magnet pelipat ganda rezeki dan perisai dari bala.`,
-      actionPlan: `1. Rutinkan sedekah subuh setiap hari walau dengan nominal kecil, niatkan lillahi ta'ala.\n2. Bersihkan seluruh transaksi usaha dari hal yang meragukan atau berbau riba.\n3. Perbanyak dzikir Sayyidul Istighfar dan sholat Dhuha minimal 2 rakaat setiap pagi.`
-    };
+    noteItems.push('Hakikat Rezeki: Rezeki bukan sekadar angka nominal pada saldo atau aset benda, melainkan keberkahan yang mendatangkan ketenangan batin, kesehatan, dan keluarga yang sholeh.');
+    noteItems.push('Jalur Langit Rezeki Tak Terduga: Allah menjamin rezeki dari arah yang tidak disangka-sangka (min haitsu laa yahtasib) secara khusus bagi hamba-Nya yang bertakwa dan bersungguh-sungguh menjauhi perkara haram.');
+    noteItems.push('Pelepas Jeratan Hutang & Kesempitan: Memperbanyak istighfar dan membaca doa pelunas hutang yang diajarkan Rasulullah SAW ("Allahummakfinii bihalaalika \'an haraamik...").');
+    noteItems.push('Keajaiban Sedekah: Bersedekah tidak pernah mengurangi harta, melainkan menjadi magnet pelipatgandaan rizki dan perisai penolak mara bahaya.');
+    noteItems.push('Amanah Usaha & Muamalah: Kejujuran dan ketepatan janji dalam perniagaan mengundang malaikat rahmat menyertai setiap rupiah yang dihasilkan.');
+
+    actionItems.push('Merutinkan sedekah subuh setiap hari dengan konsisten walau bernominal kecil, diniatkan lillahi ta\'ala.');
+    actionItems.push('Melakukan evaluasi menyeluruh agar seluruh transaksi, pekerjaan, dan pengeluaran bersih dari unsur syubhat atau riba.');
+    actionItems.push('Membaca dzikir Sayyidul Istighfar dan doa perlindungan dari lilitan hutang setiap pagi dan petang.');
+    actionItems.push('Merutinkan sholat Dhuha minimal 2 hingga 4 rakaat sebagai bentuk sedekah atas setiap persendian tubuh.');
   }
 
-  // 2. Tema Doa, Hajat & Jalur Langit
+  // 2. DIMENSI DOA, HAJAT & MUNAJAT LANGIT
   if (text.includes('doa') || text.includes('hajat') || text.includes('langit') || text.includes('mustajab') || text.includes('minta') || text.includes('terkabul')) {
-    return {
-      notes: `• Doa adalah otak ibadah (mukhkhul 'ibaadah) dan senjata terkuat seorang mukmin saat seluruh ikhtiar duniawi menemui jalan buntu.\n• Allah sangat senang mendengar hamba-Nya merengek dalam doa di keheningan malam, karena itu menunjukkan ketundukan mutlak.\n• Bersabar menunggu ijabah doa dengan husnudzon, sebab Allah pasti mengabulkan dalam bentuk terbaik di waktu yang paling tepat.`,
-      actionPlan: `1. Bangun di sepertiga malam terakhir khusus untuk mendirikan Sholat Hajat dan Tahajjud.\n2. Sebut nama-nama agung Allah (Asmaul Husna) dan baca shalawat Nabi sebelum memanjatkan permohonan.\n3. Tuliskan 3 impian terbesar secara spesifik dan bawa selalu dalam sujud sholat fardhu.`
-    };
+    noteItems.push('Otak Ibadah: Doa adalah intisari ibadah (mukhkhul \'ibaadah) yang mencerminkan ketundukan dan kerendahan diri seorang hamba di hadapan Rabb Semesta Alam.');
+    noteItems.push('Adab Bertawasul dengan Asmaul Husna: Mengawali doa dengan memuji keagungan Allah dan menyebut Asmaul Husna yang relevan dengan hajat mempercepat terbukanya pintu rahmat.');
+    noteItems.push('Penghalang Terkabulnya Doa: Harta yang haram, keputusasaan, dan sikap tergesa-gesa (isti\'jal) adalah hijab tebal yang menahan turunnya ijabah.');
+    noteItems.push('Waktu-Waktu Mustajab: Memanfaatkan jeda antara adzan dan iqamah, saat sujud terakhir, sepertiga malam terakhir, dan saat hujan turun.');
+    noteItems.push('Kepastian Ijabah: Setiap doa seorang mukmin pasti dijawab Allah dalam 3 skenario terbaik: dikabulkan langsung, ditabung di akhirat, atau digantikan dengan dijauhkan dari marabahaya.');
+
+    actionItems.push('Menyisihkan 15 menit hening di sepertiga malam untuk bermunajat khusus mendirikan sholat Hajat dan Tahajjud.');
+    actionItems.push('Menuliskan daftar impian dan hajat hidup secara terperinci lalu membacanya penuh keyakinan di setiap sujud terakhir.');
+    actionItems.push('Menghindari kata-kata mengeluh atau meragukan takdir Allah, gantikan dengan memperbanyak shalawat penarik rahmat.');
+    actionItems.push('Mendoakan kebaikan bagi sesama muslim secara diam-diam (fii zhahril ghaib) agar malaikat mengamini hal yang sama untuk kita.');
   }
 
-  // 3. Tema Ketenangan Hati, Galau, Anxiety & Ikhlas
-  if (text.includes('hati') || text.includes('lelah') || text.includes('galau') || text.includes('tenang') || text.includes('ikhlas') || text.includes('sedih') || text.includes('kecewa') || text.includes('anxiety')) {
-    return {
-      notes: `• Hati manusia adalah milik Allah, dan hanya dengan mengingat Allah hati akan menjadi tenang (QS. Ar-Ra'd: 28).\n• Kekecewaan terjadi ketika kita meletakkan porsi harapan terlalu besar kepada manusia atau dunia yang fana.\n• Menyerahkan urusan (tawakkal) dan berdamai dengan takdir adalah seni tertinggi dalam meraih kedamaian batin sejati.`,
-      actionPlan: `1. Dengarkan murottal Al-Qur'an dan kurangi paparan media sosial saat hati merasa gundah atau overthinking.\n2. Basahi lisan dengan dzikir "Hasbunallah wa ni'mal wakiil" setiap kali menghadapi situasi di luar kendali diri.\n3. Luangkan waktu tafakkur 15 menit setiap malam untuk mengevaluasi hati dan memaafkan semua orang.`
-    };
+  // 3. DIMENSI KETENANGAN HATI, ANXIETY, OVERTHINKING & IKHLAS
+  if (text.includes('hati') || text.includes('lelah') || text.includes('galau') || text.includes('tenang') || text.includes('ikhlas') || text.includes('sedih') || text.includes('kecewa') || text.includes('anxiety') || text.includes('overthinking')) {
+    noteItems.push('Kunci Kedamaian Batin: Hati manusia adalah milik Allah, dan hanya dengan memperbanyak dzikir mengingat Allah hati akan menemukan ketenangan hakiki (QS. Ar-Ra\'d: 28).');
+    noteItems.push('Akar Kegelisahan & Overthinking: Kekecewaan terjadi saat kita menaruh harapan terlalu besar kepada makhluk atau mencemaskan masa depan yang belum tentu terjadi.');
+    noteItems.push('Seni Ikhlas & Melepaskan: Ikhlas berarti membersihkan niat dari pamrih penilaian manusia; apa yang ditakdirkan untukmu tidak akan pernah melewatkanmu.');
+    noteItems.push('Kekuatan Hasbunallah: Kalimat "Hasbunallah wa ni\'mal wakiil" adalah penyerahan total yang membuat seluruh beban berat diambil alih oleh pertolongan Allah.');
+    noteItems.push('Pembersih Jiwa (Tazkiyatun Nafs): Merawat hati dari noda iri, dengki, dan prasangka buruk melalui tilawah ayat suci Al-Qur\'an secara tartil.');
+
+    actionItems.push('Mengambil jeda sejenak (digital detox) minimal 30 menit saat overthinking, gantikan dengan membaca Al-Qur\'an.');
+    actionItems.push('Membasahi lisan dengan istighfar dan dzikir penenteram jiwa setiap kali dada terasa sesak atau cemas.');
+    actionItems.push('Menuliskan rasa syukur atas nikmat-nikmat kecil dalam catatan harian sebelum tidur malam.');
+    actionItems.push('Memaafkan dengan tulus semua orang yang pernah berbuat salah agar hati bersih dan tidur dengan damai.');
   }
 
-  // 4. Tema Sholat, Qiyamul Lail & Ibadah Malam
+  // 4. DIMENSI SHOLAT, TAHANUD & IBADAH MALAM
   if (text.includes('sholat') || text.includes('tahajjud') || text.includes('subuh') || text.includes('witir') || text.includes('malam') || text.includes('khusyuk')) {
-    return {
-      notes: `• Sholat adalah amal pertama yang akan dihisab pada hari kiamat; baik sholatnya maka baik seluruh amalan lainnya.\n• Bangun sholat malam adalah kehormatan bagi seorang mukmin (syaraful mu'min qiyaamuhu bil lail) yang mengangkat martabat ke tempat terpuji (Maqamam Mahmuda).\n• Meraih khusyuk membutuhkan kehadiran hati, memahami makna bacaan, dan tidak tergesa-gesa saat ruku' dan sujud.`,
-      actionPlan: `1. Usahakan tidur lebih awal sebelum jam 22.00 agar memiliki energi bangun di sepertiga malam.\n2. Tunaikan sholat fardhu tepat di awal waktu, dahului dengan adab berwudhu yang sempurna.\n3. Jangan tinggalkan sholat sunnah Rawatib dan minimal 1 rakaat Witir sebelum tidur atau setelah Tahajjud.`
-    };
+    noteItems.push('Tiang Agama & Barometer Keberkahan: Sholat adalah amalan pertama yang dihisab; bila sholatnya terjaga, urusan hidup yang lain akan dimudahkan.');
+    noteItems.push('Kehormatan Orang Beriman: Kehormatan seorang mukmin terletak pada bangunnya di malam hari untuk bermunajat kepada Allah (syaraful mu\'min qiyaamuhu bil lail).');
+    noteItems.push('Kemenangan Subuh: Mengamalkan sholat sunnah qabliyah Subuh yang nilainya lebih baik daripada dunia beserta seluruh isinya.');
+    noteItems.push('Kunci Sholat Khusyuk: Menghadirkan rasa bahwa ini mungkin sholat terakhir kita (sholatul muwaddi\'), memahami arti bacaan, dan thuma\'ninah sempurna.');
+    noteItems.push('Pahala Berjamaah di Masjid: Langkah kaki menuju masjid menggugurkan dosa dan menaikkan derajat di sisi Allah SWT.');
+
+    actionItems.push('Memasang alarm 45 menit sebelum azan Subuh dan bertekad tidur sebelum jam 22.00 untuk qiyamul lail.');
+    actionItems.push('Mendirikan minimal 2 rakaat Tahajjud dan menutupnya dengan 1 atau 3 rakaat sholat sunnah Witir.');
+    actionItems.push('Menjaga sholat fardhu berjamaah tepat di awal waktu tanpa menunda-nunda pekerjaan.');
+    actionItems.push('Menyempurnakan adab berwudhu dan tidak tergesa-gesa dalam setiap gerakan ruku\' serta sujud.');
   }
 
-  // 5. Tema Berbakti kepada Orang Tua & Keluarga
+  // 5. DIMENSI KELUARGA, BIRRUL WALIDAIN & JODOH
   if (text.includes('orang tua') || text.includes('ibu') || text.includes('ayah') || text.includes('keluarga') || text.includes('jodoh') || text.includes('suami') || text.includes('istri')) {
-    return {
-      notes: `• Berbakti kepada kedua orang tua (birrul walidain) adalah jembatan tercepat menuju surga dan pelebur dosa-dosa besar.\n• Rumah tangga yang berkah dibangun di atas pondasi takwa, saling memaafkan, dan kesabaran dalam melayani sesama anggota keluarga.\n• Keridhaan Allah sangat berkorelasi dengan kebahagiaan yang kita hadirkan untuk orang tua kita.`,
-      actionPlan: `1. Luangkan waktu menyapa, memijat, atau menelepon orang tua dengan kalimat yang santun dan penuh kasih sayang.\n2. Selalu mendoakan kedua orang tua di setiap ba'da sholat: "Rabbighfir lii wa liwaalidayya...".\n3. Redam amarah dan dahulukan musyawarah saat timbul perselisihan di dalam rumah tangga.`
-    };
+    noteItems.push('Pintu Surga Pertengahan: Berbakti kepada kedua orang tua (birrul walidain) adalah pintu surga yang paling indah dan amalan pelebur dosa-dosa besar.');
+    noteItems.push('Korelasi Ridho Ilahi: Keridhaan Allah berada pada keridhaan orang tua, dan murka Allah berada pada kemurkaan orang tua (HR. Tirmidzi).');
+    noteItems.push('Keberkahan Rumah Tangga: Pondasi sakinah, mawaddah, wa rahmah ditegakkan dengan saling memaafkan dan mengedepankan adab akhlakul karimah.');
+    noteItems.push('Pentingnya Mendoakan Orang Tua: Doa anak sholeh adalah aset investasi akhirat yang pahalanya terus mengalir abadi tanpa terputus.');
+    noteItems.push('Menjaga Keharmonisan: Meredam ego dan mengedepankan musyawarah yang santun dalam setiap dinamika rumah tangga.');
+
+    actionItems.push('Menyapa, memeluk, atau menelepon orang tua hari ini dengan kata-kata yang lembut dan penuh penghormatan.');
+    actionItems.push('Menyisihkan rezeki khusus untuk membahagiakan orang tua dan memenuhi kebutuhan mereka tanpa diminta.');
+    actionItems.push('Merutinkan doa "Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa" setiap selesai sholat.');
+    actionItems.push('Menjaga kehangatan komunikasi dengan pasangan dan keluarga dengan saling mendoakan kebaikan.');
   }
 
-  // 6. Tema Sabar, Ujian Hidup & Istiqomah
-  if (text.includes('sabar') || text.includes('ujian') || text.includes('istiqomah') || text.includes('cobaan') || text.includes('masalah') || text.includes('hijrah')) {
-    return {
-      notes: `• Di balik setiap kesulitan yang berat pasti ada kemudahan yang menyertainya (Fa inna ma'al 'usri yusra).\n• Ujian hidup adalah tanda cinta Allah untuk menghapus dosa, menaikkan derajat, dan membersihkan hati dari cinta duniawi.\n• Istiqomah tidak menuntut kesempurnaan tanpa cela, melainkan komitmen untuk selalu bangkit kembali bertaubat setiap kali terjatuh.`,
-      actionPlan: `1. Tetapkan satu amalan sunnah kecil (seperti 2 rakaat dhuha atau 1 lembar Quran) yang dikerjakan konsisten setiap hari.\n2. Hindari perkataan mengeluh kepada orang lain; keluhkan semua ujian hanya kepada Allah dalam sujud.\n3. Perbanyak doa keteguhan iman: "Yaa Muqallibal quluub, tsabbit qalbii 'ala diinik".`
-    };
+  // 6. DIMENSI SABAR, UJIAN HIDUP, ISTIQOMAH & HIJRAH
+  if (text.includes('sabar') || text.includes('ujian') || text.includes('istiqomah') || text.includes('cobaan') || text.includes('masalah') || text.includes('hijrah') || noteItems.length === 0) {
+    noteItems.push('Hikmah Ujian Hidup: Ujian bukanlah bentuk kemurkaan Allah, melainkan sarana penggugur dosa, pengikis kesombongan, dan pengangkat derajat keimanan.');
+    noteItems.push('Kepastian Kemudahan: Janji Allah itu pasti; di balik setiap satu kesulitan yang berat telah dipersiapkan dua kemudahan yang melapangkan.');
+    noteItems.push('Makna Istiqomah: Bertahan dalam kebaikan secara konsisten lebih mulia dari seribu karomah; terus melangkah walau perlahan.');
+    noteItems.push('Menjaga Lingkungan Positif: Berteman dengan orang-orang sholeh yang senantiasa menasehati dalam kebenaran dan kesabaran.');
+    noteItems.push('Benteng Tazkiyatun Nafs: Membiasakan diri bertaubat setiap kali melakukan kekhilafan tanpa menunggu hari esok.');
+    noteItems.push('Ilmu yang Bermanfaat: Menuntut ilmu agama wajib dibarengi dengan keikhlasan niat untuk memperbaiki diri, bukan untuk mendebat orang lain.');
+
+    actionItems.push('Menetapkan satu target amalan sunnah ringan tapi konsisten tanpa putus setiap hari.');
+    actionItems.push('Menahan lisan dari mengeluh saat tertimpa ujian dan melatih diri mengucap "Inna lillahi wa inna ilaihi raaji\'uun".');
+    actionItems.push('Menghadiri atau menyimak kajian ilmu Islam secara rutin minimal satu kali dalam sepekan.');
+    actionItems.push('Memperbanyak doa memohon ketetapan iman: "Yaa Muqallibal quluub, tsabbit qalbii \'ala diinik".');
+    actionItems.push('Menebarkan kebaikan dan ilmu yang didapat kepada keluarga atau rekan kerja dengan tutur kata yang santun.');
   }
 
-  // Default Template Universal yang Mendalam
+  // Susun daftar Poin Penting dengan simbol bullet yang rapi
+  const notesFormatted = noteItems
+    .map(item => `• ${item}`)
+    .join('\n\n');
+
+  // Susun daftar Rencana Aksi Nyata dengan nomor urut yang jelas
+  const actionPlanFormatted = actionItems
+    .map((item, idx) => `${idx + 1}. ${item}`)
+    .join('\n\n');
+
   return {
-    notes: `• Ilmu yang bermanfaat adalah ilmu yang membuahkan rasa takut kepada Allah dan mendorong perbaikan akhlak dalam keseharian.\n• Setiap nasehat agama yang didengar adalah bentuk kasih sayang Allah untuk menuntun kembali langkah kita ke jalan yang lurus.\n• Menjaga kebersihan hati dari penyakit riya', ujub, dan iri dengki adalah kunci utama agar ilmu meresap menjadi hidayah.`,
-    actionPlan: `1. Catat 1 poin paling menyentuh dari kajian ini dan bagikan kepada keluarga atau sahabat terdekat.\n2. Lakukan perbaikan diri mulai dari hal kecil hari ini, terutama memperbaiki kualitas sholat fardhu.\n3. Amalkan doa memohon ilmu yang bermanfaat: "Allahumma inni as-aluka 'ilman naafi'aa, wa rizqan thayyibaa, wa 'amalan mutaqabbalaa".`
+    notes: notesFormatted,
+    actionPlan: actionPlanFormatted
   };
 }
 

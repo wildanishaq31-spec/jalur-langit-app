@@ -2014,4 +2014,30 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 75 - Ekspansi Fleksibilitas Multi-Poin Poin Penting & Rencana Aksi Nyata Resume Kajian
+* **Permintaan Pengguna**:
+  - *"untuk point penting dan rencana aksinyata boleh banyak sesuai kajiannya jadi tidak terpaku hanya ada 3 saja"*
+* **Akar Masalah & Kebutuhan Teknis**:
+  - Sebelumnya, algoritma peringkas dan template hanya membatasi 3 poin hikmah dan 3 butir rencana aksi.
+  - Selain itu, kartu resume kajian di `QuranJournalTab.tsx` belum dilengkapi dengan `whitespace-pre-line`, sehingga catatan bertingkat banyak berisiko menyatu atau kurang terstruktur rapi.
+  - Pengguna membutuhkan fleksibilitas penuh di mana jumlah poin penting dan rencana aksi dapat memuat 5, 6, 7, 8 butir atau lebih banyak butir sesuai kedalaman isi ceramah.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Ekspansi Engine Cerdas (`src/utils/smartKajianSummarizer.ts`)**:
+     - *Dukungan Multi-Poin Tanpa Batas*: Dirombak menggunakan pendekatan modular di mana sistem mengumpulkan seluruh dimensi relevan dari judul dan tema ceramah (Hakikat Masalah, Dalil Al-Qur'an/Sunnah, Kunci Hati, Adab & Doa, Bahaya Penghalang, Penawar Jiwa).
+     - Hasilnya menghasilkan **5 hingga 8 butir mendalam untuk Poin Penting & Tadabbur** dan **4 hingga 6 butir bertahap untuk Rencana Aksi Nyata**.
+     - Pembaruan seluruh preset kajian (*UAH, Hanan Attaki, Buya Yahya, Khalid Basalamah, UAS*) dengan cakupan 6 butir poin hikmah dan 5 langkah aksi nyata komprehensif.
+  2. **Peningkatan Form Modal (`src/components/modals/AddKajianModal.tsx`)**:
+     - Memperluas tinggi textarea `notes` (`rows={6}`) dan `actionPlan` (`rows={5}`) dengan font yang nyaman dibaca (`font-mono text-[11.5px] leading-relaxed`).
+     - Menyematkan badge keterangan interaktif: *"Bebas banyak poin sesuai kajian"* dan *"Bisa banyak langkah nyata"*.
+     - Menambahkan teks tips format penulisan (awalan butir `•` atau nomor urut `1, 2, 3...`).
+  3. **Penyempurnaan Tampilan Kartu di Tab Kajian (`src/components/tabs/QuranJournalTab.tsx`)**:
+     - Menambahkan styling `whitespace-pre-line` dan box terpisah:
+       - **Box 1: 💡 Poin Penting & Tadabbur Kajian**: Menampilkan seluruh butir hikmah dengan jarak spasi baris yang rapi.
+       - **Box 2: 🔖 Rencana Aksi Nyata & Penerapan Hidup**: Berlatar lembut emerald dengan indentasi terstruktur, memudahkan pengguna membaca langkah konkret pengamalan.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+  - Poin penting kini dapat memuat banyak butir hikmah tanpa batasan, tersusun rapi dan terstruktur dalam kartu kajian.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

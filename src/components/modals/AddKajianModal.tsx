@@ -373,29 +373,45 @@ export const AddKajianModal: React.FC<AddKajianModalProps> = ({ isOpen, onClose,
           </div>
 
           <div>
-            <label className="block text-xs font-semibold mb-1 text-stone-700 dark:text-stone-300">
-              💡 Poin Penting &amp; Tadabbur
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                💡 Poin Penting &amp; Tadabbur
+              </label>
+              <span className="text-[10px] text-teal-700 dark:text-teal-400 font-semibold bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
+                Bebas banyak poin sesuai kajian
+              </span>
+            </div>
             <textarea
-              rows={4}
-              placeholder="Hikmah utama dan ilmu baru yang didapatkan dari kajian..."
+              rows={6}
+              placeholder="Tuliskan butir-butir hikmah utama dan ilmu yang didapatkan (bisa 5, 7, atau lebih banyak poin)..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-[11.5px]"
             />
+            <p className="text-[10px] text-stone-500 mt-0.5">
+              💡 Tip: Format butir dengan awalan tanda &bull; atau nomor urut agar rapi saat dibaca.
+            </p>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold mb-1 text-stone-700 dark:text-stone-300">
-              🌱 Rencana Aksi Nyata (Penerapan Sehari-hari)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                🌱 Rencana Aksi Nyata (Penerapan Sehari-hari)
+              </label>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                Bisa banyak langkah nyata
+              </span>
+            </div>
             <textarea
-              rows={3}
-              placeholder="Aksi konkret yang akan kulakukan mulai hari ini setelah menyimak kajian..."
+              rows={5}
+              placeholder="Langkah-langkah konkret yang akan kulakukan (bisa banyak poin aksi nyata harian/mingguan)..."
               value={actionPlan}
               onChange={(e) => setActionPlan(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-[11.5px]"
             />
+            <p className="text-[10px] text-stone-500 mt-0.5">
+              🌱 Tip: Buat rencana aksi yang bertahap (harian, mingguan, evaluasi diri).
+            </p>
           </div>
 
           <div className="pt-2">

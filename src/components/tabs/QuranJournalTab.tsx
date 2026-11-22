@@ -660,16 +660,28 @@ export const QuranJournalTab: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Poin Penting & Tadabbur (Multi-Point Support) */}
                   {note.notes && (
-                    <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-stone-100 dark:border-emerald-900/30">
-                      {note.notes}
-                    </p>
+                    <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200/60 dark:border-emerald-800/40 space-y-1.5">
+                      <span className="font-bold text-teal-800 dark:text-amber-300 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                        💡 Poin Penting &amp; Tadabbur Kajian
+                      </span>
+                      <div className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line pl-1">
+                        {note.notes}
+                      </div>
+                    </div>
                   )}
 
+                  {/* Rencana Aksi Nyata (Multi-Step Action Plan Support) */}
                   {note.actionPlan && (
-                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                      <Bookmark className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                      <span>Penerapan Hidup: {note.actionPlan}</span>
+                    <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                        <Bookmark className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>Rencana Aksi Nyata &amp; Penerapan Hidup:</span>
+                      </div>
+                      <div className="text-xs text-emerald-950 dark:text-emerald-100/90 whitespace-pre-line leading-relaxed pl-5">
+                        {note.actionPlan}
+                      </div>
                     </div>
                   )}
                 </div>
