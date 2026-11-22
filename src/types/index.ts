@@ -9,6 +9,27 @@ export interface AmalanLinkedMenu {
   actionLabel: string;
 }
 
+export interface AmalanStep {
+  step: number;
+  title: string;
+  detail: string;
+}
+
+export interface AmalanDalil {
+  source: string; // Contoh: 'HR. Bukhari no. 1120 & Muslim no. 758' atau 'QS. Al-Isra: 79'
+  grade?: 'Shahih' | 'Hasan' | "Al-Qur'an" | 'Hasan Shahih' | 'Fadhail Amal' | string;
+  arabicText?: string;
+  indonesianText: string;
+  notes?: string;
+}
+
+export interface AmalanBacaan {
+  title: string;
+  arabic: string;
+  latin: string;
+  translation: string;
+}
+
 export interface AmalanItem {
   id: string;
   title: string;
@@ -21,6 +42,13 @@ export interface AmalanItem {
   virtue?: string;
   isPriority?: boolean;
   linkedMenu?: AmalanLinkedMenu;
+
+  // v3.0 Enriched Islamic Guidance Fields
+  hukum?: string; // e.g. "Sunnah Mu'akkadah", "Fardhu 'Ain", "Sunnah"
+  tataCara?: AmalanStep[]; // Panduan langkah demi langkah praktis
+  bacaanList?: AmalanBacaan[]; // Teks Arab berharakat, latin, arti
+  dalil?: AmalanDalil; // Referensi hadis/qur'an shahih/hasan
+  tipsIstiqomah?: string; // Tips menjaga keistiqomahan
 }
 
 export type HajatCategory = 

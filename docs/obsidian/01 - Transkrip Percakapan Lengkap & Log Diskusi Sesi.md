@@ -1677,4 +1677,33 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 65 - Eksekusi Tahap 2: Pengayaan Materi Ibadah Berdalil Shahih & Modal Detail Amalan Interaktif
+* **Permintaan Pengguna**:
+  - *"lanjut Tahap 2: Pengayaan Materi Ibadah Berdalil Shahih & Modal Detail Amalan"*
+* **Analisis & Solusi Teknis**:
+  1. **Ekspansi Kontrak Tipe Data (`src/types/index.ts`)**:
+     - Memperluas antarmuka `AmalanItem` dengan tipe baru:
+       - `AmalanStep`: Langkah kaifiyah praktis berurutan (step 1, 2, 3...) untuk membimbing pengguna awam.
+       - `AmalanDalil`: Rujukan ayat Al-Qur'an dan Hadits otentik dari Kutubus Sittah (Shahih Bukhari, Muslim, Abu Dawud, Tirmidzi, An-Nasa'i) dengan derajat hadis (`Shahih`, `Hasan`, `Al-Qur'an`).
+       - `AmalanBacaan`: Teks doa/dzikir Arab berharakat jelas, transliterasi Latin, dan terjemahan bahasa Indonesia resmi.
+       - `hukum`: Keterangan status hukum fikih (Sunnah Mu'akkadah, Fardhu 'Ain, Sunnah Mustahabbah).
+       - `tipsIstiqomah`: Petunjuk praktis menjaga konsistensi amalan harian.
+  2. **Pengayaan 20 Amalan Bawaan (`src/data/amalanData.ts`)**:
+     - Memperkaya seluruh 20 amalan inti (Tahajjud, Witir, Istighfar Sahur, Munajat Hajat, Qobliyah Subuh, Sholat Subuh, Sedekah Subuh, Dzikir Pagi, Sholat Dhuha, Dzuhur & Rawatib, Ikhtiar Bumi, Sholat Ashar, Dzikir Petang, QS. Al-Waqi'ah, Sholat Maghrib, Isya & Rawatib, QS. Al-Mulk, Sholawat Jibril, Sayyidul Istighfar, Muhasabah & Gratitude Journal).
+     - Menjamin **seluruh 20 ID amalan lama tetap identik 100%** sehingga riwayat checklist kalender pengguna tidak terputus.
+  3. **Pembangunan Komponen Modal Detail Interaktif (`src/components/modals/AmalanDetailModal.tsx`)**:
+     - Antarmuka modern dengan **3 Segmented Tabs**:
+       - **Tab 1 - Tata Cara**: Langkah demi langkah pelaksanaan bernomor urut + kotak petunjuk Kunci Istiqomah.
+       - **Tab 2 - Bacaan & Doa**: Teks Arab berharakat besar dan nyaman dibaca (`leading-loose`), transliterasi Latin miring, terjemahan resmi, serta tombol salin satu-klik dengan indikator tersalin.
+       - **Tab 3 - Dalil Shahih**: Kutipan hadis/ayat Al-Qur'an lengkap dengan lencana derajat hadis (Shahih/Hasan), nomor hadis resmi, dan penjelasan fadhilah.
+     - Footer interaktif: Tombol centang langsung *"Tandai Selesai / Sudah Selesai"* dan tombol lintas-menu langsung ke Tasbih/Hajat/Quran jika amalan memiliki tautan terkait.
+  4. **Integrasi ke Tab Amalan (`src/components/tabs/AmalanTab.tsx`)**:
+     - Judul amalan kini interaktif (dapat diklik untuk membuka panduan).
+     - Tombol baru yang elegan: **`📖 Panduan & Dalil`** di setiap kartu amalan untuk mempermudah akses edukasi ibadah.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di 18/18 rute Next.js Turbopack.
+  - Pengguna kini dapat mempelajari kaifiyah ibadah yang benar, membaca lafadz Arab-Latin-arti, serta mantap beramal dengan dalil hadis shahih yang jelas.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
