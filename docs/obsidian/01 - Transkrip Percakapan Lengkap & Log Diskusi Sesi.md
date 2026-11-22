@@ -2067,4 +2067,38 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 77 & 78 - Transformasi Sub-Tab "1 Day 1 Juz" Menjadi "Tilawah & Quran Habit Builder" Ramah Pemula
+* **Permintaan Pengguna**:
+  - *"kalau tab 1 day 1 jus ini bagusnya bagaimana menurutmu selain hanya checklist, karena setiap orang apalagi baru belajar kan tidak bisa langsung 1 jus"*
+  - Pengguna menyetujui arsitektur baru: *"boleh lanjut kita revisi"*.
+* **Akar Masalah & Kebutuhan Desain**:
+  1. Fitur lama hanya berupa 30 kotak checklist kaku "1 Day 1 Juz" tanpa panduan bertahap bagi pemula atau mereka yang baru belajar membaca Al-Qur'an.
+  2. Beban psikologis 1 juz (20 halaman/hari) seringkali membuat pengguna pemula merasa bersalah dan putus asa sehingga berhenti membaca Al-Qur'an sama sekali.
+  3. Tidak ada penanda/pembatas halaman mushaf (*digital bookmark*) yang mencatat posisi terakhir membaca (Surat, Ayat, Halaman ke berapa dari 604 halaman mushaf standar).
+  4. Tidak ada strategi pencicilan yang memecah bacaan menjadi porsi kecil yang ringan setelah sholat fardhu 5 waktu.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Pembuatan Katalog 30 Juz & Mode Target Tilawah Bertahap ([src/data/quranJuzCatalog.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/data/quranJuzCatalog.ts))**:
+     - Berisi metadata lengkap 30 Juz mushaf Rasm Utsmani standar (halaman 1–604): nama surat awal & akhir, rentang halaman, total lembar, serta intisari tema besar setiap Juz.
+     - Menyediakan 3 tingkatan target harian (*Level Selector*):
+       - **Level 1: Pemula Santai** (1 Lembar / 2 Halaman per hari, target khatam ~10 bulan, sangat cocok untuk pemula/sibuk).
+       - **Level 2: Menengah Konsisten** (2 Lembar / 4 Halaman per hari, target khatam ~5 bulan, *Rekomendasi* 🌟).
+       - **Level 3: Pejuang 1 Juz** (1 Juz / 20 Halaman per hari, target khatam 1 bulan / 30 hari).
+  2. **Pembatas Halaman Terakhir (*Digital Bookmark*) ([src/components/modals/EditBookmarkModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/EditBookmarkModal.tsx))**:
+     - Kartu khusus di bagian atas sub-tab tilawah berbingkai emas/emerald yang menampilkan posisi terakhir: Nama Surah, Nomor Ayat, Halaman Mushaf (1–604), dan Juz otomatis.
+     - Modal interaktif mengambang (`z-[100]`) untuk memperbarui pembatas dalam 1 klik dengan auto-kalkulasi nomor Juz dari nomor halaman.
+  3. **Strategi Cicil 5 Waktu Sholat Terhubung ke Checklist Amalan**:
+     - 5 tombol interaktif per waktu sholat (Subuh, Dzuhur, Ashar, Maghrib, Isya) dengan indikator porsi bacaan sesuai level yang dipilih (misal: 4 hal/sholat untuk Pejuang 1 Juz).
+     - State `dailyCicilSholatMap[selectedDate]` tersinkronisasi otomatis: ketika kelima waktu sholat dicentang, amalan `tilawah_one_day_one_juz` di Checklist Amalan hari tersebut otomatis ditandai **Selesai (Hijau ✓)** dengan efek konfeti.
+  4. **Peta 30 Juz Interaktif & Kartu Inspeksi Detail Kandungan ([src/components/tabs/QuranJournalTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/QuranJournalTab.tsx))**:
+     - Grid 30 tombol Juz dengan status selesai dan indikator juz yang sedang diinspeksi.
+     - Kartu inspeksi menampilkan surat pembuka s/d penutup, nomor halaman, intisari tema Juz, serta tombol "Tandai Juz Selesai" / "Batal Tandai".
+  5. **Mutiara Hadits Keutamaan Tilawah Al-Qur'an**:
+     - Menghadirkan hadits shahih HR. At-Tirmidzi no. 2910 tentang pahala 10 kebaikan untuk setiap satu huruf Al-Qur'an yang dibaca.
+  6. **Integrasi State & Backup Data ([src/store/useJalurLangitStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useJalurLangitStore.ts), [src/types/index.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/types/index.ts))**:
+     - State `quranBookmark`, `quranPaceMode`, dan `dailyCicilSholatMap` disimpan secara persisten di LocalStorage dan didukung penuh oleh sistem Backup & Restore (baik mode replace maupun merge).
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack tanpa ada kesalahan kompilasi atau TypeScript.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

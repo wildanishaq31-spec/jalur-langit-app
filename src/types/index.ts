@@ -192,6 +192,17 @@ export interface JalurLangitBackupMeta {
   totalGlowUpDates: number;
 }
 
+export interface QuranBookmark {
+  surahName: string;
+  surahNumber: number;
+  ayahNumber: number;
+  pageNumber: number;
+  juzNumber: number;
+  updatedAt: string;
+}
+
+export type QuranPaceMode = 'pemula' | 'menengah' | 'pejuang';
+
 export interface JalurLangitBackupData {
   app: string;
   schemaVersion: number;
@@ -206,6 +217,9 @@ export interface JalurLangitBackupData {
   glowUpMap?: Record<string, GlowUpHabits>;
   visionBoardItems?: VisionBoardItem[];
   quranCompletedJuz?: number[];
+  quranBookmark?: QuranBookmark;
+  quranPaceMode?: QuranPaceMode;
+  dailyCicilSholatMap?: Record<string, { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean }>;
   quranTadabburList?: QuranTadabburItem[];
   kajianNotes?: KajianItem[];
   gratitudeMap?: Record<string, string[]>;

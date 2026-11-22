@@ -22,6 +22,7 @@ import {
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
+import { QuranBookmark, QuranPaceMode } from '@/data/quranJuzCatalog';
 import { 
   UserLocationData, 
   DEFAULT_USER_LOCATION, 
@@ -232,6 +233,12 @@ interface JalurLangitState {
   // Quran & Kajian
   quranCompletedJuz: number[];
   toggleJuz: (juz: number) => void;
+  quranBookmark: QuranBookmark;
+  setQuranBookmark: (bookmark: Partial<QuranBookmark>) => void;
+  quranPaceMode: QuranPaceMode;
+  setQuranPaceMode: (mode: QuranPaceMode) => void;
+  dailyCicilSholatMap: Record<string, { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean }>;
+  toggleDailyCicilSholat: (dateStr: string, sholatKey: 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya') => void;
   kajianNotes: KajianItem[];
   addKajian: (item: Omit<KajianItem, 'id'>) => void;
   updateKajian: (id: string, updated: Partial<Omit<KajianItem, 'id'>>) => void;
@@ -676,6 +683,55 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           };
         });
       },
+      quranBookmark: {
+        surahName: 'Al-Fatihah',
+        surahNumber: 1,
+        ayahNumber: 1,
+        pageNumber: 1,
+        juzNumber: 1,
+        updatedAt: getTodayDateString(),
+      },
+      setQuranBookmark: (bookmark) => {
+        set((state) => ({
+          quranBookmark: {
+            ...state.quranBookmark,
+            ...bookmark,
+            updatedAt: getTodayDateString(),
+          }
+        }));
+      },
+      quranPaceMode: 'menengah',
+      setQuranPaceMode: (mode) => {
+        set({ quranPaceMode: mode });
+      },
+      dailyCicilSholatMap: {},
+      toggleDailyCicilSholat: (dateStr, sholatKey) => {
+        const state = get();
+        const currentDayMap = state.dailyCicilSholatMap[dateStr] || {
+          subuh: false,
+          dzuhur: false,
+          ashar: false,
+          maghrib: false,
+          isya: false,
+        };
+        const nextVal = !currentDayMap[sholatKey];
+        const updatedDay = {
+          ...currentDayMap,
+          [sholatKey]: nextVal,
+        };
+        const allDone = updatedDay.subuh && updatedDay.dzuhur && updatedDay.ashar && updatedDay.maghrib && updatedDay.isya;
+
+        set((s) => ({
+          dailyCicilSholatMap: {
+            ...s.dailyCicilSholatMap,
+            [dateStr]: updatedDay,
+          }
+        }));
+
+        if (allDone) {
+          get().markAmalanCompleted(dateStr, 'tilawah_one_day_one_juz');
+        }
+      },
       kajianNotes: [],
       addKajian: (item) => {
         const newItem: KajianItem = {
@@ -883,6 +939,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           glowUpMap: state.glowUpMap || {},
           visionBoardItems: state.visionBoardItems || [],
           quranCompletedJuz: state.quranCompletedJuz || [],
+          quranBookmark: state.quranBookmark,
+          quranPaceMode: state.quranPaceMode,
+          dailyCicilSholatMap: state.dailyCicilSholatMap || {},
           quranTadabburList: state.quranTadabburList || [],
           kajianNotes: state.kajianNotes || [],
           gratitudeMap: state.gratitudeMap || {},
@@ -914,6 +973,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             glowUpMap: backup.glowUpMap || {},
             visionBoardItems: Array.isArray(backup.visionBoardItems) && backup.visionBoardItems.length > 0 ? backup.visionBoardItems : current.visionBoardItems,
             quranCompletedJuz: Array.isArray(backup.quranCompletedJuz) ? backup.quranCompletedJuz : [],
+            ...(backup.quranBookmark ? { quranBookmark: backup.quranBookmark } : {}),
+            ...(backup.quranPaceMode ? { quranPaceMode: backup.quranPaceMode } : {}),
+            dailyCicilSholatMap: backup.dailyCicilSholatMap || {},
             quranTadabburList: Array.isArray(backup.quranTadabburList) ? backup.quranTadabburList : [],
             kajianNotes: Array.isArray(backup.kajianNotes) ? backup.kajianNotes : [],
             gratitudeMap: backup.gratitudeMap || {},
@@ -1025,6 +1087,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             glowUpMap: mergedGlowUp,
             visionBoardItems: Array.from(currentVisionMap.values()),
             quranCompletedJuz: mergedJuz,
+            ...(backup.quranBookmark ? { quranBookmark: backup.quranBookmark } : {}),
+            ...(backup.quranPaceMode ? { quranPaceMode: backup.quranPaceMode } : {}),
+            dailyCicilSholatMap: { ...(current.dailyCicilSholatMap || {}), ...(backup.dailyCicilSholatMap || {}) },
             quranTadabburList: Array.from(currentTadabburMap.values()),
             kajianNotes: Array.from(currentKajianMap.values()),
             gratitudeMap: mergedGratitude,

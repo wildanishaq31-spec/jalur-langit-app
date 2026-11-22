@@ -17,14 +17,25 @@ import {
   Pencil,
   Copy,
   CheckCheck,
-  Eye
+  Eye,
+  Sunrise,
+  Sun,
+  Sunset,
+  Moon,
+  Flame,
+  Leaf,
+  CheckCircle2,
+  Info,
+  ChevronRight
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { QuranTadabburItem, KajianItem } from '@/types';
 import { AddKajianModal } from '@/components/modals/AddKajianModal';
 import { AddTadabburModal } from '@/components/modals/AddTadabburModal';
 import { SurahReaderModal } from '@/components/modals/SurahReaderModal';
+import { EditBookmarkModal } from '@/components/modals/EditBookmarkModal';
 import { TADABBUR_AYAT_FALLBACK } from '@/data/surahReaderData';
+import { ALL_30_JUZ, QURAN_PACE_CONFIGS, QuranPaceMode } from '@/data/quranJuzCatalog';
 import { formatDateIndonesian } from '@/utils/dateUtils';
 
 export const QuranJournalTab: React.FC = () => {
@@ -42,16 +53,24 @@ export const QuranJournalTab: React.FC = () => {
     setQuranActiveSubTab,
     markAmalanCompleted,
     markAmalanIncomplete,
-    isAmalanCompleted
+    isAmalanCompleted,
+    quranBookmark,
+    quranPaceMode,
+    setQuranPaceMode,
+    dailyCicilSholatMap,
+    toggleDailyCicilSholat
   } = useJalurLangitStore();
 
   const isWaqiahDone = isAmalanCompleted(selectedDate, 'surah_waqiah');
   const isMulkDone = isAmalanCompleted(selectedDate, 'surah_mulk');
   const isKahfiDone = isAmalanCompleted(selectedDate, 'surah_kahfi');
   const isGratitudeAmalanDone = isAmalanCompleted(selectedDate, 'muhasabah_gratitude');
+  const isTilawahDone = isAmalanCompleted(selectedDate, 'tilawah_one_day_one_juz');
 
   const [isKajianModalOpen, setIsKajianModalOpen] = useState(false);
   const [isTadabburModalOpen, setIsTadabburModalOpen] = useState(false);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
+  const [activeInspectJuz, setActiveInspectJuz] = useState<number>(1);
   const [editingTadabburItem, setEditingTadabburItem] = useState<QuranTadabburItem | null>(null);
   const [editingKajianItem, setEditingKajianItem] = useState<KajianItem | null>(null);
   const [readingSurahId, setReadingSurahId] = useState<'al-waqiah' | 'al-mulk' | 'al-kahfi' | null>(null);
@@ -177,7 +196,7 @@ export const QuranJournalTab: React.FC = () => {
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-          <span className="truncate">1 Day 1 Juz ({quranCompletedJuz.length}/30)</span>
+          <span className="truncate">Tilawah ({quranCompletedJuz.length}/30)</span>
         </button>
 
         <button
@@ -563,46 +582,436 @@ export const QuranJournalTab: React.FC = () => {
         </div>
       )}
 
-      {/* SUB-TAB 2: 1 DAY 1 JUZ TRACKER */}
+      {/* SUB-TAB 2: TILAWAH & QURAN HABIT BUILDER (1 DAY 1 JUZ + TILAWAH BERTAHAP) */}
       {quranActiveSubTab === 'juz' && (
-        <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                <span>1 Day 1 Juz Tracker (Target Khatam 30 Hari)</span>
-              </h2>
-              <p className="text-xs text-stone-500">
-                Selesaikan 1 juz setiap hari agar khatam sebulan terasa ringan.
-              </p>
+        <div className="space-y-5">
+          {/* 1. Header & Overall Progress Banner */}
+          <div className="p-4 sm:p-5 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+                  <span>Tilawah &amp; Quran Habit Builder</span>
+                </h2>
+                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                  Bangun kebiasaan tilawah harian sesuai kemampuan, cicil per waktu sholat, dan pantau kemajuan 30 juz.
+                </p>
+              </div>
+
+              {/* Progress Summary Pill */}
+              <div className="flex items-center gap-2.5 bg-stone-50 dark:bg-emerald-900/30 p-2 sm:p-2.5 rounded-2xl border border-stone-200/80 dark:border-emerald-800/60 shrink-0">
+                <div className="text-right">
+                  <div className="text-xs font-black text-emerald-800 dark:text-emerald-300">
+                    {quranCompletedJuz.length} / 30 Juz
+                  </div>
+                  <div className="text-[10px] text-stone-500 font-semibold">
+                    {Math.round((quranCompletedJuz.length / 30) * 100)}% Selesai
+                  </div>
+                </div>
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  {Math.round((quranCompletedJuz.length / 30) * 100)}%
+                </div>
+              </div>
             </div>
 
-            <div className="px-4 py-2 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-900 dark:text-teal-200 text-xs font-bold">
-              {quranCompletedJuz.length} / 30 Juz ({Math.round((quranCompletedJuz.length / 30) * 100)}%)
+            {/* Visual Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="w-full bg-stone-100 dark:bg-emerald-900/40 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-200/60 dark:border-emerald-800/40">
+                <div
+                  className="bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-400 h-full rounded-full transition-all duration-500 shadow-xs"
+                  style={{ width: `${Math.max(4, Math.min(100, (quranCompletedJuz.length / 30) * 100))}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-stone-500 px-0.5">
+                <span>Juz 1</span>
+                <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                  {30 - quranCompletedJuz.length === 0
+                    ? '🎉 Ma Syaa Allah, Khatam 30 Juz!'
+                    : `Tersisa ${30 - quranCompletedJuz.length} juz lagi`}
+                </span>
+                <span>Juz 30</span>
+              </div>
+            </div>
+
+            {/* Sync with Checklist Amalan Bar */}
+            <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-emerald-900/40">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isTilawahDone ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                  Status Checklist Amalan Hari Ini ({formatDateIndonesian(selectedDate)}):
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isTilawahDone) {
+                    markAmalanIncomplete(selectedDate, 'tilawah_one_day_one_juz');
+                  } else {
+                    markAmalanCompleted(selectedDate, 'tilawah_one_day_one_juz');
+                    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer ${
+                  isTilawahDone
+                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                    : 'bg-stone-100 dark:bg-emerald-900/30 hover:bg-emerald-50 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-emerald-800'
+                }`}
+              >
+                {isTilawahDone ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>✓ Selesai di Checklist</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full border border-stone-400" />
+                    <span>Tandai Selesai Hari Ini</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2 pt-2">
-            {Array.from({ length: 30 }).map((_, idx) => {
-              const juzNum = idx + 1;
-              const isDone = quranCompletedJuz.includes(juzNum);
+          {/* 2. Digital Bookmark Card (Pembatas Terakhir Dibaca) */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-teal-500/10 dark:from-amber-950/30 dark:via-emerald-950/30 dark:to-teal-950/30 border border-amber-300/70 dark:border-amber-700/50 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-2xl bg-amber-500 text-white shadow-xs">
+                  <Bookmark className="w-4 h-4 fill-white" />
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Pembatas Terakhir Dibaca</span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-[9px] font-black">
+                      Bookmark
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-amber-800/80 dark:text-amber-300/70">
+                    Posisi bacaan mushaf terakhir agar langsung lanjut tanpa lupa.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsBookmarkModalOpen(true)}
+                className="px-3 py-1.5 bg-white dark:bg-emerald-900 hover:bg-amber-50 dark:hover:bg-emerald-800 text-amber-900 dark:text-amber-200 text-xs font-bold rounded-xl border border-amber-200 dark:border-amber-700 shadow-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+              >
+                <Pencil className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                <span>Perbarui Pembatas</span>
+              </button>
+            </div>
+
+            {/* Bookmark Info Box */}
+            <div className="p-3.5 bg-white/90 dark:bg-emerald-950/70 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <span>{quranBookmark.surahName}</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                    Ayat {quranBookmark.ayahNumber}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-stone-600 dark:text-stone-400 font-medium">
+                  <span className="flex items-center gap-1">
+                    📖 Halaman: <strong className="text-amber-700 dark:text-amber-400">{quranBookmark.pageNumber}</strong> / 604
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    ✨ Juz: <strong className="text-teal-700 dark:text-teal-400">{quranBookmark.juzNumber}</strong>
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="text-[10px] text-stone-400 block">Terakhir diperbarui:</span>
+                <span className="text-[11px] font-semibold text-stone-600 dark:text-stone-300">
+                  {formatDateIndonesian(quranBookmark.updatedAt ? quranBookmark.updatedAt.slice(0, 10) : selectedDate)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Level Target Selector (Pemula, Menengah, Pejuang) */}
+          <div className="p-4 sm:p-5 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-3.5">
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Leaf className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Pilih Level Target Harian (Bertahap &amp; Anti-Beban)</span>
+              </h3>
+              <p className="text-[11px] text-stone-500 mt-0.5">
+                Pilihlah target yang paling realistis bagimu. Sedikit demi sedikit namun istiqomah lebih dicintai Allah.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {(Object.keys(QURAN_PACE_CONFIGS) as QuranPaceMode[]).map((modeKey) => {
+                const config = QURAN_PACE_CONFIGS[modeKey];
+                const isSelected = quranPaceMode === modeKey;
+
+                return (
+                  <button
+                    key={modeKey}
+                    type="button"
+                    onClick={() => setQuranPaceMode(modeKey)}
+                    className={`p-3.5 rounded-2xl border text-left transition-all active:scale-98 flex flex-col justify-between gap-2.5 cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-50/80 dark:bg-emerald-900/40 border-emerald-500 dark:border-emerald-500 shadow-sm ring-1 ring-emerald-500'
+                        : 'bg-stone-50/60 dark:bg-emerald-950/20 border-stone-200/80 dark:border-emerald-900/60 hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                          isSelected
+                            ? 'bg-emerald-700 text-white'
+                            : 'bg-stone-200 dark:bg-emerald-900 text-stone-700 dark:text-stone-300'
+                        }`}>
+                          {config.badge}
+                        </span>
+                        {isSelected && (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        )}
+                      </div>
+                      <div className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100">
+                        {config.title}
+                      </div>
+                      <div className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        {config.targetDailyText}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-stone-200/60 dark:border-emerald-800/40 text-[10px] text-stone-500 leading-snug">
+                      {config.description}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Strategi Cicil 5 Waktu Sholat Hari Ini */}
+          <div className="p-4 sm:p-5 bg-gradient-to-br from-teal-50/70 via-emerald-50/50 to-white dark:from-teal-950/30 dark:via-emerald-950/30 dark:to-stone-900 rounded-3xl border border-teal-200/70 dark:border-teal-800/60 shadow-xs space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Strategi Cicil 5 Waktu Sholat ({formatDateIndonesian(selectedDate)})</span>
+                </h3>
+                <p className="text-[11px] text-stone-500 mt-0.5">
+                  {quranPaceMode === 'pejuang' && 'Target: 4 Halaman (2 lembar) setiap selesai sholat fardhu (Total 20 Halaman = 1 Juz/Hari).'}
+                  {quranPaceMode === 'menengah' && 'Target: ~1 Halaman setiap selesai sholat fardhu (Total 4 Halaman = 2 Lembar/Hari).'}
+                  {quranPaceMode === 'pemula' && 'Target: 1 Halaman saat Subuh & Maghrib (Total 2 Halaman = 1 Lembar/Hari).'}
+                </p>
+              </div>
+
+              {/* Counter Selesai */}
+              {(() => {
+                const todayCicil = dailyCicilSholatMap[selectedDate] || {
+                  subuh: false,
+                  dzuhur: false,
+                  ashar: false,
+                  maghrib: false,
+                  isya: false,
+                };
+                const doneCount = Object.values(todayCicil).filter(Boolean).length;
+                return (
+                  <div className="text-xs font-bold px-3 py-1 rounded-xl bg-teal-100 dark:bg-teal-900/60 text-teal-900 dark:text-teal-200 self-start sm:self-center shrink-0">
+                    {doneCount} / 5 Sholat Selesai
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* 5 Sholat Interactive Pills */}
+            {(() => {
+              const todayCicil = dailyCicilSholatMap[selectedDate] || {
+                subuh: false,
+                dzuhur: false,
+                ashar: false,
+                maghrib: false,
+                isya: false,
+              };
+
+              const prayers = [
+                { key: 'subuh', label: 'Subuh', icon: Sunrise, target: quranPaceMode === 'pejuang' ? '4 hal (2 lbr)' : quranPaceMode === 'menengah' ? '1 hal' : '1 hal' },
+                { key: 'dzuhur', label: 'Dzuhur', icon: Sun, target: quranPaceMode === 'pejuang' ? '4 hal (2 lbr)' : quranPaceMode === 'menengah' ? '1 hal' : 'Opsional' },
+                { key: 'ashar', label: 'Ashar', icon: Sunset, target: quranPaceMode === 'pejuang' ? '4 hal (2 lbr)' : quranPaceMode === 'menengah' ? '1 hal' : 'Opsional' },
+                { key: 'maghrib', label: 'Maghrib', icon: Moon, target: quranPaceMode === 'pejuang' ? '4 hal (2 lbr)' : quranPaceMode === 'menengah' ? '1 hal' : '1 hal' },
+                { key: 'isya', label: 'Isya', icon: Sparkles, target: quranPaceMode === 'pejuang' ? '4 hal (2 lbr)' : quranPaceMode === 'menengah' ? '1 hal' : 'Opsional' },
+              ] as const;
 
               return (
-                <button
-                  key={juzNum}
-                  onClick={() => handleToggleJuzWithCelebration(juzNum)}
-                  className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all active:scale-95 ${
-                    isDone
-                      ? 'bg-teal-700 text-white border-teal-800 shadow-md font-bold'
-                      : 'bg-stone-50 dark:bg-emerald-900/20 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-emerald-900 hover:border-teal-400'
-                  }`}
-                >
-                  <span className="text-[9px] uppercase opacity-75">Juz</span>
-                  <span className="text-sm font-extrabold">{juzNum}</span>
-                  <span className="text-[9px] mt-0.5">{isDone ? '✓' : '—'}</span>
-                </button>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+                  {prayers.map((p) => {
+                    const isDone = todayCicil[p.key];
+                    const IconComp = p.icon;
+
+                    return (
+                      <button
+                        key={p.key}
+                        type="button"
+                        onClick={() => {
+                          toggleDailyCicilSholat(selectedDate, p.key);
+                          if (!isDone) {
+                            const newCount = Object.values(todayCicil).filter(Boolean).length + 1;
+                            if (newCount === 5) {
+                              confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+                            }
+                          }
+                        }}
+                        className={`p-3 rounded-2xl border text-center transition-all active:scale-95 flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                          isDone
+                            ? 'bg-teal-700 text-white border-teal-800 shadow-xs font-bold'
+                            : 'bg-white dark:bg-emerald-950/40 text-stone-700 dark:text-stone-300 border-stone-200/80 dark:border-emerald-900/60 hover:border-teal-400'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <IconComp className={`w-3.5 h-3.5 ${isDone ? 'text-amber-300' : 'text-stone-400'}`} />
+                          <span className="text-xs font-bold">{p.label}</span>
+                        </div>
+                        <span className={`text-[10px] ${isDone ? 'text-teal-100' : 'text-stone-400'}`}>
+                          {p.target}
+                        </span>
+                        <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs transition-all ${
+                          isDone
+                            ? 'bg-white text-teal-800 font-black shadow-xs'
+                            : 'border border-stone-300 dark:border-emerald-800 text-transparent'
+                        }`}>
+                          ✓
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               );
-            })}
+            })()}
+          </div>
+
+          {/* 5. Interactive 30-Juz Map & Detail Inspector */}
+          <div className="p-4 sm:p-5 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Peta 30 Juz &amp; Eksplorasi Tema</span>
+                </h3>
+                <p className="text-[11px] text-stone-500 mt-0.5">
+                  Klik nomor Juz untuk melihat rentang surat, halaman, dan tema besar kandungannya.
+                </p>
+              </div>
+
+              <span className="text-[11px] text-stone-500 font-medium">
+                Pilih kotak di bawah untuk inspeksi:
+              </span>
+            </div>
+
+            {/* 30 Juz Grid */}
+            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">
+              {Array.from({ length: 30 }).map((_, idx) => {
+                const juzNum = idx + 1;
+                const isDone = quranCompletedJuz.includes(juzNum);
+                const isInspected = activeInspectJuz === juzNum;
+
+                return (
+                  <button
+                    key={juzNum}
+                    type="button"
+                    onClick={() => setActiveInspectJuz(juzNum)}
+                    className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all active:scale-95 cursor-pointer relative ${
+                      isDone
+                        ? 'bg-teal-700 text-white border-teal-800 shadow-xs font-bold'
+                        : isInspected
+                        ? 'bg-amber-50 dark:bg-emerald-900/60 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-500 shadow-sm font-bold'
+                        : 'bg-stone-50 dark:bg-emerald-900/20 text-stone-700 dark:text-stone-300 border-stone-200/80 dark:border-emerald-900 hover:border-teal-400'
+                    }`}
+                  >
+                    <span className="text-[8px] uppercase tracking-wider opacity-75">Juz</span>
+                    <span className="text-sm font-extrabold">{juzNum}</span>
+                    <span className="text-[9px] mt-0.5 font-bold">
+                      {isDone ? '✓' : isInspected ? '•' : '—'}
+                    </span>
+                    {isInspected && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white dark:ring-emerald-950" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Detailed Inspection Card for activeInspectJuz */}
+            {(() => {
+              const meta = ALL_30_JUZ.find((j) => j.juz === activeInspectJuz) || ALL_30_JUZ[0];
+              const isDone = quranCompletedJuz.includes(meta.juz);
+
+              return (
+                <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200/80 dark:border-emerald-800/60 space-y-3.5 animate-fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-lg bg-teal-800 text-white text-xs font-bold">
+                          Juz {meta.juz}
+                        </span>
+                        <span className="text-xs font-bold text-stone-800 dark:text-stone-200">
+                          {meta.startSurah} ➔ {meta.endSurah}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-stone-500 flex items-center gap-2">
+                        <span>Halaman: <strong>{meta.startPage} - {meta.endPage}</strong> ({meta.pageCount} Halaman)</span>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleJuzWithCelebration(meta.juz)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-xs cursor-pointer ${
+                          isDone
+                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700'
+                            : 'bg-teal-700 hover:bg-teal-800 text-white'
+                        }`}
+                      >
+                        {isDone ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            <span>Batal Tandai Selesai</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Tandai Juz {meta.juz} Selesai</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Theme Summary */}
+                  <div className="p-3 bg-white dark:bg-emerald-950/60 rounded-xl border border-stone-200/60 dark:border-emerald-800/40 space-y-1">
+                    <span className="text-[10px] font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider block">
+                      📖 Intisari &amp; Tema Kandungan Juz {meta.juz}:
+                    </span>
+                    <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+                      {meta.themeSummary}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* 6. Mutiara Hadits Tilawah */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-300/40 dark:border-amber-800/40 text-xs text-amber-950 dark:text-amber-200 space-y-1 leading-relaxed">
+            <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>Keutamaan Membaca Satu Huruf Al-Qur'an:</span>
+            </div>
+            <p className="italic">
+              &quot;Barangsiapa membaca satu huruf dari Kitabullah (Al-Qur'an), maka baginya satu kebaikan, dan satu kebaikan dilipatgandakan menjadi sepuluh kali lipat semisalnya...&quot;
+            </p>
+            <p className="text-[10px] text-amber-800/80 dark:text-amber-400 font-semibold text-right">
+              — HR. At-Tirmidzi no. 2910 (Shahih)
+            </p>
           </div>
         </div>
       )}
@@ -863,6 +1272,11 @@ export const QuranJournalTab: React.FC = () => {
           setIsKajianModalOpen(false);
           setEditingKajianItem(null);
         }}
+      />
+
+      <EditBookmarkModal
+        isOpen={isBookmarkModalOpen}
+        onClose={() => setIsBookmarkModalOpen(false)}
       />
     </div>
   );
