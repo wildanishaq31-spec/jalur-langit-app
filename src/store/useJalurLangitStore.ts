@@ -16,7 +16,9 @@ import {
   DailyTasbihProgress,
   TimeCategory,
   ActiveTab,
-  FeatureUserRequest
+  FeatureUserRequest,
+  JalurLangitBackupData,
+  JalurLangitBackupMeta
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
@@ -233,6 +235,23 @@ interface JalurLangitState {
   setNotificationsEnabled: (enabled: boolean) => void;
   setNotificationTime: (category: TimeCategory, time: string) => void;
   resetAllData: () => void;
+
+  // Backup & Restore System (Offline-first data security)
+  exportBackupData: () => JalurLangitBackupData;
+  restoreBackupData: (
+    backup: Partial<JalurLangitBackupData>, 
+    mode?: 'merge' | 'replace'
+  ) => { 
+    success: boolean; 
+    message: string; 
+    stats?: { 
+      amalanDays: number; 
+      hajatCount: number; 
+      sedekahCount: number; 
+      tasbihDays: number;
+      glowUpDays: number;
+    } 
+  };
 
   // GPS Location & Prayer Times Schedule
   userLocation: UserLocationData;
@@ -799,6 +818,202 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           selectedDate: getTodayDateString(),
           completedAmalan: {},
         });
+      },
+
+      // Backup & Restore Implementation
+      exportBackupData: (): JalurLangitBackupData => {
+        const state = get();
+        const amalanDates = Object.keys(state.completedAmalan || {}).length;
+        const hajatCount = (state.hajatList || []).length;
+        const sedekahCount = (state.sedekahLogs || []).length;
+        const glowUpDates = Object.keys(state.glowUpMap || {}).length;
+
+        const backup: JalurLangitBackupData = {
+          app: 'Jalur Langit PWA',
+          schemaVersion: 3,
+          exportedAt: new Date().toISOString(),
+          meta: {
+            appName: 'Jalur Langit - Spiritual & Self Improvement Planner',
+            schemaVersion: 3,
+            exportedAt: new Date().toISOString(),
+            totalAmalanDates: amalanDates,
+            totalHajat: hajatCount,
+            totalSedekah: sedekahCount,
+            totalTasbihCount: state.tasbihTotalLifetime || 0,
+            totalGlowUpDates: glowUpDates,
+          },
+          completedAmalan: state.completedAmalan || {},
+          hajatList: state.hajatList || [],
+          todayAffirmation: state.todayAffirmation || '',
+          sedekahLogs: state.sedekahLogs || [],
+          dailyTasbihMap: state.dailyTasbihMap || {},
+          tasbihTotalLifetime: state.tasbihTotalLifetime || 0,
+          glowUpMap: state.glowUpMap || {},
+          visionBoardItems: state.visionBoardItems || [],
+          quranCompletedJuz: state.quranCompletedJuz || [],
+          quranTadabburList: state.quranTadabburList || [],
+          kajianNotes: state.kajianNotes || [],
+          gratitudeMap: state.gratitudeMap || {},
+          futureLetters: state.futureLetters || [],
+          appTheme: state.appTheme,
+          soundEnabled: state.soundEnabled,
+          vibrationEnabled: state.vibrationEnabled,
+        };
+
+        return backup;
+      },
+
+      restoreBackupData: (backup, mode = 'merge') => {
+        if (!backup || typeof backup !== 'object') {
+          return { success: false, message: 'Format data cadangan tidak dikenali.' };
+        }
+
+        const current = get();
+
+        if (mode === 'replace') {
+          // Gantikan seluruh data secara menyeluruh
+          set({
+            completedAmalan: backup.completedAmalan || {},
+            hajatList: Array.isArray(backup.hajatList) ? backup.hajatList : [],
+            todayAffirmation: backup.todayAffirmation ?? current.todayAffirmation,
+            sedekahLogs: Array.isArray(backup.sedekahLogs) ? backup.sedekahLogs : [],
+            dailyTasbihMap: backup.dailyTasbihMap || {},
+            tasbihTotalLifetime: typeof backup.tasbihTotalLifetime === 'number' ? backup.tasbihTotalLifetime : 0,
+            glowUpMap: backup.glowUpMap || {},
+            visionBoardItems: Array.isArray(backup.visionBoardItems) && backup.visionBoardItems.length > 0 ? backup.visionBoardItems : current.visionBoardItems,
+            quranCompletedJuz: Array.isArray(backup.quranCompletedJuz) ? backup.quranCompletedJuz : [],
+            quranTadabburList: Array.isArray(backup.quranTadabburList) ? backup.quranTadabburList : [],
+            kajianNotes: Array.isArray(backup.kajianNotes) ? backup.kajianNotes : [],
+            gratitudeMap: backup.gratitudeMap || {},
+            futureLetters: Array.isArray(backup.futureLetters) ? backup.futureLetters : [],
+            ...(backup.appTheme ? { appTheme: backup.appTheme } : {}),
+            ...(typeof backup.soundEnabled === 'boolean' ? { soundEnabled: backup.soundEnabled } : {}),
+            ...(typeof backup.vibrationEnabled === 'boolean' ? { vibrationEnabled: backup.vibrationEnabled } : {}),
+          });
+        } else {
+          // Mode 'merge' (Aman: menggabungkan data cadangan tanpa menghapus data aktif)
+          // 1. Amalan Checklist
+          const mergedAmalan = { ...(current.completedAmalan || {}) };
+          for (const [date, list] of Object.entries(backup.completedAmalan || {})) {
+            if (Array.isArray(list)) {
+              mergedAmalan[date] = Array.from(new Set([...(mergedAmalan[date] || []), ...list]));
+            }
+          }
+
+          // 2. Hajat List (gabungkan berdasarkan ID unik)
+          const currentHajatMap = new Map((current.hajatList || []).map(item => [item.id, item]));
+          for (const item of backup.hajatList || []) {
+            if (item && item.id) {
+              currentHajatMap.set(item.id, item);
+            }
+          }
+
+          // 3. Sedekah Logs (gabungkan berdasarkan ID unik)
+          const currentSedekahMap = new Map((current.sedekahLogs || []).map(item => [item.id, item]));
+          for (const item of backup.sedekahLogs || []) {
+            if (item && item.id) {
+              currentSedekahMap.set(item.id, item);
+            }
+          }
+
+          // 4. Tasbih Progress Harian
+          const mergedTasbihMap = { ...(current.dailyTasbihMap || {}) };
+          for (const [date, progress] of Object.entries(backup.dailyTasbihMap || {})) {
+            if (progress && typeof progress === 'object') {
+              const existing = mergedTasbihMap[date];
+              if (existing) {
+                mergedTasbihMap[date] = {
+                  totalCount: Math.max(existing.totalCount || 0, progress.totalCount || 0),
+                  completedPresetIds: Array.from(new Set([...(existing.completedPresetIds || []), ...(progress.completedPresetIds || [])])),
+                };
+              } else {
+                mergedTasbihMap[date] = progress;
+              }
+            }
+          }
+
+          // 5. Glow Up / Habits Map
+          const mergedGlowUp = { ...(current.glowUpMap || {}), ...(backup.glowUpMap || {}) };
+
+          // 6. Vision Board Items
+          const currentVisionMap = new Map((current.visionBoardItems || []).map(item => [item.id, item]));
+          for (const item of backup.visionBoardItems || []) {
+            if (item && item.id) {
+              currentVisionMap.set(item.id, item);
+            }
+          }
+
+          // 7. Quran Juz Selesai
+          const mergedJuz = Array.from(new Set([...(current.quranCompletedJuz || []), ...(backup.quranCompletedJuz || [])]));
+
+          // 8. Quran Tadabbur List
+          const currentTadabburMap = new Map((current.quranTadabburList || []).map(item => [item.id, item]));
+          for (const item of backup.quranTadabburList || []) {
+            if (item && item.id) {
+              currentTadabburMap.set(item.id, item);
+            }
+          }
+
+          // 9. Kajian Notes
+          const currentKajianMap = new Map((current.kajianNotes || []).map(item => [item.id, item]));
+          for (const item of backup.kajianNotes || []) {
+            if (item && item.id) {
+              currentKajianMap.set(item.id, item);
+            }
+          }
+
+          // 10. Gratitude Map
+          const mergedGratitude = { ...(current.gratitudeMap || {}) };
+          for (const [date, list] of Object.entries(backup.gratitudeMap || {})) {
+            if (Array.isArray(list)) {
+              mergedGratitude[date] = Array.from(new Set([...(mergedGratitude[date] || []), ...list]));
+            }
+          }
+
+          // 11. Future Letters
+          const currentLettersMap = new Map((current.futureLetters || []).map(item => [item.id, item]));
+          for (const item of backup.futureLetters || []) {
+            if (item && item.id) {
+              currentLettersMap.set(item.id, item);
+            }
+          }
+
+          const calculatedTasbihLifetime = Math.max(
+            current.tasbihTotalLifetime || 0,
+            backup.tasbihTotalLifetime || 0,
+            Object.values(mergedTasbihMap).reduce((acc, curr) => acc + (curr.totalCount || 0), 0)
+          );
+
+          set({
+            completedAmalan: mergedAmalan,
+            hajatList: Array.from(currentHajatMap.values()),
+            sedekahLogs: Array.from(currentSedekahMap.values()),
+            dailyTasbihMap: mergedTasbihMap,
+            tasbihTotalLifetime: calculatedTasbihLifetime,
+            glowUpMap: mergedGlowUp,
+            visionBoardItems: Array.from(currentVisionMap.values()),
+            quranCompletedJuz: mergedJuz,
+            quranTadabburList: Array.from(currentTadabburMap.values()),
+            kajianNotes: Array.from(currentKajianMap.values()),
+            gratitudeMap: mergedGratitude,
+            futureLetters: Array.from(currentLettersMap.values()),
+          });
+        }
+
+        const updatedState = get();
+        return {
+          success: true,
+          message: mode === 'replace' 
+            ? 'Seluruh data berhasil dipulihkan dan digantikan dari file cadangan.' 
+            : 'Data cadangan berhasil digabungkan dengan progres yang sedang berjalan.',
+          stats: {
+            amalanDays: Object.keys(updatedState.completedAmalan || {}).length,
+            hajatCount: (updatedState.hajatList || []).length,
+            sedekahCount: (updatedState.sedekahLogs || []).length,
+            tasbihDays: Object.keys(updatedState.dailyTasbihMap || {}).length,
+            glowUpDays: Object.keys(updatedState.glowUpMap || {}).length,
+          }
+        };
       },
 
       // GPS Location & Prayer Times Schedule

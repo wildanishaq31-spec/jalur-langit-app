@@ -147,3 +147,39 @@ export interface FeatureUserRequest {
   text: string;
   submittedAt: string;
 }
+
+// --- DATA BACKUP & RESTORE CONTRACT ---
+
+export interface JalurLangitBackupMeta {
+  appName: string;
+  schemaVersion: number;
+  exportedAt: string;
+  totalAmalanDates: number;
+  totalHajat: number;
+  totalSedekah: number;
+  totalTasbihCount: number;
+  totalGlowUpDates: number;
+}
+
+export interface JalurLangitBackupData {
+  app: string;
+  schemaVersion: number;
+  exportedAt: string;
+  meta?: JalurLangitBackupMeta;
+  completedAmalan?: Record<string, string[]>;
+  hajatList?: HajatItem[];
+  todayAffirmation?: string;
+  sedekahLogs?: SedekahItem[];
+  dailyTasbihMap?: Record<string, DailyTasbihProgress>;
+  tasbihTotalLifetime?: number;
+  glowUpMap?: Record<string, GlowUpHabits>;
+  visionBoardItems?: VisionBoardItem[];
+  quranCompletedJuz?: number[];
+  quranTadabburList?: QuranTadabburItem[];
+  kajianNotes?: KajianItem[];
+  gratitudeMap?: Record<string, string[]>;
+  futureLetters?: FutureLetter[];
+  appTheme?: AppTheme;
+  soundEnabled?: boolean;
+  vibrationEnabled?: boolean;
+}

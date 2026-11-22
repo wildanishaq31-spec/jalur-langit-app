@@ -20,6 +20,7 @@ import {
   Vibrate, 
   Database, 
   Download, 
+  Upload,
   RotateCcw, 
   ShieldCheck, 
   Layers, 
@@ -30,12 +31,15 @@ import {
   LogOut,
   Smartphone,
   KeyRound,
-  BellRing
+  BellRing,
+  FileJson,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
-import { RoadmapFeatureItem } from '@/types';
+import { RoadmapFeatureItem, JalurLangitBackupData } from '@/types';
 
 interface AppDrawerMenuProps {
   onOpenLogoutModal?: () => void;
@@ -65,7 +69,12 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
     completedAmalan,
     hajatList,
     sedekahLogs,
-    visionBoardItems
+    visionBoardItems,
+    dailyTasbihMap,
+    tasbihTotalLifetime,
+    glowUpMap,
+    exportBackupData,
+    restoreBackupData
   } = useJalurLangitStore();
 
   const { currentUser, logout } = useAuthStore();
@@ -73,6 +82,32 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
   const [newIdeaText, setNewIdeaText] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [copiedBackup, setCopiedBackup] = useState(false);
+
+  // Backup & Restore State
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [pendingBackup, setPendingBackup] = useState<{
+    data: Partial<JalurLangitBackupData>;
+    fileName: string;
+    fileSizeKb: number;
+    stats: {
+      amalanDays: number;
+      hajatCount: number;
+      sedekahCount: number;
+      tasbihDays: number;
+      glowUpDays: number;
+    };
+  } | null>(null);
+  const [restoreFeedback, setRestoreFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    stats?: {
+      amalanDays: number;
+      hajatCount: number;
+      sedekahCount: number;
+      tasbihDays: number;
+      glowUpDays: number;
+    };
+  } | null>(null);
 
   // Close on Escape key
   useEffect(() => {
@@ -111,34 +146,124 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
 
   const handleExportBackup = () => {
     try {
-      const backupData = {
-        app: 'Jalur Langit - Self Improvement Edition',
-        version: '1.2.0',
-        exportedAt: new Date().toISOString(),
-        completedAmalan,
-        hajatList,
-        sedekahLogs,
-        visionBoardItems,
-      };
+      const backupData = exportBackupData();
       const jsonString = JSON.stringify(backupData, null, 2);
       
       // Copy to clipboard
-      navigator.clipboard.writeText(jsonString);
+      try {
+        navigator.clipboard.writeText(jsonString);
+      } catch {}
+
       setCopiedBackup(true);
-      setTimeout(() => setCopiedBackup(false), 3000);
+      setTimeout(() => setCopiedBackup(false), 3500);
 
       // Download file
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `jalur-langit-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      const datePart = new Date().toISOString().slice(0, 10);
+      link.download = `jalur-langit-cadangan-${datePart}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Gagal mengekspor data:', err);
+      console.error('Gagal mengekspor data cadangan:', err);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setRestoreFeedback(null);
+
+    // Validasi ekstensi
+    if (!file.name.toLowerCase().endsWith('.json')) {
+      setRestoreFeedback({
+        type: 'error',
+        message: 'File harus berformat .json cadangan resmi Jalur Langit.',
+      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content) as Partial<JalurLangitBackupData>;
+
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('Format JSON tidak valid');
+        }
+
+        // Hitung data yang terdeteksi
+        const amalanDays = Object.keys(parsed.completedAmalan || {}).length;
+        const hajatCount = Array.isArray(parsed.hajatList) ? parsed.hajatList.length : 0;
+        const sedekahCount = Array.isArray(parsed.sedekahLogs) ? parsed.sedekahLogs.length : 0;
+        const tasbihDays = Object.keys(parsed.dailyTasbihMap || {}).length;
+        const glowUpDays = Object.keys(parsed.glowUpMap || {}).length;
+
+        if (amalanDays === 0 && hajatCount === 0 && sedekahCount === 0 && tasbihDays === 0 && glowUpDays === 0 && !parsed.app) {
+          setRestoreFeedback({
+            type: 'error',
+            message: 'File ini kosong atau tidak memiliki struktur data Jalur Langit.',
+          });
+          return;
+        }
+
+        setPendingBackup({
+          data: parsed,
+          fileName: file.name,
+          fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
+          stats: {
+            amalanDays,
+            hajatCount,
+            sedekahCount,
+            tasbihDays,
+            glowUpDays
+          }
+        });
+      } catch (err) {
+        console.error('Error membaca file cadangan:', err);
+        setRestoreFeedback({
+          type: 'error',
+          message: 'Gagal memproses file. Pastikan file JSON tidak korup atau rusak.',
+        });
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const handleExecuteRestore = (mode: 'merge' | 'replace') => {
+    if (!pendingBackup) return;
+
+    try {
+      const res = restoreBackupData(pendingBackup.data, mode);
+      if (res.success) {
+        setRestoreFeedback({
+          type: 'success',
+          message: res.message,
+          stats: res.stats,
+        });
+        setPendingBackup(null);
+      } else {
+        setRestoreFeedback({
+          type: 'error',
+          message: res.message,
+        });
+      }
+    } catch (err) {
+      console.error('Gagal memulihkan data:', err);
+      setRestoreFeedback({
+        type: 'error',
+        message: 'Terjadi kesalahan sistem saat memulihkan data.',
+      });
     }
   };
 
@@ -543,40 +668,164 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
 
                 {/* 2. Manajemen Data & Backup */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                    Penyimpanan & Keamanan Data
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Penyimpanan & Cadangan Data
+                    </h4>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                      100% Offline-First
+                    </span>
+                  </div>
 
-                  <div className="p-4 rounded-3xl bg-stone-50/80 dark:bg-emerald-950/30 border border-stone-200/80 dark:border-emerald-800/50 space-y-3.5">
-                    <div className="flex items-start gap-2.5">
-                      <Database className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                      <div className="space-y-0.5">
-                        <div className="text-xs font-bold text-stone-900 dark:text-stone-100">
-                          Offline-First & Privasi Terjaga
-                        </div>
-                        <p className="text-[11px] text-stone-500 leading-relaxed">
-                          Seluruh data catatan doa, impian, sedekah, dan progres ibadah disimpan secara lokal di memori browsermu. Tidak ada data yang dikirim ke server pihak ketiga.
-                        </p>
+                  <div className="p-4 rounded-3xl bg-stone-50/80 dark:bg-emerald-950/30 border border-stone-200/80 dark:border-emerald-800/50 space-y-4">
+                    {/* Ringkasan Data Aktif di HP */}
+                    <div className="p-3 rounded-2xl bg-white dark:bg-emerald-900/40 border border-stone-200/70 dark:border-emerald-800/60 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-stone-800 dark:text-stone-200">
+                        <span className="flex items-center gap-1.5">
+                          <Database className="w-4 h-4 text-emerald-600" />
+                          <span>Status Data Lokal di Perangkat Ini</span>
+                        </span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Tersimpan Aman" />
                       </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-[10.5px] text-stone-600 dark:text-stone-300">
+                        <div className="p-2 rounded-xl bg-stone-50 dark:bg-emerald-950/60 border border-stone-100 dark:border-emerald-900/40">
+                          <span className="text-stone-400 block text-[9.5px]">Amalan Harian:</span>
+                          <strong className="text-emerald-700 dark:text-emerald-300">{Object.keys(completedAmalan || {}).length} Hari</strong> Tercatat
+                        </div>
+                        <div className="p-2 rounded-xl bg-stone-50 dark:bg-emerald-950/60 border border-stone-100 dark:border-emerald-900/40">
+                          <span className="text-stone-400 block text-[9.5px]">Impian & Hajat:</span>
+                          <strong className="text-emerald-700 dark:text-emerald-300">{hajatList?.length || 0} Doa</strong> Aktif
+                        </div>
+                        <div className="p-2 rounded-xl bg-stone-50 dark:bg-emerald-950/60 border border-stone-100 dark:border-emerald-900/40">
+                          <span className="text-stone-400 block text-[9.5px]">Sedekah Subuh:</span>
+                          <strong className="text-emerald-700 dark:text-emerald-300">{sedekahLogs?.length || 0} Catatan</strong> Riwayat
+                        </div>
+                        <div className="p-2 rounded-xl bg-stone-50 dark:bg-emerald-950/60 border border-stone-100 dark:border-emerald-900/40">
+                          <span className="text-stone-400 block text-[9.5px]">Dzikir Tasbih:</span>
+                          <strong className="text-emerald-700 dark:text-emerald-300">{tasbihTotalLifetime || 0}x</strong> Ketukan
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] text-stone-400 leading-relaxed italic">
+                        Semua data tersimpan aman di memori HP. Cadangkan file secara berkala agar bisa dipulihkan saat ganti HP.
+                      </p>
                     </div>
 
-                    <div className="pt-2 flex flex-col gap-2">
+                    {/* Tombol Aksi Cadangkan & Pulihkan */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {/* Tombol Cadangkan */}
                       <button
                         onClick={handleExportBackup}
-                        className="w-full py-2.5 px-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs"
+                        className="w-full py-2.5 px-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                       >
                         {copiedBackup ? <Check className="w-4 h-4 text-amber-300" /> : <Download className="w-4 h-4" />}
-                        <span>{copiedBackup ? 'File & Teks Backup Berhasil Disalin!' : 'Ekspor & Unduh Cadangan Data (.json)'}</span>
+                        <span>{copiedBackup ? 'File Berhasil Diunduh!' : 'Cadangkan Data (.json)'}</span>
                       </button>
 
+                      {/* Tombol Pulihkan */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-2.5 px-3 rounded-2xl bg-white dark:bg-emerald-900/60 hover:bg-emerald-50 dark:hover:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Pulihkan Data</span>
+                      </button>
+
+                      {/* Hidden File Input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Feedback Toast / Status Banner */}
+                    {restoreFeedback && (
+                      <div className={`p-3 rounded-2xl text-xs space-y-1 animate-fade-in border ${
+                        restoreFeedback.type === 'success' 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200' 
+                          : 'bg-rose-50 dark:bg-rose-950/70 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+                      }`}>
+                        <div className="flex items-center gap-2 font-bold">
+                          {restoreFeedback.type === 'success' ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : (
+                            <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                          )}
+                          <span>{restoreFeedback.message}</span>
+                        </div>
+                        {restoreFeedback.stats && (
+                          <p className="text-[10.5px] opacity-90 pl-6">
+                            Total terkini: {restoreFeedback.stats.amalanDays} hari amalan • {restoreFeedback.stats.hajatCount} hajat • {restoreFeedback.stats.sedekahCount} sedekah • {restoreFeedback.stats.tasbihDays} hari tasbih.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Pending Restore Confirmation Card */}
+                    {pendingBackup && (
+                      <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800/70 space-y-3 animate-fade-in text-stone-900 dark:text-stone-100">
+                        <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-300">
+                          <FileJson className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                          <span>File Cadangan Terdeteksi ({pendingBackup.fileName})</span>
+                        </div>
+
+                        <div className="text-[11px] text-stone-600 dark:text-stone-300 space-y-1">
+                          <div>Data yang ditemukan di dalam file:</div>
+                          <ul className="grid grid-cols-2 gap-1 text-[10.5px] font-semibold text-stone-800 dark:text-stone-200 pl-1">
+                            <li>📅 {pendingBackup.stats.amalanDays} Hari Amalan</li>
+                            <li>🤲 {pendingBackup.stats.hajatCount} Doa Hajat</li>
+                            <li>💰 {pendingBackup.stats.sedekahCount} Sedekah Subuh</li>
+                            <li>📿 {pendingBackup.stats.tasbihDays} Hari Dzikir</li>
+                          </ul>
+                        </div>
+
+                        <div className="pt-2 border-t border-amber-200 dark:border-amber-900/60 flex flex-col gap-2">
+                          <div className="text-[10.5px] font-medium text-stone-500">Pilih metode pemulihan:</div>
+                          
+                          <button
+                            onClick={() => handleExecuteRestore('merge')}
+                            className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Gabungkan Data (Disarankan)</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (confirm('PERINGATAN: Menggantikan seluruh data akan menimpa data yang saat ini ada di HP dengan data dari file cadangan. Lanjutkan?')) {
+                                handleExecuteRestore('replace');
+                              }
+                            }}
+                            className="w-full py-2 px-3 rounded-xl bg-amber-200/80 dark:bg-amber-900/50 hover:bg-amber-300/80 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span>Gantikan Seluruh Data HP</span>
+                          </button>
+
+                          <button
+                            onClick={() => setPendingBackup(null)}
+                            className="w-full py-1.5 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 text-xs font-medium cursor-pointer"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Reset Button */}
+                    <div className="pt-2 border-t border-stone-200/60 dark:border-emerald-900/40">
                       <button
                         onClick={() => {
-                          if (confirm('Apakah kamu yakin ingin mengosongkan progres checklist kalender amalan?')) {
+                          if (confirm('Apakah kamu yakin ingin mengosongkan progres checklist kalender amalan? Seluruh catatan amalan akan di-reset.')) {
                             resetAllData();
                             setIsDrawerOpen(false);
                           }
                         }}
-                        className="w-full py-2 px-3 rounded-2xl bg-stone-100 dark:bg-emerald-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                        className="w-full py-2 px-3 rounded-2xl bg-stone-100 dark:bg-emerald-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Mulai Ulang Progres Kalender</span>

@@ -1646,4 +1646,35 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 64 - Eksekusi Tahap 1: Fitur Cadangkan & Pulihkan Data Lengkap (Backup & Restore JSON)
+* **Permintaan Pengguna**:
+  - *"tapi menerutmu apa kita memang butuh penyimpanan ?"*
+  - *"ok kita batal untuk cloud database, lalu dari 4 fokus rencana v3.0 cuman tertarik dengan nomor 1,3 dan 4 sedangkan untuk mazhab saya masih kurang tertarik karena saya belum ada ilmu atau orang yang paham di bidangnya, jjadi saya fokus orang bisa memulai dulu dan istiqomah, di tiktok dan google saja banyak berseliweran tutorial-tutorial yang tidak menyertakan mazhab aman-aman saja"*
+  - *"kita asekusi tahap 1 dulu"*
+* **Analisis & Solusi Teknis**:
+  1. **Penyelarasan Visi Produk Jalur Langit v3.0**:
+     - Membatalkan kebutuhan cloud database eksternal (Supabase/Firebase) demi privasi sakral doa/hajat, kecepatan respon instan 0ms offline-first, dan zero maintenance cost.
+     - Menyederhanakan ruang lingkup v3.0 menjadi 3 pilar utama:
+       - **Pilar 1**: Materi ibadah berdalil shahih/hasan lengkap dengan tata cara, Arab berharakat, Latin, terjemahan, dan rujukan hadits yang mudah dipahami pemula.
+       - **Pilar 2**: Panduan alur sholat malam terpadu (Qiyamul Lail Guided Flow: Taubat -> Tahajjud -> Hajat -> Witir -> Sayyidul Istighfar -> Doa).
+       - **Pilar 3**: Re-branding inklusif universal untuk seluruh umat Islam (Ikhwan & Akhwat) lewat modul "Adab & Self-Care Nabawi".
+     - Menjadikan fitur **Cadangkan & Pulihkan Data (Backup & Restore JSON)** sebagai perisai keamanan data pengguna tanpa ketergantungan server.
+  2. **Implementasi Kontrak Data & State Management**:
+     - Di `src/types/index.ts`: Mendefinisikan interface `JalurLangitBackupMeta` dan `JalurLangitBackupData` yang mencakup 100% entitas data: `completedAmalan`, `hajatList`, `todayAffirmation`, `sedekahLogs`, `dailyTasbihMap`, `tasbihTotalLifetime`, `glowUpMap`, `visionBoardItems`, `quranCompletedJuz`, `quranTadabburList`, `kajianNotes`, `gratitudeMap`, `futureLetters`, dan preferensi pengguna.
+     - Di `src/store/useJalurLangitStore.ts`:
+       - Fungsi `exportBackupData()`: Mengemas seluruh data lokal beserta metadata audit (jumlah hari amalan, total hajat, sedekah, dan tasbih).
+       - Fungsi `restoreBackupData(backup, mode)`:
+         - Mendukung mode **`merge`** (menggabungkan data cadangan tanpa menghapus atau menimpa progres baru di HP) dan mode **`replace`** (menimpa seluruh data jika pengguna ingin kloning bersih dari HP lama).
+         - Mengembalikan statistik pemulihan data secara presisi.
+  3. **Antarmuka Interaktif di Drawer Utilitas (`src/components/modals/AppDrawerMenu.tsx`)**:
+     - Menghadirkan ringkasan status data lokal yang sedang aktif di HP (counter jumlah hari amalan, doa hajat, catatan sedekah, dan ketukan tasbih).
+     - Tombol **"Cadangkan Data (.json)"**: Otomatis mengunduh berkas bertanggal (`jalur-langit-cadangan-YYYY-MM-DD.json`) dan menyalin ke clipboard.
+     - Tombol **"Pulihkan Data"**: Input berkas JSON interaktif dengan validasi struktur data, ringkasan pratinjau isi file cadangan, serta pilihan eksekusi *"Gabungkan Data (Disarankan)"* atau *"Gantikan Seluruh Data HP"*.
+     - Kartu notifikasi umpan balik sukses/galat yang informatif dan ramah pengguna.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack tanpa ada kesalahan TypeScript atau kompilasi.
+  - Data pengguna kini terlindungi penuh: pengguna dapat bebas mencadangkan dan memulihkan data kapan saja saat berganti HP atau membersihkan browser tanpa risiko kehilangan progres ibadah.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
