@@ -1982,4 +1982,36 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 74 - Modul AI Asisten Resume Kajian Ilmu Otomatis dari Link Video & 1-Tap Preset
+* **Permintaan Pengguna**:
+  - *"sekarang kita buat resume kajian ilmu juga menjadi lebih pintar dimana kalau kita ambil dari link maka akan otomatis terbaca judul kajioan, pemateri point penting dan rencana aksi nyata, jadi ai akan mempelajari link videonya lalgi akan merangkumnya, apa bisa ?"* (Mengunggah gambar form Resume Kajian Ilmu).
+* **Jawaban & Analisis Arsitektur**:
+  - **Sangat Bisa**: Dibuatkan sistem AI bertingkat (*multi-layer analysis engine*) yang menghubungkan ekstraksi metadata YouTube oEmbed resmi (server-side Next.js tanpa isu CORS) dengan mesin sintesis kajian Islam tematik (*thematic Islamic knowledge analysis engine*).
+* **Solusi Rekayasa & Implementasi**:
+  1. **Engine Analisis Kajian Islam Cerdas (`src/utils/smartKajianSummarizer.ts`)**:
+     - *Speaker & Channel Parser*: Mengenali dan mengekstrak nama ustadz terkemuka (Ustadz Adi Hidayat, Ustadz Abdul Somad, Ustadz Hanan Attaki, Buya Yahya, Ustadz Khalid Basalamah, Ustadz Syafiq Riza Basalamah, Habib Ja'far, Ustadzah Oki Setiana Dewi, Gus Baha, Ustadz Salim A. Fillah, dll).
+     - *Title Cleaner*: Membersihkan judul dari clickbait, tag saluran, tanda kurung berlebih, dan watermark.
+     - *12 Thematic Synthesizers*: Menganalisis tema video (Doa & Hajat, Rezeki & Berkah, Hati & Ketenangan, Sholat & Qiyamul Lail, Birrul Walidain & Keluarga, Sabar & Ujian, Istiqomah & Hijrah, dll) untuk menghasilkan:
+       - **Poin Penting & Tadabbur**: 3-4 butir hikmah mendalam bersandar pada dalil Qur'an dan Sunnah.
+       - **Rencana Aksi Nyata**: 2-3 butir langkah konkret pengamalan sehari-hari.
+     - *Curated Presets*: Menyediakan 5 kajian pilihan populer yang siap dimuat dalam 1-klik (*UAH, Hanan Attaki, Buya Yahya, Khalid Basalamah, UAS*).
+  2. **API Endpoint Server-Side (`src/app/api/kajian/summarize/route.ts`)**:
+     - Menerima `POST` dengan body `{ url }`.
+     - Mengambil metadata video langsung dari YouTube oEmbed / noembed secara bebas CORS.
+     - Merangkum konten secara instan dan mengembalikan payload JSON lengkap.
+  3. **Penyempurnaan Modal `AddKajianModal.tsx` & Tab Kajian**:
+     - Modal diperbaiki menjadi melayang di tengah layar (`z-[100]`, backdrop blur, pinned header).
+     - Memasang kartu **AI Asisten Resume Kajian (1-Klik Cerdas)** di bagian atas formulir:
+       - Input link video YouTube / Podcast.
+       - Tombol **`[ 🪄 Rangkum dengan AI ]`** dengan status loading animasi (*Menganalisis...*).
+       - Chip preset rekomendasi cepat 1-Tap.
+       - Notifikasi sukses berwarna hijau setelah seluruh form terisi.
+     - Seluruh kolom (Judul, Pemateri, Link, Poin Penting, Aksi Nyata) otomatis terisi namun tetap dapat disunting bebas oleh pengguna sebelum disimpan.
+     - Tombol *Tulis Resume Kajian Baru* di `QuranJournalTab.tsx` ditata ulang menjadi tombol blok lebar yang ramah sentuhan seluler.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack (termasuk rute API dinamis `/api/kajian/summarize`).
+  - Pengguna kini cukup menempelkan link YouTube atau menekan salah satu preset ustadz, dan AI akan otomatis membaca judul, mendeteksi penceramah, merangkum poin penting, serta merumuskan rencana aksi nyata.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

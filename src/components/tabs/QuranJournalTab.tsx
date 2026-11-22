@@ -583,14 +583,15 @@ export const QuranJournalTab: React.FC = () => {
       {/* SUB-TAB 3: 1 DAY 1 KAJIAN (SHEET 4) */}
       {quranActiveSubTab === 'kajian' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          {/* Header 1 Day 1 Kajian & Tombol Aksi */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-3">
             <div>
-              <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <Video className="w-5 h-5 text-rose-500" />
+              <h2 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Video className="w-5 h-5 text-rose-500 shrink-0" />
                 <span>1 Day 1 Kajian Daily Checklist</span>
               </h2>
-              <p className="text-xs text-stone-500">
-                Simpan ringkasan video YouTube atau podcast kajian dan aksi nyatanya.
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                Simpan ringkasan video YouTube atau podcast kajian dan aksi nyatanya dengan bantuan AI.
               </p>
             </div>
 
@@ -599,10 +600,10 @@ export const QuranJournalTab: React.FC = () => {
                 setEditingKajianItem(null);
                 setIsKajianModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-95"
+              className="w-full py-3 px-4 bg-emerald-700 hover:bg-emerald-800 active:scale-98 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Catat Kajian</span>
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Tulis Resume Kajian Baru</span>
             </button>
           </div>
 
