@@ -202,7 +202,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             }`}
           >
             <Droplets className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-            <span className="text-[10px]">Glow Up</span>
+            <span className="text-[10px]">Self-Care</span>
           </Link>
 
           {/* Center Tasbih */}

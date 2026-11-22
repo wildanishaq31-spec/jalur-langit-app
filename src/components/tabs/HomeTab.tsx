@@ -128,7 +128,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
                 onClick={() => onNavigateToTab('glowup')}
                 className="px-3.5 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-medium text-xs backdrop-blur-md transition-all active:scale-95"
               >
-                Glow Up 🌿
+                Self-Care 🌿
               </button>
 
               <button
@@ -197,7 +197,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
               <span>Target & Capaian Tanggal Ini</span>
             </h2>
             <p className="text-xs text-stone-500">
-              Pantau progres harian di setiap modul: Amalan, Glow Up, Tasbih, Vision, Hajat, & Quran.
+              Pantau progres harian di setiap modul: Amalan, Self-Care, Tasbih, Vision, Hajat, & Quran.
             </p>
           </div>
         </div>
@@ -231,12 +231,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
             </button>
           </div>
 
-          {/* Module 2: Glow Up & Self Care */}
+          {/* Module 2: Adab & Self-Care */}
           <div className="p-4 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-2.5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                  <Droplets className="w-3.5 h-3.5" /> Glow Up Self-Care
+                  <Droplets className="w-3.5 h-3.5" /> Adab & Self-Care
                 </span>
                 <span className="text-xs font-black text-sky-600">
                   {currentGlowUp.waterGlasses * 250} ml
@@ -261,7 +261,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
               onClick={() => onNavigateToTab('glowup')}
               className="w-full py-2 px-3 rounded-2xl bg-stone-100 dark:bg-emerald-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold transition-all flex items-center justify-center gap-1"
             >
-              <span>Buka Glow Up Tracker</span>
+              <span>Buka Adab & Self-Care</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

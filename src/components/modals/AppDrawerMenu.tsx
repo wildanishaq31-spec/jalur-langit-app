@@ -885,7 +885,7 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
                       Jalur Langit PWA
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-900 border border-emerald-700 text-emerald-200">
-                      v1.2.0 Stable
+                      v3.0.0 Stable
                     </span>
                   </div>
                   <p className="text-[11px] text-stone-300 leading-relaxed">

@@ -1732,4 +1732,40 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 67 - Eksekusi Tahap 4: Re-branding Inklusif Universal (Adab & Self-Care Nabawi) & Final Polish Rilis Jalur Langit v3.0.0
+* **Permintaan Pengguna**:
+  - *"Tahap 4: Re-branding Inklusif Universal (Adab & Self-Care Nabawi) & Final Polish v3.0"*
+* **Analisis & Solusi Teknis**:
+  1. **Re-branding Inklusif Universal Menjadi "Adab & Self-Care Nabawi"**:
+     - Memperluas orientasi modul kebiasaan hidup sehat agar inklusif dan relevan bagi seluruh kalangan muslim (Ikhwan maupun Akhwat), tanpa mengubah skema state lokal (`glowUpMap`, `waterGlasses`, `morningSkincare`, `nightSkincare`, `workout30Min`, `reading15Min`, `sleep7Hours`, `healthyFood`, `mood`, `brainDump`).
+     - Menyematkan sub-lencana elegan `(Glow Up Syar'i)` untuk mempertahankan familiaritas pengguna setia.
+     - Menghadirkan Kartu Edukasi Prinsip Kebugaran & Adab Sunnah:
+       - *Thaharah & Kesucian*: Berlandaskan hadits HR. Muslim no. 223 ("Kebersihan/kesucian adalah separuh dari keimanan").
+       - *Jasmani Kuat & Berkah*: Berlandaskan hadits HR. Muslim no. 2664 ("Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah").
+       - *Siwak & Adab Istirahat*: Kebiasaan bersiwak/sikat gigi, tidur menghadap sisi kanan, dan berdzikir sebelum lelap.
+  2. **Penyempurnaan Copywriting Kebiasaan Sehat & Thaharah Universal**:
+     - *Thaharah & Skincare Pagi Halal*: Cuci muka bersih, moisturizer/pelembap halal, dan perlindungan tabir surya UV.
+     - *Thaharah Malam, Siwak & Wudhu Tidur*: Pembersihan debu/kotoran wajah, kebersihan mulut/gigi, dan sunnah berwudhu menyambut tidur.
+     - *Olahraga & Kebugaran Jasmani Sunnah (30 Menit)*: Jalan santai/pagi, stretching, lari, push-up/gym, atau senam ringan.
+     - *Membaca Buku / Sirah Nabawiyah (15 Menit)*: Pengembangan diri, ilmu agama, dan meneladani akhlak Rasulullah ﷺ.
+     - *Tidur Cukup (Adab Tidur Miring ke Kanan)*: Istirahat lelap 7-8 jam diawali Al-Mulk agar bugar bangun Qiyamul Lail.
+     - *Makanan Sehat, Halal & Thayyib*: Asupan bergizi seimbang, perbanyak serat/air, dan batasi konsumsi gula berlebih.
+     - *Catatan Adab Minum*: Sunnah duduk tenang, membaca bismillah, minum bertahap (2-3 nafas), dan diakhiri alhamdulillah.
+  3. **Penyelarasan Antarmuka & Navigasi**:
+     - Di `src/components/Navigation.tsx`: Label navigasi bawah diperbarui menjadi "Self-Care" yang ringkas, bersih, dan seimbang di layar smartphone.
+     - Di `src/components/tabs/HomeTab.tsx`: Tautan tombol cepat, kartu ringkasan capaian, dan deskripsi diperbarui dari "Glow Up" menjadi "Adab & Self-Care".
+     - Di `src/components/modals/AppDrawerMenu.tsx`: Versi aplikasi dinaikkan menjadi `v3.0.0 Stable`.
+     - Di `package.json`: Versi proyek dinaikkan menjadi `"version": "3.0.0"`.
+  4. **Penyelesaian Seluruh 4 Tahap Roadmap Jalur Langit v3.0.0**:
+     - **Tahap 1**: Fitur Cadangkan & Pulihkan Data JSON (Backup & Restore) dengan mode Merge & Replace.
+     - **Tahap 2**: Pengayaan 20 Materi Ibadah Berdalil Shahih/Hasan & Modal Panduan 3 Tab Interaktif.
+     - **Tahap 3**: Modul Terpadu Qiyamul Lail (Guided 6-Step Night Prayer Workflow & Auto-Sync Checklist).
+     - **Tahap 4**: Re-branding Universal Adab & Self-Care Nabawi serta Rilis Resmi v3.0.0.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack.
+  - Zero data loss: Seluruh data lokal pengguna v2.5.0 tetap utuh 100%.
+  - Mesin jadwal salat GPS (`prayerTimeService.ts`) dan fisika tasbih 3D tetap terkunci tanpa perubahan (*untouched*).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

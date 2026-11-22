@@ -14,7 +14,8 @@ import {
   Coffee, 
   Check, 
   Edit3,
-  Calendar
+  Calendar,
+  ShieldCheck
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { GlowUpHabits } from '@/types';
@@ -72,7 +73,7 @@ export const GlowUpTab: React.FC = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
             <Sparkles className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">Self Improvement & Daily Habits</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Adab & Self-Care Nabawi</span>
           </div>
 
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-black/30 text-xs font-bold text-stone-800 dark:text-stone-200">
@@ -81,12 +82,56 @@ export const GlowUpTab: React.FC = () => {
           </div>
         </div>
 
-        <h1 className="text-xl sm:text-2xl font-black font-serif text-stone-900 dark:text-stone-100">
-          Glow Up Habits Tracker
-        </h1>
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <h1 className="text-xl sm:text-2xl font-black font-serif text-stone-900 dark:text-stone-100">
+            Adab & Self-Care Nabawi
+          </h1>
+          <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+            Glow Up Syar&apos;i
+          </span>
+        </div>
         <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 max-w-lg leading-relaxed">
-          Menyeimbangkan kebugaran lahiriah dan kejernihan batiniah. Merawat tubuh dan pikiran adalah bentuk ikhtiar serta rasa syukur atas amanah yang Allah anugerahkan.
+          Menyeimbangkan kebugaran lahiriah dan kejernihan batiniah untuk Ikhwan &amp; Akhwat. Merawat kebersihan raga (thaharah), kebugaran jasmani, serta kesehatan mental adalah bagian dari sunnah Rasulullah ﷺ dan wujud rasa syukur atas amanah Allah.
         </p>
+      </div>
+
+      {/* Nabawi Sunnah Health & Hygiene Principles Card */}
+      <div className="p-4 rounded-3xl bg-white dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-850 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Prinsip Kebugaran &amp; Adab Sunnah</span>
+          </div>
+          <span className="text-[10px] font-medium text-stone-500 dark:text-stone-400">
+            Universal Ikhwan &amp; Akhwat
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <div className="p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/40 space-y-1">
+            <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+              <span>💧 Thaharah &amp; Kesucian</span>
+            </div>
+            <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-snug">
+              &quot;Kesucian adalah separuh dari keimanan.&quot; (HR. Muslim no. 223). Rawat kebersihan wajah, kuku, dan wudhu harian.
+            </p>
+          </div>
+          <div className="p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 space-y-1">
+            <div className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+              <span>💪 Jasmani Kuat &amp; Berkah</span>
+            </div>
+            <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-snug">
+              &quot;Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.&quot; (HR. Muslim no. 2664).
+            </p>
+          </div>
+          <div className="p-3 rounded-2xl bg-teal-50/70 dark:bg-teal-900/30 border border-teal-100 dark:border-teal-800/40 space-y-1">
+            <div className="text-xs font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5">
+              <span>🪥 Siwak &amp; Adab Istirahat</span>
+            </div>
+            <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-snug">
+              Menjaga kesegaran gigi/mulut, tidur miring ke sisi kanan, serta berdzikir sebelum memejamkan mata.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* 1. WATER INTAKE TRACKER (2 LITERS / 8 GLASSES) */}
@@ -124,6 +169,10 @@ export const GlowUpTab: React.FC = () => {
             );
           })}
         </div>
+
+        <p className="text-[11px] text-stone-500 dark:text-stone-400 italic">
+          💡 Adab Minum Sunnah: Duduk tenang, baca bismillah, minum bertahap (2-3 nafas), dan akhiri dengan alhamdulillah.
+        </p>
       </div>
 
       {/* 2. DAILY GLOW UP & SELF-CARE CHECKLIST */}
@@ -131,7 +180,7 @@ export const GlowUpTab: React.FC = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
             <Heart className="w-5 h-5 text-rose-500" />
-            <span>Rutinitas Perawatan Diri ({formatDateIndonesian(selectedDate)})</span>
+            <span>Rutinitas Perawatan Diri &amp; Adab ({formatDateIndonesian(selectedDate)})</span>
           </h2>
         </div>
 
@@ -145,13 +194,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <Sun className="w-5 h-5 text-amber-500" />
+              <Sun className="w-5 h-5 text-amber-500 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Morning Skincare & Sunscreen</div>
-                <div className="text-xs text-stone-500">Cuci muka, moisturizer, & perlindungan UV</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Thaharah &amp; Skincare Pagi Halal</div>
+                <div className="text-xs text-stone-500">Cuci muka bersih, moisturizer/pelembap halal, &amp; perlindungan UV</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.morningSkincare ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.morningSkincare && <Check className="w-4 h-4" />}
@@ -167,13 +216,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <Moon className="w-5 h-5 text-indigo-400" />
+              <Moon className="w-5 h-5 text-indigo-400 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Night Skincare & Wudhu Tidur</div>
-                <div className="text-xs text-stone-500">Double cleansing & wudhu sebelum lelap</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Thaharah Malam, Siwak &amp; Wudhu Tidur</div>
+                <div className="text-xs text-stone-500">Bersihkan kotoran wajah, sikat gigi/siwak, &amp; berwudhu sebelum lelap</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.nightSkincare ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.nightSkincare && <Check className="w-4 h-4" />}
@@ -189,13 +238,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <Activity className="w-5 h-5 text-emerald-500" />
+              <Activity className="w-5 h-5 text-emerald-500 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Olahraga / Stretching 30 Menit</div>
-                <div className="text-xs text-stone-500">Jalan pagi, senam ringan, atau workout</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Olahraga &amp; Kebugaran Jasmani (30 Menit)</div>
+                <div className="text-xs text-stone-500">Jalan pagi, stretching, lari, gym/push-up, atau senam ringan</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.workout30Min ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.workout30Min && <Check className="w-4 h-4" />}
@@ -211,13 +260,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <BookOpen className="w-5 h-5 text-teal-500" />
+              <BookOpen className="w-5 h-5 text-teal-500 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Membaca Buku 15 Menit</div>
-                <div className="text-xs text-stone-500">Buku pengembangan diri / sirah nabawiyah</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Membaca Buku / Sirah Nabawiyah (15 Menit)</div>
+                <div className="text-xs text-stone-500">Buku pengembangan diri, ilmu agama, atau keteladanan Nabi ﷺ</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.reading15Min ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.reading15Min && <Check className="w-4 h-4" />}
@@ -233,13 +282,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <Moon className="w-5 h-5 text-purple-500" />
+              <Moon className="w-5 h-5 text-purple-500 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Tidur Cukup (7-8 Jam)</div>
-                <div className="text-xs text-stone-500">Tidur lebih awal setelah Isya & surat Al-Mulk</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Tidur Cukup (Adab Tidur Miring ke Kanan)</div>
+                <div className="text-xs text-stone-500">Tidur 7-8 jam diawali Al-Mulk agar bugar bangun Qiyamul Lail</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.sleep7Hours ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.sleep7Hours && <Check className="w-4 h-4" />}
@@ -255,13 +304,13 @@ export const GlowUpTab: React.FC = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              <Coffee className="w-5 h-5 text-amber-600" />
+              <Coffee className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Makan Bergizi & Batasi Gula</div>
-                <div className="text-xs text-stone-500">Buah, sayur, makanan halal & thayyib</div>
+                <div className="text-sm font-bold text-stone-800 dark:text-stone-100">Makanan Sehat, Halal &amp; Thayyib</div>
+                <div className="text-xs text-stone-500">Sayur, buah, protein bergizi &amp; batasi konsumsi gula berlebih</div>
               </div>
             </div>
-            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 ${
               currentGlowUp.healthyFood ? 'bg-emerald-600 border-emerald-700 text-white' : 'border-stone-300 dark:border-emerald-800'
             }`}>
               {currentGlowUp.healthyFood && <Check className="w-4 h-4" />}
