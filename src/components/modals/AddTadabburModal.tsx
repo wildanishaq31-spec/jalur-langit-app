@@ -81,13 +81,39 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
   // Filter 114 Surahs by search query
   const filteredSurahs = useMemo(() => {
     if (!surahSearchQuery.trim()) return ALL_114_SURAHS;
-    const q = surahSearchQuery.toLowerCase();
+    const q = surahSearchQuery.toLowerCase().trim();
     return ALL_114_SURAHS.filter(
       s => s.name.toLowerCase().includes(q) ||
            s.meaning.toLowerCase().includes(q) ||
-           String(s.number).includes(q)
+           String(s.number) === q ||
+           `qs ${s.name.toLowerCase()}`.includes(q)
     );
   }, [surahSearchQuery]);
+
+  // Handler search input with instant matching
+  const handleSearchChange = (query: string) => {
+    setSurahSearchQuery(query);
+    if (!query.trim()) return;
+    const q = query.toLowerCase().trim();
+    const match = ALL_114_SURAHS.find(
+      s => s.name.toLowerCase().includes(q) ||
+           s.meaning.toLowerCase().includes(q) ||
+           String(s.number) === q
+    );
+    if (match) {
+      setSelectedSurahNumber(match.number);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filteredSurahs.length > 0) {
+        handleApplySmartGenerate(filteredSurahs[0].number);
+        setSurahSearchQuery('');
+      }
+    }
+  };
 
   // Handler for 1-Click Smart Auto-Generate
   const handleApplySmartGenerate = (surahNum: number) => {
@@ -202,59 +228,143 @@ export const AddTadabburModal: React.FC<AddTadabburModalProps> = ({ isOpen, onCl
               Pilih surah Al-Qur&apos;an di bawah, lalu klik <b>Generate Otomatis</b>. Seluruh kolom (Arab, Latin, Terjemahan, Kisah, Topik, Hikmah, &amp; Aksi Nyata) akan terisi otomatis secara mendalam.
             </p>
 
-            {/* Input Pencarian Cepat Surah */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input
-                type="text"
-                placeholder="Cari nama surah atau arti (cth: Waqiah, Yasin, Kahf)..."
-                value={surahSearchQuery}
-                onChange={(e) => setSurahSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 rounded-xl bg-white dark:bg-emerald-900/60 border border-teal-200 dark:border-teal-700 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-
-            {/* Dropdown 114 Surah + Tombol Generate */}
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1">
-                <select
-                  value={selectedSurahNumber}
-                  onChange={(e) => setSelectedSurahNumber(Number(e.target.value))}
-                  className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-emerald-900/60 border border-teal-300 dark:border-teal-700 text-xs font-semibold text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none cursor-pointer"
-                >
-                  <optgroup label="🌟 Surah Rekomendasi Utama">
-                    <option value={94}>QS. 94. Al-Insyirah (Kelapangan Hati) - 8 Ayat</option>
-                    <option value={2}>QS. 2. Al-Baqarah (Ayat Kursi) - 286 Ayat</option>
-                    <option value={93}>QS. 93. Adh-Dhuha (Waktu Duha) - 11 Ayat</option>
-                    <option value={56}>QS. 56. Al-Waqi&apos;ah (Hari Kiamat) - 96 Ayat</option>
-                    <option value={67}>QS. 67. Al-Mulk (Kerajaan) - 30 Ayat</option>
-                    <option value={18}>QS. 18. Al-Kahfi (Gua) - 110 Ayat</option>
-                    <option value={65}>QS. 65. At-Talaq (Ayat Seribu Dinar) - 12 Ayat</option>
-                    <option value={55}>QS. 55. Ar-Rahman (Maha Pengasih) - 78 Ayat</option>
-                    <option value={112}>QS. 112. Al-Ikhlas (Keesaan Allah) - 4 Ayat</option>
-                    <option value={1}>QS. 1. Al-Fatihah (Pembukaan) - 7 Ayat</option>
-                  </optgroup>
-                  <optgroup label="📖 Katalog Lengkap 114 Surah Al-Qur'an">
-                    {filteredSurahs.map((s) => (
-                      <option key={s.number} value={s.number}>
-                        QS. {s.number}. {s.name} ({s.arabic}) - {s.meaning} [{s.ayahCount} Ayat]
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-stone-500">
-                  <ChevronDown className="w-4 h-4" />
-                </div>
+            {/* FITUR 1: PENCARIAN LANGSUNG (KETIK & OTOMATIS MUNCUL) */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-teal-900 dark:text-teal-200">
+                🔍 Fitur 1: Cari Cepat (Ketik Nama Surah / Arti / Nomor)
+              </label>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="text"
+                  placeholder="Ketik nama surat (cth: al ikhlas, yasin, waqiah, mulk, kahfi)..."
+                  value={surahSearchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="w-full pl-8 pr-8 py-2.5 rounded-xl bg-white dark:bg-emerald-900/60 border border-teal-300 dark:border-teal-700 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
+                />
+                {surahSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSurahSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+                    title="Hapus pencarian"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => handleApplySmartGenerate(selectedSurahNumber)}
-                className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 active:scale-98 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-              >
-                <Wand2 className="w-4 h-4" />
-                <span>Generate Otomatis</span>
-              </button>
+              {/* DAFTAR HASIL PENCARIAN YANG OTOMATIS MUNCUL */}
+              {surahSearchQuery.trim().length > 0 && (
+                <div className="rounded-2xl bg-white dark:bg-emerald-950 border-2 border-teal-400 dark:border-teal-600 shadow-xl p-2.5 space-y-1.5 animate-fade-in">
+                  <div className="flex items-center justify-between px-2 py-1 text-[11px] font-bold text-teal-800 dark:text-teal-200 border-b border-teal-100 dark:border-emerald-900/60">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                      <span>Hasil Pencarian: &quot;{surahSearchQuery}&quot; ({filteredSurahs.length} surah)</span>
+                    </span>
+                    <span className="text-[10px] text-stone-500 dark:text-stone-400 font-normal">Klik untuk langsung generate</span>
+                  </div>
+
+                  {filteredSurahs.length === 0 ? (
+                    <div className="px-3 py-3 text-xs text-stone-500 text-center">
+                      Surah &quot;{surahSearchQuery}&quot; tidak ditemukan. Silakan cek ejaan atau pilih dari daftar surah di bawah.
+                    </div>
+                  ) : (
+                    <div className="max-h-52 overflow-y-auto space-y-1 scrollbar-thin">
+                      {filteredSurahs.slice(0, 6).map((s) => (
+                        <button
+                          key={s.number}
+                          type="button"
+                          onClick={() => {
+                            handleApplySmartGenerate(s.number);
+                            setSurahSearchQuery('');
+                          }}
+                          className="w-full text-left p-2.5 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-900/50 flex items-center justify-between group transition-all border border-stone-100 dark:border-emerald-900/60 hover:border-teal-300 dark:hover:border-teal-700 cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/70 text-teal-800 dark:text-teal-200 text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                              {s.number}
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-stone-900 dark:text-stone-100 group-hover:text-teal-700 dark:group-hover:text-teal-300">
+                                  QS. {s.name}
+                                </span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 dark:bg-emerald-900/60 text-stone-600 dark:text-stone-300">
+                                  {s.revelation}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                                {s.meaning} • {s.ayahCount} Ayat
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <span className="text-sm font-arabic font-bold text-teal-800 dark:text-teal-300 hidden sm:inline">
+                              {s.arabic}
+                            </span>
+                            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white text-[11px] font-bold shadow-xs group-hover:from-teal-700 group-hover:to-emerald-700 flex items-center gap-1">
+                              <Wand2 className="w-3 h-3" />
+                              <span>Pilih &amp; Generate</span>
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* FITUR 2: PILIH MANUAL DARI DAFTAR SURAH YANG SUDAH ADA */}
+            <div className="space-y-1.5 pt-1 border-t border-teal-200/60 dark:border-teal-800/60">
+              <label className="block text-[11px] font-bold text-teal-900 dark:text-teal-200">
+                📋 Fitur 2: Atau Pilih dari Daftar 114 Surah yang Sudah Ada
+              </label>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <select
+                    value={selectedSurahNumber}
+                    onChange={(e) => setSelectedSurahNumber(Number(e.target.value))}
+                    className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-emerald-900/60 border border-teal-300 dark:border-teal-700 text-xs font-semibold text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none cursor-pointer"
+                  >
+                    <optgroup label="🌟 Surah Rekomendasi Utama">
+                      <option value={94}>QS. 94. Al-Insyirah (Kelapangan Hati) - 8 Ayat</option>
+                      <option value={2}>QS. 2. Al-Baqarah (Ayat Kursi) - 286 Ayat</option>
+                      <option value={93}>QS. 93. Adh-Dhuha (Waktu Duha) - 11 Ayat</option>
+                      <option value={56}>QS. 56. Al-Waqi&apos;ah (Hari Kiamat) - 96 Ayat</option>
+                      <option value={67}>QS. 67. Al-Mulk (Kerajaan) - 30 Ayat</option>
+                      <option value={18}>QS. 18. Al-Kahfi (Gua) - 110 Ayat</option>
+                      <option value={65}>QS. 65. At-Talaq (Ayat Seribu Dinar) - 12 Ayat</option>
+                      <option value={55}>QS. 55. Ar-Rahman (Maha Pengasih) - 78 Ayat</option>
+                      <option value={112}>QS. 112. Al-Ikhlas (Keesaan Allah) - 4 Ayat</option>
+                      <option value={1}>QS. 1. Al-Fatihah (Pembukaan) - 7 Ayat</option>
+                    </optgroup>
+                    <optgroup label="📖 Katalog Lengkap 114 Surah Al-Qur'an">
+                      {ALL_114_SURAHS.map((s) => (
+                        <option key={s.number} value={s.number}>
+                          QS. {s.number}. {s.name} ({s.arabic}) - {s.meaning} [{s.ayahCount} Ayat]
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-stone-500">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleApplySmartGenerate(selectedSurahNumber)}
+                  className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 active:scale-98 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  <span>Generate Otomatis</span>
+                </button>
+              </div>
             </div>
 
             {/* Quick Chips Rekomendasi Cepat (1-Klik Langsung Terisi) */}
