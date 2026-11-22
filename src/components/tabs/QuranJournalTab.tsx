@@ -66,23 +66,37 @@ export const QuranJournalTab: React.FC = () => {
     }
   };
 
-  // Gratitude for selectedDate (dynamic list)
-  const [gratitudeItems, setGratitudeItems] = useState<string[]>(() => {
-    const list = gratitudeMap[selectedDate];
-    if (list && list.length > 0) {
-      return list;
+  // Helper: cari daftar syukur terakhir yang terisi dari tanggal mana pun (Persistent Vault)
+  const getLatestGratitudeList = (map: Record<string, string[]>, currentDate: string): string[] => {
+    const currentList = map[currentDate];
+    if (currentList && currentList.some(item => item && item.trim() !== '')) {
+      return currentList;
     }
-    return ['', '', ''];
+    // Cari tanggal lain yang memiliki data terisi (terbaru lebih dahulu)
+    const sortedDates = Object.keys(map).sort().reverse();
+    for (const d of sortedDates) {
+      const items = map[d];
+      if (items && items.some(item => item && item.trim() !== '')) {
+        return items;
+      }
+    }
+    // Default awal jika aplikasi baru pertama kali dibuka
+    return [
+      'Masih diberikan nikmat nafas dan kesempatan sholat Subuh hari ini',
+      'Kesehatan badan, kejernihan pikiran, dan ketenangan hati',
+      'Keluarga dan sahabat yang senantiasa saling mendoakan dalam kebaikan'
+    ];
+  };
+
+  // Gratitude for selectedDate (Persistent Gratitude Vault)
+  const [gratitudeItems, setGratitudeItems] = useState<string[]>(() => {
+    return getLatestGratitudeList(gratitudeMap, selectedDate);
   });
   const [isSavedGratitude, setIsSavedGratitude] = useState(false);
 
   React.useEffect(() => {
-    const list = gratitudeMap[selectedDate];
-    if (list && list.length > 0) {
-      setGratitudeItems(list);
-    } else {
-      setGratitudeItems(['', '', '']);
-    }
+    const list = getLatestGratitudeList(gratitudeMap, selectedDate);
+    setGratitudeItems(list);
     setIsSavedGratitude(false);
   }, [selectedDate, gratitudeMap]);
 
@@ -107,9 +121,22 @@ export const QuranJournalTab: React.FC = () => {
   };
 
   const handleSaveGratitude = () => {
-    setGratitudeList(selectedDate, gratitudeItems);
+    const validItems = gratitudeItems.filter(item => item.trim() !== '');
+    const toSave = validItems.length > 0 ? validItems : gratitudeItems;
+    setGratitudeList(selectedDate, toSave);
     setIsSavedGratitude(true);
+    markAmalanCompleted(selectedDate, 'muhasabah_gratitude');
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
     setTimeout(() => setIsSavedGratitude(false), 2500);
+  };
+
+  const handleToggleGratitudeAmalan = () => {
+    if (isGratitudeAmalanDone) {
+      markAmalanIncomplete(selectedDate, 'muhasabah_gratitude');
+    } else {
+      markAmalanCompleted(selectedDate, 'muhasabah_gratitude');
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.55 } });
+    }
   };
 
   const handleToggleJuzWithCelebration = (juz: number) => {
@@ -693,62 +720,53 @@ export const QuranJournalTab: React.FC = () => {
 
       {/* SUB-TAB 4: GRATITUDE & SYUKUR */}
       {quranActiveSubTab === 'syukur' && (
-        <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
-          {/* Linked Amalan Sync Banner: Muhasabah & Gratitude Journal */}
-          <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-amber-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-amber-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isGratitudeAmalanDone ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse'}`} />
-              <div>
-                <p className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
-                  <span>Terhubung ke Amalan: Muhasabah & Gratitude Journal</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    isGratitudeAmalanDone
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
-                  }`}>
-                    {isGratitudeAmalanDone ? 'Selesai ✓' : 'Belum Selesai'}
-                  </span>
-                </p>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                  Menyimpan catatan syukur hari ini otomatis menandai amalan ini selesai di Checklist Amalan.
-                </p>
+        <div className="p-5 sm:p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-4">
+          
+          {/* Header Bar: Title, Counter & Tombol Checklist Baca Harian (Tersambung ke Checklist Amalan) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100 dark:border-emerald-900/50">
+            <div>
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-500 fill-rose-500/20 shrink-0" />
+                <h2 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100">
+                  Gratitude Journal
+                </h2>
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                  {gratitudeItems.filter(t => t.trim().length > 0).length} Butir Nikmat
+                </span>
               </div>
+              <p className="text-xs text-stone-500 mt-1">
+                {formatDateIndonesian(selectedDate)} • Refleksi Nikmat &amp; Pengingat Bersyukur Harian
+              </p>
             </div>
 
+            {/* Checklist Sudah Dibaca & Diresapi Hari Ini */}
             <button
-              onClick={() => {
-                if (isGratitudeAmalanDone) {
-                  markAmalanIncomplete(selectedDate, 'muhasabah_gratitude');
-                } else {
-                  markAmalanCompleted(selectedDate, 'muhasabah_gratitude');
-                  confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-                }
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 flex items-center gap-1.5 ${
+              type="button"
+              onClick={handleToggleGratitudeAmalan}
+              className={`w-full sm:w-auto px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 active:scale-95 cursor-pointer ${
                 isGratitudeAmalanDone
-                  ? 'bg-stone-200 dark:bg-emerald-900/60 text-stone-700 dark:text-stone-200 hover:bg-stone-300'
-                  : 'bg-emerald-700 hover:bg-emerald-800 text-white dark:bg-emerald-700 dark:hover:bg-emerald-600'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-100 border border-emerald-300 dark:border-emerald-700'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-emerald-700/20'
               }`}
             >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>{isGratitudeAmalanDone ? 'Batal Selesai' : 'Tandai Selesai di Checklist ✓'}</span>
+              <Check className={`w-4 h-4 stroke-[3] ${isGratitudeAmalanDone ? 'text-emerald-600 dark:text-emerald-300' : 'text-white'}`} />
+              <span>
+                {isGratitudeAmalanDone
+                  ? 'Sudah Dibaca & Diresapi Hari Ini ✓'
+                  : 'Tandai Sudah Dibaca Hari Ini'}
+              </span>
             </button>
           </div>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-              <Heart className="w-5 h-5 fill-rose-500/20" />
-              <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100">
-                Gratitude Journal ({formatDateIndonesian(selectedDate)})
-              </h2>
-            </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
-              {gratitudeItems.filter(t => t.trim().length > 0).length} Hal Disyukuri
-            </span>
-          </div>
 
-          <p className="text-xs text-stone-500 italic">
-            “Jika kamu bersyukur, pasti Kami akan menambah (nikmat) kepadamu.” (QS. Ibrahim: 7)
-          </p>
+          {/* Kutipan Qalbu & Panduan Syukur */}
+          <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/40 space-y-1">
+            <p className="text-xs text-amber-900 dark:text-amber-200 italic font-serif">
+              &ldquo;Jika kamu bersyukur, pasti Kami akan menambah (nikmat) kepadamu.&rdquo; <span className="font-sans font-semibold text-[11px] not-italic text-amber-700 dark:text-amber-400">(QS. Ibrahim: 7)</span>
+            </p>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
+              Bacalah butir-butir rasa syukur di bawah ini dengan sepenuh hati. Catatan nikmat Anda tersimpan abadi dan dapat dibaca setiap hari, serta bebas Anda tambahi kapan pun ada nikmat baru.
+            </p>
+          </div>
 
           <div className="space-y-3">
             {gratitudeItems.map((item, index) => {
@@ -802,13 +820,14 @@ export const QuranJournalTab: React.FC = () => {
 
             {/* BUTTON SIMPAN */}
             <button
+              type="button"
               onClick={handleSaveGratitude}
-              className="w-full py-3 px-4 text-white text-xs font-bold rounded-2xl transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98 bg-emerald-800 hover:bg-emerald-900"
+              className="w-full py-3.5 px-4 text-white text-xs font-bold rounded-2xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-98 bg-emerald-800 hover:bg-emerald-900 cursor-pointer"
             >
               {isSavedGratitude ? (
                 <>
                   <Check className="w-4 h-4 text-amber-300 stroke-[3]" />
-                  <span>Catatan Syukur Berhasil Disimpan!</span>
+                  <span>Catatan Syukur Disimpan &amp; Amalan Selesai ✓</span>
                 </>
               ) : (
                 <>
