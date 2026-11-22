@@ -3,6 +3,44 @@ import { AmalanItem, TasbihPreset } from '@/types';
 export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
   // --- DINI HARI (02:30 - Subuh) ---
   {
+    id: 'sholat_taubat',
+    title: 'Sholat Taubat',
+    arabicTitle: 'صلاة التوبة',
+    category: 'dini_hari',
+    timeRange: '02:30 - 04:30 WIB',
+    description: 'Minimal 2 rakaat di sepertiga malam untuk membersihkan jiwa dari dosa dan khilaf sebelum bermunajat.',
+    virtue: 'Tidaklah seorang hamba berbuat dosa lalu bersuci, sholat 2 rakaat, dan memohon ampun melainkan Allah pasti mengampuninya. (HR. Abu Dawud)',
+    isPriority: true,
+    hukum: "Sunnah Ghairu Mu'akkadah",
+    tataCara: [
+      { step: 1, title: 'Wudhu Sempurna & Niat', detail: 'Bangun di sepertiga malam terakhir, berwudhu dengan tertib dan berniat ikhlas mengharap ampunan Allah SWT.' },
+      { step: 2, title: 'Rakaat Pertama & Kedua', detail: 'Sholat 2 rakaat dengan tuma\'ninah. Rakaat 1 membaca Al-Fatihah dan Al-Kafirun, rakaat 2 membaca Al-Fatihah dan Al-Ikhlas.' },
+      { step: 3, title: 'Sujud Penuh Pengakuan Dosa', detail: 'Pada sujud terakhir sebelum salam, perbanyak membaca doa Nabi Yunus: "Laa ilaaha illaa Anta subhaanaka innii kuntu minazh zhaalimiin".' },
+      { step: 4, title: 'Salam & Istighfar Taubat', detail: 'Ucapkan salam, lalu duduk tenang melafadzkan istighfar taubat seraya bertekad sungguh-sungguh tidak mengulangi maksiat.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Niat Sholat Taubat',
+        arabic: 'أُصَلِّي سُنَّةَ التَّوْبَةِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى',
+        latin: "Usholli sunnatat taubati rok'ataini lillaahi Ta'aala.",
+        translation: 'Aku niat sholat sunnah Taubat dua rakaat karena Allah Ta\'ala.'
+      },
+      {
+        title: 'Doa Ba\'da Sholat Taubat',
+        arabic: 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ',
+        latin: "Astaghfirullahal 'azhiim alladzii laa ilaaha illaa huwal hayyul qayyuumu wa atuubu ilaih.",
+        translation: 'Aku memohon ampunan kepada Allah Yang Maha Agung, tiada Tuhan selain Dia Yang Maha Hidup lagi Maha Berdiri Sendiri, dan aku bertaubat kepada-Nya.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Abu Dawud no. 1521 & Tirmidzi no. 406',
+      grade: 'Hasan',
+      indonesianText: 'Tidaklah seorang hamba melakukan suatu dosa, lalu ia bersuci dengan baik, kemudian berdiri sholat dua rakaat dan memohon ampun kepada Allah, melainkan Allah pasti mengampuninya. (HR. Abu Dawud & Tirmidzi)',
+      notes: 'Langkah awal terbaik sebelum memanjatkan hajat besar di sepertiga malam adalah menyucikan jiwa terlebih dahulu lewat sholat taubat.'
+    },
+    tipsIstiqomah: 'Jadikan sholat taubat sebagai pembuka qiyamul lail sebelum sholat tahajjud agar hati terasa ringan, lapang, dan siap menyambut rahmat-Nya.'
+  },
+  {
     id: 'tahajjud',
     title: 'Sholat Tahajjud',
     arabicTitle: 'صلاة التهجد',
@@ -33,6 +71,49 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
       notes: 'Rasulullah SAW bersabda: "Sebaik-baik sholat setelah sholat fardhu adalah sholat malam." (HR. Muslim)'
     },
     tipsIstiqomah: 'Mulai bertahap dari 2 rakaat saja secara rutin setiap malam. Pasang alarm 30-45 menit sebelum waktu fajar Subuh.'
+  },
+  {
+    id: 'sholat_hajat',
+    title: 'Sholat Hajat',
+    arabicTitle: 'صلاة الحاجة',
+    category: 'dini_hari',
+    timeRange: '02:30 - 04:30 WIB',
+    description: '2 rakaat khusus memohon pertolongan, jalan keluar, dan pengabulan hajat besar dunia-akhirat.',
+    virtue: 'Barangsiapa memiliki hajat kepada Allah, berwudhulah dengan baik lalu sholat 2 rakaat dan panjatkan doa hajat. (HR. Tirmidzi)',
+    isPriority: false,
+    hukum: "Sunnah Ghairu Mu'akkadah",
+    linkedMenu: {
+      tab: 'hajat',
+      subTab: 'hajat',
+      actionLabel: 'Buka Papan Hajat Spesifik',
+    },
+    tataCara: [
+      { step: 1, title: 'Waktu Terbaik', detail: 'Dikerjakan di sepertiga malam setelah tahajjud (sebelum witir) atau di waktu malam yang tenang.' },
+      { step: 2, title: '2 Rakaat Khusyuk', detail: 'Rakaat 1 membaca Al-Fatihah dan Ayat Kursi, rakaat 2 membaca Al-Fatihah dan Al-Ikhlas (atau surat yang dihafal).' },
+      { step: 3, title: 'Pujian & Sholawat Ba\'da Salam', detail: 'Selesai salam, perbanyak memuji keagungan Allah, bersholawat atas Nabi Muhammad SAW, lalu membaca doa Sholat Hajat.' },
+      { step: 4, title: 'Sebutkan Hajat Rinci', detail: 'Sampaikan impian, kebutuhan finansial, jodoh, kesehatan, atau kelulusan secara jujur dan yakin 100% Allah Maha Kuasa.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Niat Sholat Hajat',
+        arabic: 'أُصَلِّي سُنَّةَ الْحَاجَةِ رَكْعَتَيْنِ لِلَّهِ تَعَالَى',
+        latin: "Usholli sunnatal haajati rok'ataini lillaahi Ta'aala.",
+        translation: 'Aku niat sholat sunnah Hajat dua rakaat karena Allah Ta\'ala.'
+      },
+      {
+        title: 'Doa Sholat Hajat (HR. Tirmidzi no. 479)',
+        arabic: 'لَا إِلَهَ إِلَّا اللَّهُ الْحَلِيمُ الْكَرِيمُ، سُبْحَانَ اللَّهِ رَبِّ الْعَرْشِ الْعَظِيمِ، الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ، أَسْأَلُكَ مُوجِبَاتِ رَحْمَتِكَ وَعَزَائِمَ مَغْفِرَتِكَ',
+        latin: "Laa ilaaha illallahul haliimul kariim, subhaanallahi rabbil 'arsyil 'azhiim, alhamdulillahi rabbil 'aalamiin, as-aluka muujibaati rahmatika wa 'azaa-ima maghfiratika.",
+        translation: 'Tiada Tuhan selain Allah Yang Maha Santun lagi Maha Mulia. Maha Suci Allah Rabb Pemilik Arsy yang agung. Segala puji bagi Allah Rabb semesta alam. Aku memohon kepada-Mu hal-hal yang mendatangkan rahmat-Mu dan ketetapan ampunan-Mu.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Tirmidzi no. 479 & Ibnu Majah no. 1384',
+      grade: 'Hasan',
+      indonesianText: 'Barangsiapa memiliki hajat kepada Allah atau kepada salah seorang anak cucu Adam, hendaklah ia berwudhu dengan baik kemudian sholat dua rakaat lalu memuji Allah dan bersholawat kepada Nabi. (HR. Tirmidzi)',
+      notes: 'Bagi seorang muslim, sholat hajat adalah pintu kepasrahan total menyerahkan urusan besar kepada Pemilik Segala Solusi.'
+    },
+    tipsIstiqomah: 'Fokuskan satu hajat terbesar dalam periode 40 hari jalur langit ini hingga terasa tanda ketenangan dan kemudahan dari Allah.'
   },
   {
     id: 'witir',
@@ -272,6 +353,44 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
     },
     tipsIstiqomah: 'Buka fitur Tasbih Digital di aplikasi untuk membaca dzikir pagi berulang secara teratur.'
   },
+  {
+    id: 'tilawah_one_day_one_juz',
+    title: 'Tilawah Qur\'an (One Day One Juz)',
+    arabicTitle: 'تِلَاوَةُ الْقُرْآنِ الْكَرِيمِ',
+    category: 'subuh',
+    timeRange: '05:00 - 06:30 WIB / Fleksibel',
+    description: 'Membaca 1 juz Al-Qur\'an per hari (atau cicil 2 lembar / 4 halaman setiap selesai sholat fardhu) untuk target khatam rutin.',
+    targetCount: 1,
+    targetUnit: 'juz',
+    virtue: 'Setiap huruf Al-Qur\'an bernilai 10 pahala, dan Al-Qur\'an akan menjadi pembela serta pemberi syafaat di hari kiamat. (HR. Muslim & Tirmidzi)',
+    isPriority: true,
+    hukum: "Sunnah Mu'akkadah",
+    linkedMenu: {
+      tab: 'quran',
+      subTab: 'khatam',
+      actionLabel: 'Buka Target Khatam di Quran',
+    },
+    tataCara: [
+      { step: 1, title: 'Metode Cicil Ba\'da Fardhu', detail: 'Baca 2 lembar (4 halaman) setelah setiap sholat fardhu 5 waktu, otomatis tuntas 1 juz setiap hari tanpa merasa berat.' },
+      { step: 2, title: 'Tartil & Resapi Makna', detail: 'Bacalah dengan tajwid yang fasih, irama tartil, dan sempatkan menyimak terjemahan ayat-ayat yang menggugah hati.' },
+      { step: 3, title: 'Catat Progres Khatam', detail: 'Perbarui riwayat juz yang telah selesai dibaca pada tab Qur\'an aplikasi untuk memantau perjalanan khatam 30 hari.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Doa Sebelum Membaca Al-Qur\'an',
+        arabic: 'اللَّهُمَّ افْتَحْ عَلَيَّ حِكْمَتَكَ وَانْشُرْ عَلَيَّ رَحْمَتَكَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ',
+        latin: "Allahummaftah 'alayya hikmataka wansyur 'alayya rahmataka ya dzal jalaali wal ikraam.",
+        translation: 'Ya Allah, bukakanlah hikmah-Mu untukku dan limpahkanlah rahmat-Mu kepadaku, wahai Pemilik Keagungan dan Kemuliaan.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Muslim no. 804 & Tirmidzi no. 2910',
+      grade: 'Shahih',
+      indonesianText: 'Bacalah Al-Qur\'an, karena sesungguhnya ia akan datang pada hari kiamat sebagai pemberi syafaat bagi para pembacanya. (HR. Muslim no. 804)',
+      notes: 'Nabi SAW bersabda: "Siapa yang membaca satu huruf dari Kitabullah, maka baginya satu kebaikan dan setiap kebaikan dilipatgandakan sepuluh kali lipat." (HR. Tirmidzi no. 2910)'
+    },
+    tipsIstiqomah: 'Kuncinya adalah mencicil: 4 halaman ba\'da Subuh, 4 halaman ba\'da Dzuhur, 4 halaman ba\'da Ashar, 4 halaman ba\'da Maghrib, dan 4 halaman ba\'da Isya.'
+  },
 
   // --- DHUHA & SIANG ---
   {
@@ -336,6 +455,116 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
       indonesianText: 'Barangsiapa menjaga empat rakaat sebelum Dzuhur dan empat rakaat sesudahnya, maka Allah mengharamkan dirinya dari api neraka. (HR. Tirmidzi no. 428)'
     },
     tipsIstiqomah: 'Segera bersiap ketika adzan Dzuhur berkumandang; tinggalkan sejenak urusan kantor / bisnis.'
+  },
+  {
+    id: 'sholat_jumat',
+    title: 'Sholat Jum\'at & Sholat Dzuhur Awal Waktu',
+    arabicTitle: 'صَلَاةُ الْجُمُعَةِ',
+    category: 'dhuha',
+    timeRange: '11:30 - 13:00 WIB (Khusus Hari Jum\'at)',
+    description: 'Sholat Jum\'at berjamaah di masjid bagi laki-laki, atau Sholat Dzuhur di awal waktu di rumah bagi muslimah, diiringi amalan sunnah Jum\'at.',
+    virtue: 'Hari Jum\'at adalah sebaik-baik hari terbitnya matahari (Sayyidul Ayyam). Setiap langkah menuju sholat Jum\'at berpahala puasa dan sholat setahun. (HR. Tirmidzi)',
+    isPriority: true,
+    hukum: "Fardhu 'Ain (Laki-laki) / Sholat Dzuhur Utama (Muslimah)",
+    tataCara: [
+      { step: 1, title: 'Sunnah Sebelum Berangkat', detail: 'Mandi sunnah Jum\'at, memotong kuku, merapikan diri, memakai pakaian putih bersih, dan memakai wewangian (bagi laki-laki ke masjid / di rumah bagi wanita).' },
+      { step: 2, title: 'Hadir Lebih Awal di Masjid', detail: 'Bagi ikhwan berangkat lebih pagi sebelum imam naik mimbar; bagi akhwat bersiap sholat Dzuhur tepat saat adzan berkumandang.' },
+      { step: 3, title: 'Khutbah & Sholat', detail: 'Mendengarkan khutbah dengan tenang tanpa berbicara sepatah kata pun, lalu mendirikan sholat Jum\'at 2 rakaat berjamaah secara khusyuk.' },
+      { step: 4, title: 'Waktu Mustajab Ba\'da Ashar', detail: 'Manfaatkan sisa hari Jum\'at terutama ba\'da Ashar hingga Maghrib untuk memperbanyak munajat hajat karena waktu tersebut sangat mustajab.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Niat Sholat Jum\'at (Sebagai Makmum)',
+        arabic: 'أُصَلِّي فَرْضَ الْجُمُعَةِ رَكْعَتَيْنِ مَأْمُومًا لِلَّهِ تَعَالَى',
+        latin: "Usholli fardhol jum'ati rok'ataini ma'muuman lillaahi Ta'aala.",
+        translation: 'Aku niat sholat fardhu Jum\'at dua rakaat sebagai makmum karena Allah Ta\'ala.'
+      },
+      {
+        title: 'Sholawat Khusus Hari Jum\'at',
+        arabic: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ',
+        latin: "Allahumma shalli 'alaa Muhammad wa 'alaa aali Muhammad kamaa shallaita 'alaa Ibrahim wa 'alaa aali Ibrahim innaka hamiidum majiid.",
+        translation: 'Ya Allah, limpahkanlah sholawat kepada Nabi Muhammad dan keluarga Nabi Muhammad sebagaimana Engkau limpahkan sholawat kepada Nabi Ibrahim dan keluarga Nabi Ibrahim, sungguh Engkau Maha Terpuji lagi Maha Mulia.'
+      }
+    ],
+    dalil: {
+      source: 'QS. Al-Jumu\'ah: 9 & HR. Abu Dawud no. 1067',
+      grade: 'Al-Qur\'an & Shahih',
+      indonesianText: 'Wahai orang-orang yang beriman! Apabila telah diseru untuk melaksanakan shalat pada hari Jum\'at, maka segeralah kamu mengingat Allah dan tinggalkanlah jual beli. Yang demikian itu lebih baik bagimu jika kamu mengetahui. (QS. Al-Jumu\'ah: 9)',
+      notes: 'Rasulullah SAW bersabda: "Sholat Jum\'at adalah kewajiban bagi setiap muslim secara berjamaah kecuali 4 golongan: budak, wanita, anak kecil, dan orang yang sakit." (HR. Abu Dawud no. 1067)'
+    },
+    tipsIstiqomah: 'Setiap Jumat pagi, siapkan infaq terbaik dan sempatkan mandi sunnah sebelum jam 11:00 WIB agar tidak terburu-buru.'
+  },
+  {
+    id: 'surah_kahfi',
+    title: 'Membaca QS. Al-Kahfi',
+    arabicTitle: 'سُورَةُ الْكَهْفِ',
+    category: 'dhuha',
+    timeRange: 'Kamis Petang - Jum\'at Sore',
+    description: 'Membaca 110 ayat Surat Al-Kahfi di hari Jum\'at (atau minimal 10 ayat awal dan akhir) sebagai lentera cahaya dan perisai dari fitnah Dajjal.',
+    virtue: 'Barangsiapa membaca surat Al-Kahfi pada hari Jum\'at, maka Allah akan memancarkan cahaya baginya di antara dua Jum\'at. (HR. Al-Hakim & Al-Baihaqi)',
+    isPriority: true,
+    hukum: "Sunnah Mu'akkadah (Hari Jum'at)",
+    linkedMenu: {
+      tab: 'quran',
+      subTab: 'tadabbur',
+      actionLabel: 'Buka QS. Al-Kahfi di Quran',
+    },
+    tataCara: [
+      { step: 1, title: 'Rentang Waktu Pelaksanaan', detail: 'Dimulai dari tenggelamnya matahari hari Kamis (malam Jum\'at) hingga matahari terbenam hari Jum\'at (waktu Maghrib).' },
+      { step: 2, title: 'Cicil Membaca', detail: 'Bisa dicicil: ayat 1-30 malam Jum\'at, ayat 31-70 setelah Subuh, dan ayat 71-110 setelah sholat Jum\'at/Ashar.' },
+      { step: 3, title: 'Tadabbur 4 Fitnah Hidup', detail: 'Resapi pesan perlindungan iman: fitnah akidah (Ashabul Kahfi), fitnah harta (Pemilik Kebun), fitnah ilmu (Musa & Khidir), dan fitnah kekuasaan (Dzulqarnain).' }
+    ],
+    bacaanList: [
+      {
+        title: 'Ayat Pembuka QS. Al-Kahfi (Ayat 1-2)',
+        arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَنْزَلَ عَلَىٰ عَبْدِهِ الْكِتَابَ وَلَمْ يَجْعَلْ لَهُ عِوَجًا ۜ قَيِّمًا لِيُنْذِرَ بَأْسًا شَدِيدًا مِنْ لَدُنْهُ وَيُبَشِّرَ الْمُؤْمِنِينَ',
+        latin: "Alhamdulillahilladzii anzala 'alaa 'abdihil kitaaba wa lam yaj'al lahu 'iwajaa. Qayyiman liyundzira ba'san syadiidan min ladunhu wa yubasysyiral mu'miniin.",
+        translation: 'Segala puji bagi Allah yang telah menurunkan Kitab (Al-Qur\'an) kepada hamba-Nya dan Dia tidak menjadikannya bengkok; sebagai bimbingan yang lurus, untuk memperingatkan siksaan yang sangat pedih dari sisi-Nya dan memberikan kabar gembira kepada orang-orang mukmin.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Al-Hakim 2/399 & Al-Baihaqi 3/249',
+      grade: 'Shahih',
+      indonesianText: 'Barangsiapa membaca surat Al-Kahfi pada hari Jum\'at, niscaya akan terpancar cahaya baginya yang menerangi di antara dua Jum\'at. (HR. Al-Hakim & Al-Baihaqi - Shahih)',
+      notes: 'Nabi SAW juga bersabda: "Siapa yang menghafal sepuluh ayat pertama dari surat Al-Kahfi, ia akan terlindungi dari fitnah Dajjal." (HR. Muslim no. 809)'
+    },
+    tipsIstiqomah: 'Buka menu Al-Qur\'an di aplikasi yang menyediakan audio murottal tartil agar Anda bisa menyimak dan membaca dengan khusyuk.'
+  },
+  {
+    id: 'kajian_ilmu',
+    title: 'Menuntut Ilmu Agama (1 Day 1 Kajian)',
+    arabicTitle: 'طَلَبُ الْعِلْمِ فَرِيضَةٌ',
+    category: 'dhuha',
+    timeRange: 'Fleksibel (Siang / Sore)',
+    description: 'Menyimak kajian ilmu syar\'i (majelis taklim atau rekaman audio/video YouTube) dan mencatat faidah hikmahnya.',
+    virtue: 'Barangsiapa menempuh jalan untuk mencari ilmu agama, Allah mudahkan baginya jalan menuju surga. (HR. Muslim)',
+    isPriority: false,
+    hukum: "Sunnah Mu'akkadah (Tholabul 'Ilmi)",
+    linkedMenu: {
+      tab: 'hajat',
+      subTab: 'kajian',
+      actionLabel: 'Catat Resume Kajian di Menu Kajian',
+    },
+    tataCara: [
+      { step: 1, title: 'Niat Lurus Ikhlas', detail: 'Niatkan tholabul \'ilmi semata-mata untuk mengangkat kebodohan diri dan mengamalkan syariat dalam kehidupan sehari-hari.' },
+      { step: 2, title: 'Simak Fokus 15-30 Menit', detail: 'Dengarkan materi tentang tauhid, fikih ibadah harian, tazkiyatun nufus (penyucian jiwa), atau adab akhlak mulia.' },
+      { step: 3, title: 'Ikat Ilmu dengan Catatan', detail: 'Buka menu Catatan Kajian di tab Hajat aplikasi, tuliskan intisari materi dan tentukan 1 aksi nyata yang akan Anda amalkan.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Doa Memohon Ilmu yang Bermanfaat',
+        arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا',
+        latin: "Allahumma innii as-aluka 'ilman naafi'an, wa rizqan thayyiban, wa 'amalan mutaqabbalan.",
+        translation: 'Ya Allah, sesungguhnya aku memohon kepada-Mu ilmu yang bermanfaat, rezeki yang halal lagi baik, dan amal yang diterima.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Muslim no. 2699 & HR. Ibnu Majah no. 224',
+      grade: 'Shahih',
+      indonesianText: 'Menuntut ilmu itu wajib atas setiap muslim. (HR. Ibnu Majah no. 224)',
+      notes: 'Rasulullah SAW bersabda: "Barangsiapa menempuh suatu jalan untuk mencari ilmu, maka Allah akan mudahkan baginya jalan menuju surga." (HR. Muslim no. 2699)'
+    },
+    tipsIstiqomah: 'Gunakan waktu luang saat istirahat siang atau saat berkendara untuk mendengarkan audio podcast kajian ustadz/ustadzah yang terpercaya.'
   },
   {
     id: 'ikhtiar_bumi',
@@ -433,6 +662,50 @@ export const DEFAULT_AMALAN_LIST: AmalanItem[] = [
       indonesianText: 'Barangsiapa membacanya 3 kali di waktu pagi dan 3 kali di waktu petang, maka tidak ada sesuatu pun yang dapat membahayakannya. (HR. Abu Dawud & Tirmidzi - Shahih)'
     },
     tipsIstiqomah: 'Buka modul Tasbih Digital untuk membaca dzikir petang dengan irama yang tenang dan tertuntun.'
+  },
+  {
+    id: 'dzikir_yunus_hauqalah',
+    title: 'Dzikir Pelepas Kesulitan (Yunus & Hauqalah)',
+    arabicTitle: 'دُعَاءُ ذِي النُّونِ وَالْحَوْقَلَةِ',
+    category: 'petang',
+    timeRange: '16:00 - 18:00 WIB / Ba\'da Ashar',
+    description: 'Melafadzkan doa Nabi Yunus AS (Laa ilaaha illaa Anta...) dan Hauqalah 100x sebagai pemecah kebuntuan hidup dan simpanan surga.',
+    targetCount: 100,
+    targetUnit: 'kali',
+    virtue: 'Doa Dzun Nun di dalam perut ikan paus tidaklah dibaca oleh seorang muslim dalam kesusahan melainkan Allah pasti mengabulkannya. (HR. Tirmidzi)',
+    isPriority: false,
+    hukum: 'Sunnah Mustahabbah',
+    linkedMenu: {
+      tab: 'tasbih',
+      presetId: 'yunus',
+      actionLabel: 'Lantunkan di Tasbih (100x)',
+    },
+    tataCara: [
+      { step: 1, title: 'Hadirkan Kerendahan Diri', detail: 'Sadari sepenuhnya bahwa manusia adalah hamba yang lemah dan serahkan seluruh penyelesaian masalah pelik hanya kepada Allah SWT.' },
+      { step: 2, title: 'Lafadzkan Doa Nabi Yunus 100x', detail: 'Lafadzkan secara tertib "Laa ilaaha illaa anta subhaanaka innii kuntu minazh zhaalimiin" dengan lisan yang khusyuk.' },
+      { step: 3, title: 'Sambung dengan Hauqalah 100x', detail: 'Genapkan dengan "Laa hawla wa laa quwwata illaa billaahil \'aliyyil \'adzim" sebagai ikrar pasrah dan penggugur rasa sombong.' }
+    ],
+    bacaanList: [
+      {
+        title: 'Doa Nabi Yunus AS (QS. Al-Anbiya: 87)',
+        arabic: 'لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ',
+        latin: "Laa ilaaha illaa anta subhaanaka innii kuntu minazh zhaalimiin.",
+        translation: 'Tidak ada Tuhan selain Engkau, Maha Suci Engkau, sungguh aku termasuk orang-orang yang zalim.'
+      },
+      {
+        title: 'Kalimat Hauqalah',
+        arabic: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ',
+        latin: "Laa hawla wa laa quwwata illaa billaahil 'aliyyil 'adzim.",
+        translation: 'Tiada daya dan kekuatan kecuali dengan pertolongan Allah Yang Maha Tinggi lagi Maha Agung.'
+      }
+    ],
+    dalil: {
+      source: 'HR. Tirmidzi no. 3505 & HR. Bukhari no. 4205',
+      grade: 'Shahih',
+      indonesianText: 'Doa Dzun Nun (Nabi Yunus) ketika berada di dalam perut ikan paus: Laa ilaaha illaa anta subhaanaka innii kuntu minazh zhaalimiin. Sesungguhnya tidaklah seorang muslim berdoa dengannya dalam suatu masalah melainkan Allah akan mengabulkannya. (HR. Tirmidzi)',
+      notes: 'Nabi SAW juga bersabda tentang Hauqalah: "Maukah aku tunjukkan kepadamu salah satu perbendaharaan surga? Yaitu Laa hawla wa laa quwwata illaa billaah." (HR. Bukhari)'
+    },
+    tipsIstiqomah: 'Buka Tasbih Digital preset Doa Nabi Yunus untuk berdzikir tenang menjelang senja sebagai penenang hati setelah berikhtiar seharian.'
   },
   {
     id: 'surah_waqiah',

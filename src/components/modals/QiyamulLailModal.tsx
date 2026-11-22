@@ -60,6 +60,7 @@ interface QiyamStep {
 const QIYAM_STEPS: QiyamStep[] = [
   {
     id: 1,
+    amalanId: 'sholat_taubat',
     name: 'Sholat Taubat',
     arabicName: 'صلاة التوبة',
     category: 'Pembersih Diri Sebelum Bermunajat',
@@ -121,6 +122,7 @@ const QIYAM_STEPS: QiyamStep[] = [
   },
   {
     id: 3,
+    amalanId: 'sholat_hajat',
     name: 'Sholat Hajat',
     arabicName: 'صلاة الحاجة',
     category: 'Munajat Hajat Khusus (Opsional)',

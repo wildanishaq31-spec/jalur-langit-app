@@ -799,6 +799,8 @@ export const AmalanTab: React.FC = () => {
                                 ) : (
                                   <>
                                     {item.linkedMenu.tab === 'tasbih' && <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                                    {item.linkedMenu.tab === 'hajat' && <HeartHandshake className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
+                                    {item.linkedMenu.tab === 'quran' && <BookOpen className="w-3.5 h-3.5 text-amber-300 shrink-0" />}
                                     <span>{item.linkedMenu.actionLabel} →</span>
                                   </>
                                 )}

@@ -188,9 +188,17 @@ export const PwaNotificationManager: React.FC = () => {
               // Mainkan suara lonceng chime lembut
               playGentleChime();
 
-              const title = `Adzan ${fardhu.name} (${prayerTimeHM}) 🕌`;
+              const isFriday = now.getDay() === 5;
+              const prayerDisplayName = (fardhu.key === 'dhuhr' && isFriday) 
+                ? "Sholat Jum'at & Dzuhur" 
+                : fardhu.name;
+              const prayerMessage = (fardhu.key === 'dhuhr' && isFriday)
+                ? "Waktu Sholat Jum'at & Dzuhur telah tiba. Tunaikan sholat fardhu di awal waktu (berjamaah di masjid bagi ikhwan / sholat awal waktu bagi akhwat)."
+                : fardhu.message;
+
+              const title = `Adzan ${prayerDisplayName} (${prayerTimeHM}) 🕌`;
               const options: NotificationOptions & { vibrate?: number[] } = {
-                body: fardhu.message,
+                body: prayerMessage,
                 icon: '/icon.svg',
                 badge: '/icon.svg',
                 vibrate: [300, 150, 300, 150, 300],

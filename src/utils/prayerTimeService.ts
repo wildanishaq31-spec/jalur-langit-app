@@ -381,7 +381,9 @@ export function getDynamicAmalanTimeRange(
 
   switch (amalanId) {
     // --- Dini Hari ---
+    case 'sholat_taubat':
     case 'tahajjud':
+    case 'sholat_hajat':
     case 'witir':
     case 'hajat_dini_hari':
       return `${p.tahajjud} - ${p.fajr} ${tz}`;
@@ -396,12 +398,19 @@ export function getDynamicAmalanTimeRange(
     case 'sedekah_subuh':
     case 'dzikir_pagi':
       return `${p.fajr} - 06:30 ${tz}`;
+    case 'tilawah_one_day_one_juz':
+      return `05:00 - 06:30 ${tz} / Fleksibel`;
 
     // --- Dhuha & Siang ---
     case 'sholat_dhuha':
       return `${p.dhuha} - ${p.dhuhr} ${tz}`;
     case 'sholat_dzuhur':
+    case 'sholat_jumat':
       return `${p.dhuhr} - ${p.asr} ${tz}`;
+    case 'surah_kahfi':
+      return `Kamis Petang - Jum'at Sore ${tz}`;
+    case 'kajian_ilmu':
+      return `Fleksibel (Siang / Sore) ${tz}`;
     case 'ikhtiar_bumi':
       return `08:00 - 16:00 ${tz}`;
 
@@ -410,6 +419,7 @@ export function getDynamicAmalanTimeRange(
       return `${p.asr} - ${p.maghrib} ${tz}`;
     case 'dzikir_petang':
     case 'surah_waqiah':
+    case 'dzikir_yunus_hauqalah':
       return `${p.asr} - ${p.maghrib} ${tz}`;
 
     // --- Malam ---
@@ -465,7 +475,9 @@ export function isAmalanActiveNow(
 
   switch (amalanId) {
     // --- Dini Hari ---
+    case 'sholat_taubat':
     case 'tahajjud':
+    case 'sholat_hajat':
     case 'witir':
     case 'hajat_dini_hari':
       return curM >= tahajjudM && curM < fajrM;
@@ -491,7 +503,19 @@ export function isAmalanActiveNow(
       return curM >= dhuhaM && curM < dhuhrM;
 
     case 'sholat_dzuhur':
+    case 'sholat_jumat':
       return curM >= dhuhrM && curM < asrM;
+
+    case 'surah_kahfi': {
+      const day = now.getDay();
+      if (day === 5) return curM < maghribM; // Hari Jumat sebelum Maghrib
+      if (day === 4) return curM >= maghribM; // Malam Jumat ba'da Maghrib
+      return false;
+    }
+
+    case 'kajian_ilmu':
+    case 'tilawah_one_day_one_juz':
+      return true;
 
     case 'ikhtiar_bumi':
       return curM >= 480 && curM < 960; // 08:00 - 16:00
@@ -500,6 +524,7 @@ export function isAmalanActiveNow(
     case 'sholat_ashar':
     case 'dzikir_petang':
     case 'surah_waqiah':
+    case 'dzikir_yunus_hauqalah':
       return curM >= asrM && curM < maghribM;
 
     // --- Malam ---

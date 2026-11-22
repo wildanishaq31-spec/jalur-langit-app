@@ -1804,4 +1804,53 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 69 - Sinkronisasi Penuh Alur Qiyamul Lail, Sholat Jum'at, Tilawah 1 Juz, QS. Al-Kahfi, Kajian Ilmu, & Dzikir Nabi Yunus
+* **Permintaan Pengguna**:
+  - *"di sini kan ada alur sholat malam tapi kenapa di checklist di bawahnya tidak ada ? kenapa ?"* (Mengunggah gambar banner Alur Sholat Malam 6 langkah di atas checklist Dini Hari yang hanya berisi Tahajjud, Witir, Istighfar Sahur, Munajat Hajat).
+  - *"cek lagi di versi 3.0 ini apa yang belum masuk checklist"*
+  - *"tambahkan semua dan untuk sholat jumat juga"*
+* **Analisis & Temuan Audit**:
+  1. **Disinkronisasi Alur Sholat Malam (Qiyamul Lail)**:
+     - Banner dan modal panduan `QiyamulLailModal.tsx` memiliki 6 langkah terstruktur:
+       1. Sholat Taubat 2 Rakaat
+       2. Sholat Tahajjud Minimal 2 Rakaat
+       3. Sholat Hajat 2 Rakaat
+       4. Sholat Witir 1 atau 3 Rakaat
+       5. Sayyidul Istighfar & Dzikir Sahur 100x
+       6. Munajat Doa Hajat Spesifik
+     - Di checklist `dini_hari`, sebelumnya baru ada 4 item (Tahajjud, Witir, Istighfar Sahur, Munajat Hajat). Langkah 1 (Sholat Taubat) dan Langkah 3 (Sholat Hajat) belum memiliki card tersendiri dan `amalanId` di modal belum terhubung.
+  2. **Audit Amalan Lintas Fitur v3.0 yang Belum Masuk Checklist**:
+     - *Tilawah Al-Qur'an (One Day One Juz)*: Target khatam rutin di modul Quran.
+     - *Sholat Jum'at Berjamaah & Adab Jum'at*: Ibadah fardhu agung mingguan bagi laki-laki dan sholat Dzuhur awal waktu bagi muslimah.
+     - *Membaca QS. Al-Kahfi*: Sunnah mu'akkadah hari Jum'at penangkal fitnah Dajjal.
+     - *Menuntut Ilmu Agama (1 Day 1 Kajian)*: Terhubung dengan modul Catatan Kajian di tab Hajat.
+     - *Dzikir Pelepas Kesulitan (Doa Nabi Yunus & Hauqalah 100x)*: Wirid mustajab pelapang kebuntuan hidup di tab Tasbih.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Pengayaan Checklist Amalan (`src/data/amalanData.ts`)**:
+     - Menambahkan 7 amalan baru berdalil shahih/hasan lengkap dengan tata cara, teks doa berharakat, latin, arti, dan tips istiqomah:
+       - `sholat_taubat` (Dini Hari - Urutan 1 sebelum Tahajjud)
+       - `sholat_hajat` (Dini Hari - Urutan 3 setelah Tahajjud, sebelum Witir)
+       - `tilawah_one_day_one_juz` (Subuh / Fleksibel - Terhubung ke Target Khatam Quran)
+       - `sholat_jumat` (Dhuha / Siang - Fardhu Jum'at & Sunnah Hari Jum'at)
+       - `surah_kahfi` (Dhuha / Kamis Petang s.d. Jum'at - Terhubung ke Tab Tadabbur Quran)
+       - `kajian_ilmu` (Dhuha / Siang - Terhubung ke Tab Catatan Kajian)
+       - `dzikir_yunus_hauqalah` (Petang - Terhubung ke Preset Tasbih 100x)
+     - Total amalan checklist bertambah dari 20 menjadi **27 amalan komprehensif**.
+  2. **Sinkronisasi 100% Modal Panduan Qiyamul Lail (`src/components/modals/QiyamulLailModal.tsx`)**:
+     - Mengisi `amalanId: 'sholat_taubat'` pada Langkah 1 dan `amalanId: 'sholat_hajat'` pada Langkah 3.
+     - Seluruh 6 langkah kini tersinkronisasi 2 arah (*bi-directional auto-sync*): mencentang di modal otomatis mencentang checklist, dan mencentang di checklist otomatis memperbarui status modal.
+     - Susunan checklist di sesi Dini Hari kini berurutan 1-ke-1 persis sesuai alur 6 langkah di banner.
+  3. **Penyesuaian Jadwal Sholat GPS & Realtime Active Indicator (`src/utils/prayerTimeService.ts`)**:
+     - Menambahkan jadwal dinamis berbasis GPS dan pendeteksi waktu aktif untuk seluruh amalan baru.
+     - `surah_kahfi` cerdas mendeteksi hari Kamis petang (ba'da Maghrib) hingga Jum'at sore.
+     - `sholat_jumat` sinkron dengan rentang waktu Dzuhur GPS.
+  4. **Peningkatan Notifikasi PWA Hari Jum'at (`src/components/pwa/PwaNotificationManager.tsx`)**:
+     - Notifikasi adzan waktu Dzuhur pada hari Jum'at otomatis menyesuaikan judul dan isi pesan: *"Waktu Sholat Jum'at & Dzuhur telah tiba. Tunaikan sholat fardhu di awal waktu (berjamaah di masjid bagi ikhwan / sholat awal waktu bagi akhwat)."*
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack.
+  - Alur 6 langkah Sholat Malam kini terjabarkan sempurna di checklist di bawahnya tanpa ada langkah yang terlewat.
+  - Amalan Sholat Jum'at, Tilawah 1 Juz, QS Al-Kahfi, Kajian Ilmu, dan Dzikir Nabi Yunus telah resmi aktif di aplikasi.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

@@ -89,8 +89,8 @@ tags:
 * **Notification**: Web Notification API (sinkron jadwal waktu HP)
 * **Local Server Port**: `http://localhost:3005`
 * **Status Kompilasi**: **PASS (Exit Code 0)** — `npm run build` sukses 100% tanpa galat TypeScript atau hidrasi.
-* **Status Pengembangan Terkini**: **Rilis Resmi v3.0.0 (Stable)** — 4 Tahap roadmap v3.0 tuntas 100%: Fitur Cadangkan & Pulihkan Data JSON (Backup & Restore), 20 Materi Ibadah Berdalil Shahih & Modal 3 Tab Interaktif, Modul Terpadu Sholat Malam (Qiyamul Lail Guided 6-Step Flow), serta Re-branding Universal Adab & Self-Care Nabawi (Ikhwan & Akhwat).
-* **Versi Rilis**: **v3.0.0 Stable** (Package.json & Drawer System Info tersinkronisasi).
+* **Status Pengembangan Terkini**: **Rilis Resmi v3.0.0 (Stable)** — 4 Tahap roadmap v3.0 tuntas 100%: Fitur Cadangkan & Pulihkan Data JSON (Backup & Restore), 27 Materi Ibadah Berdalil Shahih & Modal 3 Tab Interaktif, Modul Terpadu Sholat Malam (Qiyamul Lail Guided 6-Step Flow & 100% Bi-Directional Auto-Sync), Integrasi Lengkap Sholat Jum'at & Sunnah Hari Jum'at, Tilawah 1 Juz, QS Al-Kahfi, Kajian Ilmu, Dzikir Nabi Yunus & Hauqalah, serta Re-branding Universal Adab & Self-Care Nabawi (Ikhwan & Akhwat).
+* **Versi Rilis**: **v3.0.0 Stable** (Package.json, Drawer System Info, & Checklist 27 Amalan tersinkronisasi).
 
 ---
 > Catatan: Berkas ini diperbarui otomatis pada sesi rilis tanggal **22 November 2026**.
