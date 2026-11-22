@@ -27,6 +27,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { DEFAULT_AMALAN_LIST } from '@/data/amalanData';
 import { TimeCategory, AmalanItem } from '@/types';
 import { AmalanDetailModal } from '@/components/modals/AmalanDetailModal';
+import { QiyamulLailModal } from '@/components/modals/QiyamulLailModal';
 import { 
   formatDateIndonesian, 
   getTodayDateString, 
@@ -64,6 +65,7 @@ export const AmalanTab: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<TimeCategory | 'semua'>('semua');
   const [expandedVirtueId, setExpandedVirtueId] = useState<string | null>(null);
   const [selectedDetailAmalan, setSelectedDetailAmalan] = useState<AmalanItem | null>(null);
+  const [isQiyamModalOpen, setIsQiyamModalOpen] = useState(false);
 
   // Real-time clock & Active slot
   const [currentTimeStr, setCurrentTimeStr] = useState<string>('19:40 WIB');
@@ -265,6 +267,38 @@ export const AmalanTab: React.FC = () => {
           );
         })}
       </div>
+
+      {/* 4. BANNER PANDUAN TERPADU QIYAMUL LAIL */}
+      {(selectedCategory === 'semua' || selectedCategory === 'dini_hari') && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-950 via-[#072418] to-emerald-900 border border-emerald-800/80 shadow-md text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-xl bg-amber-400 text-stone-900 flex items-center justify-center font-bold text-xs shadow-xs">
+                🌙
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-800/80 text-emerald-200 border border-emerald-700">
+                Mode Terpadu Sepertiga Malam
+              </span>
+            </div>
+
+            <h3 className="text-base sm:text-lg font-bold font-serif text-amber-300">
+              Alur Sholat Malam & Sahur (Qiyamul Lail)
+            </h3>
+
+            <p className="text-xs text-emerald-200/90 leading-relaxed max-w-xl">
+              Panduan terstruktur 6 langkah: Sholat Taubat ➔ Tahajjud ➔ Hajat ➔ Witir ➔ Sayyidul Istighfar ➔ Munajat Doa. Didesain agar Anda tidak bingung memulai ibadah malam.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setIsQiyamModalOpen(true)}
+            className="py-2.5 px-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-900 text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 shrink-0 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-stone-900" />
+            <span>Mulai Panduan Sholat Malam →</span>
+          </button>
+        </div>
+      )}
 
       {/* Checklist Amalan Items with Time Windows */}
       <div className="space-y-3">
@@ -468,6 +502,13 @@ export const AmalanTab: React.FC = () => {
               )
             : undefined
         }
+        onNavigateToTab={navigateToTab}
+      />
+
+      {/* Qiyamul Lail Guided Flow Modal */}
+      <QiyamulLailModal
+        isOpen={isQiyamModalOpen}
+        onClose={() => setIsQiyamModalOpen(false)}
         onNavigateToTab={navigateToTab}
       />
     </div>

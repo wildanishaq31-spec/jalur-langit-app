@@ -1706,4 +1706,30 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 66 - Eksekusi Tahap 3: Modul Terpadu Qiyamul Lail (Guided Workflow Sholat Malam & Sahur)
+* **Permintaan Pengguna**:
+  - *"langsung eksekusi Tahap 3"*
+* **Analisis & Solusi Teknis**:
+  1. **Perancangan Alur 6 Langkah Qiyamul Lail Terstruktur**:
+     - Membangun alur panduan sholat malam yang runtut, menenangkan, dan anti-bingung bagi pemula:
+       - **Langkah 1**: Sholat Taubat (2 rakaat) — pembersih diri dari dosa dan maksiat sebelum bermunajat.
+       - **Langkah 2**: Sholat Tahajjud (minimal 2 rakaat) — amalan inti sepertiga malam dengan sujud panjang.
+       - **Langkah 3**: Sholat Hajat (2 rakaat, opsional) — permohonan pertolongan khusus atas impian atau masalah hidup.
+       - **Langkah 4**: Sholat Witir (1 atau 3 rakaat) — penutup seluruh rangkaian sholat sunnah malam.
+       - **Langkah 5**: Sayyidul Istighfar & Dzikir Sahur (100x) — dzikir pembuka ampunan menjelang fajar Subuh dengan mini-counter interaktif dan opsi buka Tasbih Digital.
+       - **Langkah 6**: Munajat Doa Sepertiga Malam — waktu puncak ijabah doa yang terhubung langsung dengan daftar target doa aktif pengguna dari Papan Hajat (`hajatList`).
+  2. **Pembangunan Komponen Modal Panduan Terpadu (`src/components/modals/QiyamulLailModal.tsx`)**:
+     - Stepper navigation bar 6 titik dengan status dinamis (aktif, tuntas, atau dalam pengerjaan).
+     - Rincian lengkap setiap langkah: Niat (Arab berharakat, Latin, terjemahan), kaifiyah urutan pengerjaan, doa khusus ba'da sholat, dan dalil rujukan hadis shahih/hasan.
+     - Sinkronisasi checklist otomatis: Saat pengguna menuntaskan langkah Tahajjud, Witir, Istighfar Sahur, atau Munajat Hajat, sistem otomatis memanggil `markAmalanCompleted` pada tanggal aktif kalender.
+     - Perayaan tuntas: Animasi konfeti perayaan dan doa berkah saat seluruh 6 langkah berhasil diselesaikan.
+  3. **Integrasi Banner Sepertiga Malam di Antarmuka Amalan (`src/components/tabs/AmalanTab.tsx`)**:
+     - Menghadirkan Banner Card elegan bertema malam (*Deep Emerald & Gold Sand*) bertajuk *"Alur Sholat Malam & Sahur (Qiyamul Lail)"* yang tampil saat kategori 'Semua' atau 'Dini Hari' dipilih.
+     - Tombol aksi *"Mulai Panduan Sholat Malam →"* yang langsung membuka alur terpadu.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack.
+  - Pengguna awam kini memiliki pembimbing langkah demi langkah dalam mendirikan ibadah sepertiga malam secara teratur dan khusyuk.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
