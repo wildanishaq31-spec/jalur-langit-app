@@ -144,6 +144,9 @@ export interface QuranTadabburItem {
   id: string;
   surahName: string;
   ayahRange: string;
+  arabicText?: string; // Teks Arab berharakat
+  latinText?: string; // Transliterasi Latin
+  translationText?: string; // Arti / Terjemahan Bahasa Indonesia
   youtubeLink?: string;
   story: string; // Kisah pada ayat
   topic: string; // Topik mengenai ayat ini

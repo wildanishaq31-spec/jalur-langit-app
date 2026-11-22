@@ -1853,4 +1853,44 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 70 - Format Baru Tadabbur Al-Qur'an (Ayat Arab, Latin, Terjemahan, Kisah, Topik, Hikmah, Aksi Nyata) & Modal Pembaca Surah Rutin
+* **Permintaan Pengguna**:
+  - *"sekarang kita perbaiki tampilan tadabbur dimana disini hanta urnaling saja sedangkan ayatnya tidak ada jadi saat klik quran al qawiah tidak langsung bisa membacanya karena tidak ada arab dan latinnya, kalau di tambah kan bisa langsung dibaca, jadi formatnya baru lengkap ayat, kisah, topik, hikmah dan rencana aksi nyata"* (Mengunggah gambar tab Tadabbur Al-Qur'an).
+* **Analisis & Kebutuhan**:
+  1. Pada antarmuka `QuranJournalTab.tsx` sebelumnya:
+     - Kartu Tadabbur hanya memuat 4 kotak refleksi (Kisah & Konteks, Topik, Hikmah, Aksi Nyata) tanpa menyertakan ayat Al-Qur'an secara visual.
+     - Kartu Surah Rutin Harian di atasnya (`QS. Al-Waqi'ah` dan `QS. Al-Mulk`) hanya memiliki tombol centang (*Tandai Selesai*), sehingga pengguna yang mengklik dari checklist amalan tidak bisa langsung membaca ayatnya karena tidak ada teks Arab dan transliterasi Latinnya.
+  2. Pengguna menginginkan:
+     - Format baru yang **LENGKAP**:
+       1. **Ayat Al-Qur'an (Teks Arab berharakat, Transliterasi Latin, dan Terjemahan Indonesia)**
+       2. **Kisah & Konteks Ayat**
+       3. **Topik Mengenai Ayat**
+       4. **Hikmah yang Didapat**
+       5. **Rencana Aksi Nyata & Muhasabah**
+     - Pada kartu Surah Rutin Harian (`QS. Al-Waqi'ah`, `QS. Al-Mulk`, `QS. Al-Kahfi`), disediakan tombol **[ 📖 Baca Surah ]** yang langsung membuka antarmuka pembaca surah lengkap dengan teks Arab berharakat, Latin, dan arti.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Pengembangan Dataset Surah & Fallback Ayat (`src/data/surahReaderData.ts`)**:
+     - Membangun dataset pembaca surah lengkap:
+       - `QS. Al-Waqi'ah` (Surah ke-56, 96 Ayat)
+       - `QS. Al-Mulk` (Surah ke-67, 30 Ayat)
+       - `QS. Al-Kahfi` (Surah ke-18, Ayat 1-4, 10, dan 110)
+     - Menyiapkan kamus `TADABBUR_AYAT_FALLBACK` untuk menjamin entri tadabbur lama di `localStorage` otomatis menampilkan ayat berharakat tanpa perlu reset data.
+  2. **Modal Pembaca Surah Rutin Interaktif (`src/components/modals/SurahReaderModal.tsx`)**:
+     - Menampilkan surah lengkap dengan basmalah kaligrafi.
+     - Pengatur ukuran huruf (A- / A / A+) dan filter mode tampilan (*Arab + Latin + Arti*, *Arab + Arti*, atau *Teks Arab Saja*).
+     - Tombol salin ayat per nomor ayat dengan indikator status.
+     - Tombol `[ Tandai Selesai di Checklist ✓ ]` yang tersinkronisasi instan ke state checklist kalender dengan efek selebrasi confetti.
+  3. **Pembaruan Kartu Tadabbur di `QuranJournalTab.tsx`**:
+     - Format baru terstruktur 2 bagian:
+       - **Bagian 1: Teks Ayat Al-Qur'an**: Box berlatar lembut dengan badge nomor ayat, teks Arab berukuran besar dan jelas (`leading-[2.6rem]`), transliterasi Latin emas-amber, terjemahan Indonesia, tombol salin ayat, serta tombol *Baca Lengkap*.
+       - **Bagian 2: 4 Pilar Tadabbur**: Kisah & Konteks, Topik Mengenai Ayat, Hikmah yang Didapat, dan Rencana Aksi Nyata & Muhasabah.
+     - Menambahkan **QS. Al-Kahfi** (Khusus Hari Jum'at) di deretan kartu Surah Rutin Harian sehingga menjadi 3 surah utama.
+  4. **Pembaruan Form Tambah/Edit Tadabbur (`AddTadabburModal.tsx` & `src/types/index.ts`)**:
+     - Menambahkan kolom input `arabicText`, `latinText`, dan `translationText` sehingga pengguna dapat mencatat ayat Al-Qur'an baru lengkap dengan lafazh Arab dan artinya.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack.
+  - Pengguna kini dapat langsung membaca teks Arab dan Latin surah Al-Waqi'ah, Al-Mulk, Al-Kahfi, serta seluruh ayat pada lembar tadabbur.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
