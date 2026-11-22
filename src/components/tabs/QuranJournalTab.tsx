@@ -329,12 +329,14 @@ export const QuranJournalTab: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* Header & Tombol Tulis Tadabbur Baru */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/80 dark:border-emerald-800/60 shadow-xs space-y-3">
             <div>
-              <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
-                Quran Journaling &amp; Tadabbur
+              <h2 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-teal-700 dark:text-teal-400 shrink-0" />
+                <span>Quran Journaling &amp; Tadabbur</span>
               </h2>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-stone-500 mt-1 leading-relaxed">
                 Format lengkap: Ayat (Arab &amp; Latin), Kisah, Topik, Hikmah, dan Rencana Aksi Nyata
               </p>
             </div>
@@ -344,10 +346,10 @@ export const QuranJournalTab: React.FC = () => {
                 setEditingTadabburItem(null);
                 setIsTadabburModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-95"
+              className="w-full py-3 px-4 bg-teal-700 hover:bg-teal-800 active:scale-98 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Tulis Tadabbur</span>
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Tulis Lembar Tadabbur Baru</span>
             </button>
           </div>
 
