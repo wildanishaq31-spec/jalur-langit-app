@@ -1768,4 +1768,40 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 68 - Implementasi Pemisahan Amalan Wajib & Sunnah serta Notifikasi Adzan 5 Waktu Sholat Fardhu Presisi
+* **Permintaan Pengguna**:
+  - *"katanya untuk amalan akan di pisah wajib, sunnah dll ??"*
+  - *"apa yang wajib juga ada notifnya sesuai jamnya? sebelumnya kan ada outline kalau sudah masuk waktunya"*
+  - *"ok lanjut"*
+* **Analisis & Solusi Teknis**:
+  1. **Pemisahan Kategori Hukum & Filter Fikih Interaktif**:
+     - Membangun antarmuka klasifikasi status hukum di `src/components/tabs/AmalanTab.tsx`:
+       - `🟢 Wajib (Fardhu 'Ain)`: 5 sholat fardhu (Subuh, Dzuhur, Ashar, Maghrib, Isya).
+       - `🔵 Sunnah Mu'akkadah`: 5 amalan sunnah utama yang senantiasa dijaga Rasulullah ﷺ (Tahajjud, Witir, Qobliyah Subuh, Dhuha, Sayyidul Istighfar).
+       - `🟣 Sunnah & Dzikir`: 10 wirid, sedekah fajar, surat pilihan (Al-Waqi'ah & Al-Mulk), dan muhasabah.
+     - **3 Kartu Ringkasan Capaian Fikih Interaktif**:
+       - Menampilkan status langsung di atas checklist: `🟢 Wajib Fardhu (X/5 Tuntas)`, `🔵 Mu'akkadah (X/5)`, dan `🟣 Sunnah & Dzikir (X/10)`. Pengguna dapat mengklik kartu ini untuk langsung menyaring daftar amalan terkait.
+     - **Dual Filter Tier**:
+       - Tier 1: Filter Hukum (`Semua`, `Wajib Fardhu`, `Sunnah Mu'akkadah`, `Sunnah & Dzikir`).
+       - Tier 2: Filter Sesi Waktu (`Semua Waktu`, `Dini Hari`, `Subuh`, `Dhuha & Siang`, `Petang`, `Malam`).
+     - **View Mode Toggle**:
+       - `⏰ Urut Waktu`: Mengurutkan amalan secara kronologis 24 jam (Dini Hari ➔ Subuh ➔ Dhuha ➔ Petang ➔ Malam).
+       - `📑 Kelompok Fikih`: Mengelompokkan amalan ke dalam 3 sekat bagian terpisah dengan tajuk edukasi fikih yang elegan dan counter capaian masing-masing.
+     - **Lencana (Badge) Visual di Setiap Kartu**:
+       - Menempatkan lencana berwarna tegas (hijau emerald untuk Wajib, biru sky untuk Sunnah Mu'akkadah, ungu purple untuk Sunnah & Dzikir) di bagian depan setiap kartu amalan.
+  2. **Notifikasi Alarm Adzan 5 Sholat Fardhu Presisi GPS Kemenag RI**:
+     - Di `src/components/pwa/PwaNotificationManager.tsx`:
+       - Menambahkan pelacak waktu adzan 5 sholat fardhu presisi (`fajr`, `dhuhr`, `asr`, `maghrib`, `isha`) dari hasil kalkulasi GPS Kemenag RI HP pengguna.
+       - Tepat saat jam realtime menyentuh menit adzan sholat wajib, aplikasi membunyikan nada lonceng chime lembut (`playGentleChime()`) dan memunculkan notifikasi push di bilah HP dengan getaran berkala dan pesan bermakna.
+       - Sistem menyimpan kunci idempoten harian (`jalur_langit_fardhu_${todayKey}_${fardhu.key}`) sehingga notifikasi hanya berbunyi 1 kali per sholat fardhu per hari.
+     - Di `src/components/modals/AlarmNotificationModal.tsx`:
+       - Menambahkan catatan penegas bahwa notifikasi adzan presisi 5 waktu sholat fardhu otomatis aktif mengikuti koordinat GPS wilayah pengguna.
+  3. **Penegasan Fitur Outline Emas Waktu Sekarang**:
+     - Outline emas berdenyut (`ring-2 ring-amber-400/50`) dan lencana `[• Waktu Sekarang]` tetap aktif 100% pada semua amalan (termasuk 5 sholat wajib) saat jam HP memasuki jadwal waktu sholat tersebut.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 18/18 rute Next.js Turbopack.
+  - Pengguna kini dapat membedakan amalan wajib dan sunnah dengan sangat jelas serta menerima notifikasi adzan fardhu tepat di menit GPS wilayahnya.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

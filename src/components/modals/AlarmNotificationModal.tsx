@@ -301,6 +301,11 @@ export const AlarmNotificationModal: React.FC<AlarmNotificationModalProps> = ({ 
                   <span className="text-xs font-bold text-stone-700 dark:text-stone-300">{prayerTimes.isha}</span>
                 </div>
               </div>
+
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-[11px] text-emerald-900 dark:text-emerald-200 font-medium">
+                <BellRing className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>Notifikasi adzan presisi otomatis aktif untuk seluruh 5 sholat wajib (Subuh, Dzuhur, Ashar, Maghrib, Isya) tepat di menit GPS wilayah Anda.</span>
+              </div>
             </div>
           )}
 
