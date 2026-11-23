@@ -5,9 +5,6 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Calendar as CalendarIcon, 
-  Sparkles, 
-  Check, 
-  Flame,
   ArrowRight,
   Heart
 } from 'lucide-react';

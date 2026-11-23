@@ -15,8 +15,7 @@ import {
   Mail, 
   Moon, 
   Sun,
-  Clock,
-  CheckCircle2
+  Clock
 } from 'lucide-react';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { RoadmapFeatureItem } from '@/types';
