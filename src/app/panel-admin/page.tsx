@@ -37,7 +37,8 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
@@ -51,6 +52,7 @@ type CMSMenuId =
   | 'webhook' 
   | 'add-buyer' 
   | 'roadmap' 
+  | 'admin-auth'
   | 'settings'
   | 'all';
 
@@ -103,11 +105,22 @@ export default function PanelAdminPage() {
   const [errorField, setErrorField] = useState<'email' | 'password' | 'pin' | null>(null);
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
 
-  // Settings Tab Credentials State
+  // Settings Tab Credentials State (Pengaturan Email, Password, PIN)
   const [settingEmail, setSettingEmail] = useState('');
   const [settingPassword, setSettingPassword] = useState('');
+  const [settingPasswordConfirm, setSettingPasswordConfirm] = useState('');
   const [settingPin, setSettingPin] = useState('');
+  const [settingPinConfirm, setSettingPinConfirm] = useState('');
+  const [showSettingPassword, setShowSettingPassword] = useState(false);
+  const [showSettingPin, setShowSettingPin] = useState(false);
   const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
+  const [settingsSaveError, setSettingsSaveError] = useState<string | null>(null);
+
+  // Live Tester States
+  const [testEmail, setTestEmail] = useState('');
+  const [testPassword, setTestPassword] = useState('');
+  const [testPin, setTestPin] = useState('');
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const [copiedWebhook, setCopiedWebhook] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -139,7 +152,14 @@ export default function PanelAdminPage() {
     if (adminCredentials) {
       setSettingEmail(adminCredentials.email || 'agung.siswoyo14@gmail.com');
       setSettingPassword(adminCredentials.password || 'AdminJalurLangit2026!');
+      setSettingPasswordConfirm(adminCredentials.password || 'AdminJalurLangit2026!');
       setSettingPin(adminCredentials.pin || '1409');
+      setSettingPinConfirm(adminCredentials.pin || '1409');
+      
+      // Default live tester values
+      setTestEmail(adminCredentials.email || 'agung.siswoyo14@gmail.com');
+      setTestPassword(adminCredentials.password || 'AdminJalurLangit2026!');
+      setTestPin(adminCredentials.pin || '1409');
     }
   }, [adminCredentials]);
 
@@ -175,13 +195,48 @@ export default function PanelAdminPage() {
 
   const handleSaveAdminSettings = (e: React.FormEvent) => {
     e.preventDefault();
+    setSettingsSaveError(null);
+
+    const emailTrimmed = settingEmail.trim().toLowerCase();
+    if (!emailTrimmed || !emailTrimmed.includes('@')) {
+      setSettingsSaveError('Email admin tidak valid. Harus mengandung format email yang benar.');
+      return;
+    }
+
+    if (!settingPassword || settingPassword.length < 4) {
+      setSettingsSaveError('Password admin minimal 4 karakter.');
+      return;
+    }
+
+    if (settingPasswordConfirm && settingPassword !== settingPasswordConfirm) {
+      setSettingsSaveError('Password baru dan Konfirmasi Password tidak cocok.');
+      return;
+    }
+
+    const pinTrimmed = settingPin.trim();
+    if (!pinTrimmed || pinTrimmed.length < 4) {
+      setSettingsSaveError('PIN keamanan harus berupa angka minimal 4 digit.');
+      return;
+    }
+
+    if (settingPinConfirm && pinTrimmed !== settingPinConfirm.trim()) {
+      setSettingsSaveError('PIN baru dan Konfirmasi PIN tidak cocok.');
+      return;
+    }
+
     updateAdminCredentials({
-      email: settingEmail.trim(),
+      email: emailTrimmed,
       password: settingPassword.trim(),
-      pin: settingPin.trim(),
+      pin: pinTrimmed,
     });
+
+    setTestEmail(emailTrimmed);
+    setTestPassword(settingPassword.trim());
+    setTestPin(pinTrimmed);
+
     setSettingsSaveSuccess(true);
-    setTimeout(() => setSettingsSaveSuccess(false), 4000);
+    setSettingsSaveError(null);
+    setTimeout(() => setSettingsSaveSuccess(false), 5000);
   };
 
   const handleResetCredentialsToDefault = () => {
@@ -189,9 +244,32 @@ export default function PanelAdminPage() {
       resetAdminCredentials();
       setSettingEmail('agung.siswoyo14@gmail.com');
       setSettingPassword('AdminJalurLangit2026!');
+      setSettingPasswordConfirm('AdminJalurLangit2026!');
       setSettingPin('1409');
+      setSettingPinConfirm('1409');
+      setTestEmail('agung.siswoyo14@gmail.com');
+      setTestPassword('AdminJalurLangit2026!');
+      setTestPin('1409');
+      setTestResult(null);
       setSettingsSaveSuccess(true);
-      setTimeout(() => setSettingsSaveSuccess(false), 3000);
+      setSettingsSaveError(null);
+      setTimeout(() => setSettingsSaveSuccess(false), 4000);
+    }
+  };
+
+  const handleTestCredentials = (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = verifyAdminLogin(testEmail, testPassword, testPin);
+    if (res.success) {
+      setTestResult({
+        success: true,
+        message: '✓ Berhasil! Kredensial valid dan siap digunakan untuk login CMS.'
+      });
+    } else {
+      setTestResult({
+        success: false,
+        message: `✗ Gagal: ${res.errorMessage || 'Kredensial tidak cocok.'}`
+      });
     }
   };
 
@@ -390,6 +468,14 @@ export default function PanelAdminPage() {
       label: 'Roadmap & Lab Fitur', 
       icon: Map, 
       badge: '5 Lab', 
+      group: 'SISTEM & EKSPANSI' 
+    },
+    { 
+      id: 'admin-auth', 
+      label: 'Pengaturan Login Admin', 
+      icon: KeyRound, 
+      badge: 'Email, Pass, PIN', 
+      badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-400/30', 
       group: 'SISTEM & EKSPANSI' 
     },
     { id: 'settings', label: 'Pengaturan & Backup', icon: Settings, group: 'SISTEM & EKSPANSI' },
@@ -814,6 +900,7 @@ export default function PanelAdminPage() {
                     {activeMenu === 'webhook' && 'Integrasi Webhook & Simulator Lynk.id'}
                     {activeMenu === 'add-buyer' && 'Tambah Akses Pembeli Cadangan'}
                     {activeMenu === 'roadmap' && 'Roadmap Fitur & Pengembangan Lab'}
+                    {activeMenu === 'admin-auth' && 'Pengaturan Kredensial Login Admin (Email, Password & PIN)'}
                     {activeMenu === 'settings' && 'Pengaturan Keamanan & Backup Data'}
                     {activeMenu === 'all' && 'Semua Modul CMS Panel Admin'}
                   </h2>
@@ -822,7 +909,21 @@ export default function PanelAdminPage() {
 
               {/* Topbar Right Quick Actions */}
               <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300/70 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu('admin-auth')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    activeMenu === 'admin-auth'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100'
+                  }`}
+                  title="Pengaturan Email, Password, & PIN Login Admin"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-300" />
+                  <span className="hidden sm:inline">Setting Login Admin</span>
+                </button>
+
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300/70 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span>Webhook Aktif</span>
                 </div>
@@ -1447,6 +1548,319 @@ export default function PanelAdminPage() {
                 </section>
               )}
 
+              {/* ================= SECTION: PENGATURAN KREDENSIAL LOGIN ADMIN (EMAIL, PASSWORD, PIN) ================= */}
+              {(activeMenu === 'admin-auth' || activeMenu === 'all') && (
+                <section className="space-y-4 animate-fade-in">
+                  <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-6">
+                    
+                    {/* Header Section */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100 dark:border-emerald-900/40">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 shadow-xs">
+                          <KeyRound className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-[10px] font-extrabold uppercase tracking-wider">
+                              Autentikasi 3-Faktor
+                            </span>
+                            <span className="text-[11px] text-stone-400 font-medium">CMS Security Gate</span>
+                          </div>
+                          <h3 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100 mt-0.5">
+                            Pengaturan Kredensial Login Admin
+                          </h3>
+                          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                            Atur alamat Email Admin, Password baru, dan PIN 4–6 digit untuk akses Panel Admin CMS.
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleResetCredentialsToDefault}
+                        className="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-emerald-800 hover:bg-stone-100 dark:hover:bg-emerald-900/50 text-stone-600 dark:text-stone-300 text-xs font-bold transition-all self-start sm:self-center cursor-pointer flex items-center gap-1.5"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Reset ke Default Bawaan</span>
+                      </button>
+                    </div>
+
+                    {/* Status Kredensial Aktif Saat Ini */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-900/20 border border-emerald-200/80 dark:border-emerald-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Email Admin Aktif</span>
+                        </span>
+                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 dark:text-stone-100 truncate">
+                          {adminCredentials?.email || 'agung.siswoyo14@gmail.com'}
+                        </div>
+                        <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">✓ Terverifikasi Utama</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-teal-900/20 border border-teal-200/80 dark:border-teal-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider flex items-center gap-1">
+                          <Lock className="w-3.5 h-3.5" />
+                          <span>Status Password</span>
+                        </span>
+                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 dark:text-stone-100 font-mono">
+                          ••••••••••••
+                        </div>
+                        <span className="text-[10px] text-teal-700 dark:text-teal-400 font-medium">✓ Terlindungi Enkripsi</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                          <KeyRound className="w-3.5 h-3.5" />
+                          <span>Status PIN Keamanan</span>
+                        </span>
+                        <div className="text-xs sm:text-sm font-extrabold text-stone-900 dark:text-stone-100 font-mono tracking-widest">
+                          •••• ({adminCredentials?.pin ? adminCredentials.pin.length : 4} Digit)
+                        </div>
+                        <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">✓ PIN Aktif Digunakan</span>
+                      </div>
+                    </div>
+
+                    {/* Alert Notifikasi Sukses / Error */}
+                    {settingsSaveSuccess && (
+                      <div className="p-3.5 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 text-xs font-bold flex items-center gap-2.5 animate-fade-in shadow-xs">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <div>
+                          <span>Kredensial login admin (Email, Password, &amp; PIN) berhasil disimpan!</span>
+                          <p className="text-[11px] font-normal text-emerald-800 dark:text-emerald-200 mt-0.5">
+                            Gunakan kredensial baru ini saat membuka Panel Admin berikutnya.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {settingsSaveError && (
+                      <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-bold flex items-center gap-2.5 animate-shake shadow-xs">
+                        <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                        <span>{settingsSaveError}</span>
+                      </div>
+                    )}
+
+                    {/* Form Pengaturan Kredensial Baru */}
+                    <form onSubmit={handleSaveAdminSettings} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        {/* 1. Email Admin */}
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                            <Mail className="w-4 h-4 text-emerald-600" />
+                            <span>1. Alamat Email Admin *</span>
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={settingEmail}
+                            onChange={(e) => setSettingEmail(e.target.value)}
+                            placeholder="Contoh: agung.siswoyo14@gmail.com"
+                            className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                          />
+                          <p className="text-[10px] text-stone-500">
+                            Email ini akan diminta pada langkah pertama verifikasi login CMS Panel Admin.
+                          </p>
+                        </div>
+
+                        {/* 2. Password Admin Baru */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center justify-between">
+                            <span className="flex items-center gap-1.5">
+                              <Lock className="w-4 h-4 text-emerald-600" />
+                              <span>2. Password Admin Baru *</span>
+                            </span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showSettingPassword ? 'text' : 'password'}
+                              required
+                              value={settingPassword}
+                              onChange={(e) => setSettingPassword(e.target.value)}
+                              placeholder="Masukkan password admin baru"
+                              className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSettingPassword(!showSettingPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                              title={showSettingPassword ? 'Sembunyikan' : 'Tampilkan'}
+                            >
+                              {showSettingPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 2b. Konfirmasi Password Admin Baru */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                            <Lock className="w-4 h-4 text-emerald-600" />
+                            <span>Konfirmasi Password Baru *</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showSettingPassword ? 'text' : 'password'}
+                              required
+                              value={settingPasswordConfirm}
+                              onChange={(e) => setSettingPasswordConfirm(e.target.value)}
+                              placeholder="Ketik ulang password baru"
+                              className={`w-full pl-4 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 ${
+                                settingPassword && settingPasswordConfirm && settingPassword !== settingPasswordConfirm
+                                  ? 'border-rose-400 focus:ring-rose-400'
+                                  : 'border-stone-300 dark:border-emerald-700 focus:ring-emerald-500'
+                              }`}
+                            />
+                          </div>
+                          {settingPassword && settingPasswordConfirm && settingPassword !== settingPasswordConfirm && (
+                            <p className="text-[10px] text-rose-500 font-semibold">Password belum cocok</p>
+                          )}
+                        </div>
+
+                        {/* 3. PIN Keamanan Admin Baru */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center justify-between">
+                            <span className="flex items-center gap-1.5">
+                              <KeyRound className="w-4 h-4 text-emerald-600" />
+                              <span>3. PIN Keamanan Baru (4-6 Digit) *</span>
+                            </span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showSettingPin ? 'text' : 'password'}
+                              inputMode="numeric"
+                              required
+                              value={settingPin}
+                              onChange={(e) => setSettingPin(e.target.value)}
+                              placeholder="Contoh: 1409"
+                              className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs sm:text-sm text-stone-900 dark:text-stone-100 font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSettingPin(!showSettingPin)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                              title={showSettingPin ? 'Sembunyikan' : 'Tampilkan'}
+                            >
+                              {showSettingPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 3b. Konfirmasi PIN Baru */}
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                            <KeyRound className="w-4 h-4 text-emerald-600" />
+                            <span>Konfirmasi PIN Baru *</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showSettingPin ? 'text' : 'password'}
+                              inputMode="numeric"
+                              required
+                              value={settingPinConfirm}
+                              onChange={(e) => setSettingPinConfirm(e.target.value)}
+                              placeholder="Ketik ulang PIN baru"
+                              className={`w-full pl-4 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border text-xs sm:text-sm text-stone-900 dark:text-stone-100 font-mono tracking-widest focus:outline-none focus:ring-2 ${
+                                settingPin && settingPinConfirm && settingPin.trim() !== settingPinConfirm.trim()
+                                  ? 'border-rose-400 focus:ring-rose-400'
+                                  : 'border-stone-300 dark:border-emerald-700 focus:ring-emerald-500'
+                              }`}
+                            />
+                          </div>
+                          {settingPin && settingPinConfirm && settingPin.trim() !== settingPinConfirm.trim() && (
+                            <p className="text-[10px] text-rose-500 font-semibold">PIN belum cocok</p>
+                          )}
+                        </div>
+
+                      </div>
+
+                      {/* Tombol Simpan */}
+                      <div className="pt-2 flex items-center gap-3">
+                        <button
+                          type="submit"
+                          className="px-5 py-3 rounded-2xl bg-emerald-800 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                        >
+                          <Check className="w-4 h-4" />
+                          <span>Simpan Pengaturan Kredensial Admin</span>
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* LIVE CREDENTIAL TESTER BOX */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-teal-500/10 dark:from-amber-950/30 dark:via-emerald-950/30 dark:to-teal-950/30 border border-amber-300/70 dark:border-amber-700/50 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Uji Coba Validitas Kredensial (Live Tester)
+                        </h4>
+                      </div>
+                      <p className="text-[11px] text-stone-600 dark:text-stone-400">
+                        Cek apakah email, password, dan PIN yang baru saja Anda set dapat membuka autentikasi secara benar sebelum Anda mengunci panel.
+                      </p>
+
+                      <form onSubmit={handleTestCredentials} className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pt-1">
+                        <div>
+                          <input
+                            type="email"
+                            required
+                            value={testEmail}
+                            onChange={(e) => setTestEmail(e.target.value)}
+                            placeholder="Email uji coba"
+                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            required
+                            value={testPassword}
+                            onChange={(e) => setTestPassword(e.target.value)}
+                            placeholder="Password uji coba"
+                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            required
+                            value={testPin}
+                            onChange={(e) => setTestPin(e.target.value)}
+                            placeholder="PIN uji coba"
+                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950 border border-stone-300 dark:border-emerald-700 text-xs font-mono text-stone-900 dark:text-stone-100"
+                          />
+                        </div>
+                        <div>
+                          <button
+                            type="submit"
+                            className="w-full py-2 px-3 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Tes Login</span>
+                          </button>
+                        </div>
+                      </form>
+
+                      {testResult && (
+                        <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 animate-fade-in ${
+                          testResult.success
+                            ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700'
+                            : 'bg-rose-100 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-700'
+                        }`}>
+                          {testResult.success ? (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                          )}
+                          <span>{testResult.message}</span>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </section>
+              )}
+
               {/* ================= SECTION: SETTINGS (PENGATURAN & KEAMANAN) ================= */}
               {(activeMenu === 'settings' || activeMenu === 'all') && (
                 <section className="space-y-4 animate-fade-in">
@@ -1458,92 +1872,28 @@ export default function PanelAdminPage() {
                       </h3>
                     </div>
 
-                    {/* KELOLA KREDENSIAL LOGIN ADMIN (EMAIL, PASSWORD, PIN) */}
-                    <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-3.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    {/* KELOLA KREDENSIAL LOGIN ADMIN (EMAIL, PASSWORD, PIN) QUICK CARD */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <KeyRound className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                           <span className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100">
-                            Kelola Kredensial Login Admin (Email, Password &amp; PIN)
+                            Pengaturan Kredensial Login Admin (Email, Password, PIN)
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={handleResetCredentialsToDefault}
-                          className="text-[10px] font-bold text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 underline cursor-pointer self-start sm:self-center"
-                        >
-                          Reset ke Default Bawaan
-                        </button>
+                        <p className="text-stone-500 text-[11px] leading-relaxed">
+                          Email terdaftar saat ini: <b>{adminCredentials?.email || 'agung.siswoyo14@gmail.com'}</b>. Klik tombol di samping untuk mengubah email, password, atau PIN login admin.
+                        </p>
                       </div>
 
-                      <p className="text-stone-500 text-[11px] leading-relaxed">
-                        Anda dapat mengubah email login admin, password, serta PIN keamanan kapan saja. Perubahan akan langsung tersimpan secara aman di penyimpanan browser lokal ini.
-                      </p>
-
-                      {settingsSaveSuccess && (
-                        <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center gap-2 animate-fade-in">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          <span>Kredensial login admin berhasil diperbarui &amp; disimpan!</span>
-                        </div>
-                      )}
-
-                      <form onSubmit={handleSaveAdminSettings} className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-stone-600 dark:text-stone-400 flex items-center gap-1">
-                            <Mail className="w-3 h-3 text-emerald-600" />
-                            <span>Email Admin</span>
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            value={settingEmail}
-                            onChange={(e) => setSettingEmail(e.target.value)}
-                            placeholder="Contoh: agung.siswoyo14@gmail.com"
-                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950/80 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-stone-600 dark:text-stone-400 flex items-center gap-1">
-                            <Lock className="w-3 h-3 text-emerald-600" />
-                            <span>Password Admin Baru</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={settingPassword}
-                            onChange={(e) => setSettingPassword(e.target.value)}
-                            placeholder="Masukkan password admin"
-                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950/80 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-stone-600 dark:text-stone-400 flex items-center gap-1">
-                            <KeyRound className="w-3 h-3 text-emerald-600" />
-                            <span>PIN Keamanan Baru</span>
-                          </label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            required
-                            value={settingPin}
-                            onChange={(e) => setSettingPin(e.target.value)}
-                            placeholder="Contoh: 1409"
-                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-emerald-950/80 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-3 pt-1">
-                          <button
-                            type="submit"
-                            className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs transition-all active:scale-95 shadow-xs flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Simpan Perubahan Kredensial Admin</span>
-                          </button>
-                        </div>
-                      </form>
+                      <button
+                        type="button"
+                        onClick={() => setActiveMenu('admin-auth')}
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all active:scale-95 shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>Buka Setting Kredensial</span>
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

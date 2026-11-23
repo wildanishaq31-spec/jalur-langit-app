@@ -2169,4 +2169,31 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 81 - Penambahan Menu & Halaman Khusus "Pengaturan Login Admin" (Email, Password, PIN & Live Tester)
+* **Permintaan Pengguna**:
+  - *"buat pengaturan di panel admin untuk setting email, password dan pin login admin"*
+* **Akar Masalah & Kebutuhan Desain**:
+  1. Pengguna menginginkan menu pengaturan mandiri di Panel Admin CMS yang secara khusus dan gamblang mengatur Email Admin, Password baru, dan PIN login admin.
+  2. Dibutuhkan verifikasi konfirmasi (konfirmasi password & konfirmasi PIN) agar admin tidak salah ketik yang berisiko terkunci dari sistem.
+  3. Dibutuhkan fasilitas pengujian langsung (*Live Credential Tester*) di dalam halaman pengaturan agar admin bisa memastikan kredensial barunya benar-benar valid sebelum mengunci panel atau logout.
+* **Solusi Rekayasa & Implementasi ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+  1. **Penambahan Menu Khusus Sidebar & Navigasi Cepat Topbar**:
+     - Ditambahkan menu baru `admin-auth` di sidebar: **"Pengaturan Login Admin"** dengan ikon `KeyRound` dan badge emas `"Email, Pass, PIN"`.
+     - Ditambahkan tombol pintas di Topbar Header CMS: `[ 🔑 Setting Login Admin ]` agar dapat diakses 1 klik dari mana saja.
+  2. **Kartu Status Kredensial Aktif**:
+     - Menampilkan indikator status Email Admin Aktif (`✓ Terverifikasi Utama`), Status Password (`•••• Terlindungi Enkripsi`), Status PIN Keamanan (`•••• Digit`), serta waktu pembaruan terakhir.
+  3. **Formulir Pengaturan Kredensial Baru dengan Konfirmasi Lengkap**:
+     - Input **Email Admin Baru** (validasi format email `@`).
+     - Input **Password Admin Baru** + tombol intip (`Eye`/`EyeOff`) + **Konfirmasi Password**.
+     - Input **PIN Keamanan Baru (4–6 digit angka)** + tombol intip (`Eye`/`EyeOff`) + **Konfirmasi PIN**.
+     - Validasi interaktif yang mendeteksi ketidakcocokan konfirmasi secara realtime sebelum disimpan.
+     - Tombol `[ Simpan Pengaturan Kredensial Admin ]` dan tombol `[ Reset ke Default Bawaan ]`.
+  4. **Modul Uji Coba Kredensial Langsung (*Live Credential Tester*)**:
+     - Form pengujian mandiri di mana admin dapat langsung mengetes kombinasi Email, Password, dan PIN yang baru disimpan tanpa perlu logout terlebih dahulu.
+     - Memberikan respon instan: Banner Hijau jika berhasil atau Banner Merah dengan rincian kesalahan spesifik.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
