@@ -650,6 +650,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           createdAt: new Date().toISOString(),
         };
         set((state) => ({ hajatList: [newItem, ...state.hajatList] }));
+        get().markAmalanCompleted(get().selectedDate, 'hajat_dini_hari');
       },
       updateHajat: (id, updated) => {
         set((state) => ({

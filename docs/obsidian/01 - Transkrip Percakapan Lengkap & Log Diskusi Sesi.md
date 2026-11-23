@@ -2411,4 +2411,32 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 90 - Penghapusan Banner Manual Hajat & Sedekah Subuh serta Integrasi Otomatisasi Backend
+* **Permintaan Pengguna**:
+  - *"sekarang di hajat kita hilangkan amalan dini hari tandai munajat selesai dan amalan subuh : sedekah subuhnya kita hapus tapi secara backend tetap ada fungsinya tetap terhubung jadi saat setiap hari membaca hajat dan melakukan sedekah subuh otomatis akan terhubung ke amalan sudah di lakukan, jadi harus kita revisi seperti apa?"*
+  - *"lanjuutkan"*
+* **Analisis Kebutuhan**:
+  1. Menghilangkan banner checklist manual di bagian atas sub-tab Hajat (*Amalan Dini Hari: Munajat Hajat Spesifik [✓ Tandai Munajat Selesai ✓]*) dan sub-tab Sedekah (*Amalan Subuh: Sedekah Subuh [✓ Tandai Sedekah Selesai ✓]*).
+  2. Kedua banner tersebut sebelumnya memakan ruang layar atas yang cukup besar dan terasa redundant (pengguna sudah mencatat sedekah atau membaca hajat, namun masih harus menekan tombol terpisah di banner).
+  3. Memastikan fungsi integrasi amalan tetap berjalan otomatis di backend/store:
+     - Saat pengguna mencatat riwayat sedekah subuh pada hari itu (`selectedDate`), amalan `sedekah_subuh` otomatis tercentang hijau di tab Amalan.
+     - Saat pengguna membaca/meninjau daftar hajat atau menambah hajat baru, amalan `hajat_dini_hari` (Munajat Hajat Spesifik) otomatis tercentang hijau.
+     - Menyediakan tombol elegan `[ 🤲 Aamiinkan Doa ]` di dalam kotak lafadz doa setiap kartu hajat yang memicu konfeti lembut, notifikasi syahdu, serta otomatis mencatatkan amalan hari itu.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Pembersihan Tampilan Hajat & Sedekah ([src/components/tabs/HajatTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/HajatTab.tsx))**:
+     - Menghapus komponen banner `Linked Amalan Sync Banner: Munajat Hajat Spesifik` dari sub-tab Hajat & Manifesting.
+     - Menghapus komponen banner `Linked Amalan Sync Banner: Sedekah Subuh` dari sub-tab Sedekah Subuh.
+     - Tata letak kini langsung berfokus pada konten utama: **Papan Hajat & Ikhtiar Doa** dan **Ringkasan Akumulasi Total Sedekah**.
+  2. **Otomatisasi Cerdas Backend & Auto-Sync ([src/components/tabs/HajatTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/HajatTab.tsx) & [src/store/useJalurLangitStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useJalurLangitStore.ts))**:
+     - Menambahkan `useEffect` reaktif di `HajatTab` yang otomatis menandai `sedekah_subuh` selesai jika ada catatan sedekah pada `selectedDate`.
+     - Menambahkan `useEffect` reaktif di `HajatTab` yang otomatis menandai `hajat_dini_hari` selesai saat pengguna membuka dan membaca papan hajat.
+     - Pada `addHajat` di `useJalurLangitStore`, menambahkan pemanggilan `markAmalanCompleted(selectedDate, 'hajat_dini_hari')` otomatis.
+  3. **Tombol Interaktif "Aamiinkan Doa" di Setiap Kartu Hajat**:
+     - Menyediakan tombol `[ 🤲 Aamiinkan Doa ]` di samping judul Lafadz Doa / Afirmasi pada tiap kartu hajat.
+     - Saat diklik, memunculkan animasi konfeti lembut dan *toast alert* bertuliskan: *"Aamiin ya Rabbal 'Alamin 🤲 Doa untuk '[Judul Hajat]' telah dipanjatkan & amalan hari ini otomatis tercatat!"*
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
