@@ -13,8 +13,8 @@ export interface AuthUser {
 
 export interface AdminCredentials {
   email: string;
-  password: string;
-  pin: string;
+  password: string; // Tersimpan dalam format heksadesimal terenkripsi (enc:...)
+  pin: string; // Format teks/angka (contoh: '1409')
   lastUpdatedAt?: string;
 }
 

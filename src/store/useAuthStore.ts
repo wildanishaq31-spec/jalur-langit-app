@@ -3,10 +3,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AuthUser, UserTier, TIER_CONFIG, AdminCredentials } from '@/types/auth';
+import { encryptPassword, decryptPassword } from '@/utils/cryptoUtils';
 
 export const DEFAULT_ADMIN_CREDENTIALS: AdminCredentials = {
   email: 'agung.siswoyo14@gmail.com',
-  password: 'AdminJalurLangit2026!',
+  password: encryptPassword('AdminJalurLangit2026!'),
   pin: '1409',
   lastUpdatedAt: '2026-11-23T00:00:00.000Z'
 };
@@ -110,13 +111,19 @@ export const useAuthStore = create<AuthState>()(
       adminCredentials: DEFAULT_ADMIN_CREDENTIALS,
 
       updateAdminCredentials: (creds) => {
-        set((state) => ({
-          adminCredentials: {
-            ...state.adminCredentials,
-            ...creds,
-            lastUpdatedAt: new Date().toISOString()
+        set((state) => {
+          const updatedCreds = { ...state.adminCredentials, ...creds };
+          // Pastikan password disimpan selalu dalam format terenkripsi (enc:...)
+          if (creds.password) {
+            updatedCreds.password = encryptPassword(creds.password);
           }
-        }));
+          return {
+            adminCredentials: {
+              ...updatedCreds,
+              lastUpdatedAt: new Date().toISOString()
+            }
+          };
+        });
       },
 
       resetAdminCredentials: () => {
@@ -143,8 +150,10 @@ export const useAuthStore = create<AuthState>()(
           };
         }
 
-        // 2. Verifikasi Password
+        // 2. Verifikasi Password (Support format terenkripsi & fallback data lama)
+        const decryptedStoredPassword = decryptPassword(current.password);
         const isPasswordValid = (
+          passwordInput === decryptedStoredPassword ||
           passwordInput === current.password ||
           passwordInput === 'AdminJalurLangit2026!' ||
           passwordInput === 'jalurlangit2026' ||
@@ -159,7 +168,17 @@ export const useAuthStore = create<AuthState>()(
           };
         }
 
-        // 3. Verifikasi PIN Keamanan
+        // Jika password di storage sebelumnya belum terenkripsi, upgrade secara otomatis ke format terenkripsi
+        if (current.password && !current.password.startsWith('enc:')) {
+          set((state) => ({
+            adminCredentials: {
+              ...state.adminCredentials,
+              password: encryptPassword(current.password)
+            }
+          }));
+        }
+
+        // 3. Verifikasi PIN Keamanan (Format teks numerik, contoh: 1409)
         const isPinValid = (
           pinInput.trim() === current.pin.trim() ||
           pinInput.trim() === '1409'

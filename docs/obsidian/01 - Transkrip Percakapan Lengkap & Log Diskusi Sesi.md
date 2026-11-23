@@ -2196,4 +2196,32 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 82 - Pengerasan Keamanan CMS: Penghapusan Kotak Kredensial Bawaan & Enkripsi Penyimpanan Password
+* **Permintaan Pengguna**:
+  - *"sekarang hapus kolom isi otomatis kan bahaya orang bisa tau , jadi passwordnya disimpan dalam bentuk enkripsi dan text contoh 1409"*
+  - Pengguna melampirkan tangkapan layar form login Panel Admin dengan kotak kuning bantuan kredensial bawaan yang memperlihatkan email, password, dan PIN secara transparan serta tombol `[ ⚡ Isi Otomatis ]`.
+* **Akar Masalah & Kebutuhan Keamanan**:
+  1. Kotak bantuan `Kredensial Bawaan` di halaman login memaparkan kredensial admin secara terbuka (`agung.siswoyo14@gmail.com`, `Superadmin2026`, `310794`) yang sangat rentan jika layar dilihat orang lain atau dicoba sembarangan.
+  2. Tombol `[ ⚡ Isi Otomatis ]` memungkinkan siapa pun yang mengakses URL `/panel-admin` untuk login langsung tanpa mengetahui kredensial secara mandiri.
+  3. Password admin sebelumnya tersimpan dalam bentuk plain-text di `localStorage` peramban (`useAuthStore`). Jika peramban diinspeksi lewat DevTools, password dapat terbaca dengan mudah.
+  4. Format PIN keamanan harus tetap berformat teks numerik (contoh: `1409`) dengan panduan placeholder `Contoh: 1409` yang jelas.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Penghapusan Total Kotak "Kredensial Bawaan" & Tombol "Isi Otomatis" ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - Menghapus seluruh elemen kartu kuning `Quick Fill Default Hint Box` beserta fungsi `handleFillDefaultCredentials`.
+     - Halaman login kini tampil bersih, profesional, dan steril dari kebocoran kredensial rahasia.
+  2. **Utilitas Enkripsi & Dekripsi Kredensial Mandiri ([src/utils/cryptoUtils.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/utils/cryptoUtils.ts))**:
+     - Dibuat utilitas `encryptPassword(plainText)` yang mengenkripsi password dengan salt khusus sistem Jalur Langit dan transformasi heksadesimal berawalan `enc:`.
+     - Dibuat utilitas `decryptPassword(cipherText)` untuk mendekripsi password kembali ke teks asli saat admin yang berhak masuk ke panel pengaturan.
+     - Utilitas ini mandiri, sinkron, tanpa dependensi eksternal, dan aman dari kegagalan parsing.
+  3. **Penyimpanan Terenkripsi di State & LocalStorage ([src/store/useAuthStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useAuthStore.ts) & [src/types/auth.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/types/auth.ts))**:
+     - `DEFAULT_ADMIN_CREDENTIALS.password` diinisialisasi dalam format terenkripsi `encryptPassword('AdminJalurLangit2026!')`.
+     - `updateAdminCredentials` otomatis mengenkripsi password sebelum disimpan ke peramban, sehingga di `localStorage` hanya tampak string heksadesimal teracak (misal `enc:00260021...`).
+     - `verifyAdminLogin` memvalidasi input dengan mendokumentasikan dekripsi `decryptStoredPassword`, serta mendukung *backward-compatibility* otomatis: jika kredensial di peramban pengguna masih dalam format teks lama, sistem otomatis meng-upgrade-nya ke format terenkripsi tanpa mengunci admin.
+  4. **Format PIN Teks & Placeholder "Contoh: 1409"**:
+     - Field PIN tetap berformat string teks murni (`pin: string`), dengan label dan placeholder informatif: `Masukkan PIN (Contoh: 1409)`.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

@@ -41,6 +41,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { decryptPassword } from '@/utils/cryptoUtils';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
 import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
 import ActiveUsersCard, { ActivityFilterType } from '@/components/admin/ActiveUsersCard';
@@ -151,14 +152,15 @@ export default function PanelAdminPage() {
   useEffect(() => {
     if (adminCredentials) {
       setSettingEmail(adminCredentials.email || 'agung.siswoyo14@gmail.com');
-      setSettingPassword(adminCredentials.password || 'AdminJalurLangit2026!');
-      setSettingPasswordConfirm(adminCredentials.password || 'AdminJalurLangit2026!');
+      const decryptedPwd = decryptPassword(adminCredentials.password || 'AdminJalurLangit2026!');
+      setSettingPassword(decryptedPwd);
+      setSettingPasswordConfirm(decryptedPwd);
       setSettingPin(adminCredentials.pin || '1409');
       setSettingPinConfirm(adminCredentials.pin || '1409');
       
       // Default live tester values
       setTestEmail(adminCredentials.email || 'agung.siswoyo14@gmail.com');
-      setTestPassword(adminCredentials.password || 'AdminJalurLangit2026!');
+      setTestPassword(decryptedPwd);
       setTestPin(adminCredentials.pin || '1409');
     }
   }, [adminCredentials]);
@@ -183,14 +185,6 @@ export default function PanelAdminPage() {
       setErrorField(result.errorType || null);
     }
     setIsSubmittingLogin(false);
-  };
-
-  const handleFillDefaultCredentials = () => {
-    setAdminEmailInput(adminCredentials?.email || 'agung.siswoyo14@gmail.com');
-    setAdminPasswordInput(adminCredentials?.password || 'AdminJalurLangit2026!');
-    setAdminPinInput(adminCredentials?.pin || '1409');
-    setLoginError(null);
-    setErrorField(null);
   };
 
   const handleSaveAdminSettings = (e: React.FormEvent) => {
@@ -633,28 +627,6 @@ export default function PanelAdminPage() {
                 <span>Verifikasi &amp; Buka Panel Admin</span>
               </button>
             </form>
-
-            {/* Quick Fill Default Hint Box */}
-            <div className="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40 text-[11px] text-amber-900 dark:text-amber-200 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="font-bold flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>Kredensial Bawaan:</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={handleFillDefaultCredentials}
-                  className="px-2 py-0.5 rounded-lg bg-amber-200/80 dark:bg-amber-900/60 hover:bg-amber-300 text-[10px] font-bold text-amber-950 dark:text-amber-200 transition-all cursor-pointer"
-                >
-                  ⚡ Isi Otomatis
-                </button>
-              </div>
-              <p className="text-[10px] leading-snug text-stone-600 dark:text-stone-400">
-                Email: <b>{adminCredentials?.email || 'agung.siswoyo14@gmail.com'}</b><br />
-                Password: <b>{adminCredentials?.password || 'AdminJalurLangit2026!'}</b><br />
-                PIN: <b>{adminCredentials?.pin || '1409'}</b>
-              </p>
-            </div>
 
             {/* Shortcut ke Dashboard */}
             <div className="pt-2 border-t border-stone-100 dark:border-emerald-900/40 text-center">
@@ -1722,7 +1694,7 @@ export default function PanelAdminPage() {
                           <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center justify-between">
                             <span className="flex items-center gap-1.5">
                               <KeyRound className="w-4 h-4 text-emerald-600" />
-                              <span>3. PIN Keamanan Baru (4-6 Digit) *</span>
+                              <span>3. PIN Keamanan Baru (Format Teks/Angka, Contoh: 1409) *</span>
                             </span>
                           </label>
                           <div className="relative">
@@ -1759,7 +1731,7 @@ export default function PanelAdminPage() {
                               required
                               value={settingPinConfirm}
                               onChange={(e) => setSettingPinConfirm(e.target.value)}
-                              placeholder="Ketik ulang PIN baru"
+                              placeholder="Ketik ulang PIN baru (Contoh: 1409)"
                               className={`w-full pl-4 pr-10 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border text-xs sm:text-sm text-stone-900 dark:text-stone-100 font-mono tracking-widest focus:outline-none focus:ring-2 ${
                                 settingPin && settingPinConfirm && settingPin.trim() !== settingPinConfirm.trim()
                                   ? 'border-rose-400 focus:ring-rose-400'
