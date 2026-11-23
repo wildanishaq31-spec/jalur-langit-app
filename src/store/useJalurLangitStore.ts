@@ -17,10 +17,12 @@ import {
   TimeCategory,
   ActiveTab,
   FeatureUserRequest,
+  RoadmapFeatureItem,
   JalurLangitBackupData,
   JalurLangitBackupMeta
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
+import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
 import { QuranBookmark, QuranPaceMode } from '@/data/quranJuzCatalog';
 import { 
@@ -164,6 +166,14 @@ interface JalurLangitState {
   voteFeature: (featureId: string) => void;
   userFeatureRequests: FeatureUserRequest[];
   addFeatureRequest: (text: string) => void;
+  deleteFeatureRequest: (id: string) => void;
+
+  // Dynamic Roadmap & Inovasi Lab Management
+  roadmapFeatures: RoadmapFeatureItem[];
+  addRoadmapFeature: (feature: Omit<RoadmapFeatureItem, 'id'> & { id?: string }) => void;
+  updateRoadmapFeature: (id: string, updates: Partial<RoadmapFeatureItem>) => void;
+  deleteRoadmapFeature: (id: string) => void;
+  resetRoadmapFeatures: () => void;
 
   // Active Tab & Cross-menu Navigation
   activeTab: ActiveTab;
@@ -361,6 +371,38 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           ...state.userFeatureRequests,
         ],
       })),
+      deleteFeatureRequest: (id) => set((state) => ({
+        userFeatureRequests: state.userFeatureRequests.filter((r) => r.id !== id),
+      })),
+
+      // Roadmap & Inovasi Fitur Lab Store
+      roadmapFeatures: ROADMAP_FEATURES,
+      addRoadmapFeature: (feature) => set((state) => {
+        const newId = feature.id || `feat-${Date.now()}`;
+        const newFeature: RoadmapFeatureItem = {
+          ...feature,
+          id: newId,
+          createdAt: new Date().toISOString()
+        };
+        return {
+          roadmapFeatures: [newFeature, ...state.roadmapFeatures],
+          featureVotes: {
+            ...state.featureVotes,
+            [newId]: state.featureVotes[newId] || 0
+          }
+        };
+      }),
+      updateRoadmapFeature: (id, updates) => set((state) => ({
+        roadmapFeatures: state.roadmapFeatures.map((f) =>
+          f.id === id ? { ...f, ...updates } : f
+        )
+      })),
+      deleteRoadmapFeature: (id) => set((state) => ({
+        roadmapFeatures: state.roadmapFeatures.filter((f) => f.id !== id)
+      })),
+      resetRoadmapFeatures: () => set({
+        roadmapFeatures: ROADMAP_FEATURES
+      }),
 
       // Navigation & Cross-menu integration
       activeTab: 'home',
@@ -1222,6 +1264,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           state.selectedDate = todayStr;
           state.calendarYear = y;
           state.calendarMonth = m - 1;
+          if (!state.roadmapFeatures || state.roadmapFeatures.length === 0) {
+            state.roadmapFeatures = ROADMAP_FEATURES;
+          }
         }
       },
       migrate: (persistedState: any) => {

@@ -170,7 +170,9 @@ export interface RoadmapFeatureItem {
   description: string;
   highlights: string[];
   estimatedRelease: string;
-  iconName: 'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail';
+  iconName: 'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail' | 'Sparkles';
+  votes?: number;
+  createdAt?: string;
 }
 
 export interface FeatureUserRequest {

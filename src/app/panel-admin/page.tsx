@@ -38,11 +38,21 @@ import {
   EyeOff,
   AlertCircle,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Plus,
+  Edit3,
+  Heart,
+  MessageSquare,
+  Compass,
+  FileText,
+  Calculator,
+  Headphones
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { decryptPassword } from '@/utils/cryptoUtils';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
+import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest } from '@/types';
 import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
 import ActiveUsersCard, { ActivityFilterType } from '@/components/admin/ActiveUsersCard';
 
@@ -140,6 +150,33 @@ export default function PanelAdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [now, setNow] = useState(0);
+
+  // Dynamic Roadmap & Lab Fitur Store
+  const {
+    roadmapFeatures,
+    addRoadmapFeature,
+    updateRoadmapFeature,
+    deleteRoadmapFeature,
+    resetRoadmapFeatures,
+    featureVotes,
+    userFeatureRequests,
+    deleteFeatureRequest
+  } = useJalurLangitStore();
+
+  // Roadmap Form & Modal State
+  const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
+  const [editingRoadmapId, setEditingRoadmapId] = useState<string | null>(null);
+  const [roadmapTitle, setRoadmapTitle] = useState('');
+  const [roadmapCategory, setRoadmapCategory] = useState<'ibadah' | 'produktivitas' | 'audio' | 'finansial' | 'doa'>('ibadah');
+  const [roadmapStatus, setRoadmapStatus] = useState<FeatureStatus>('dalam_pengerjaan');
+  const [roadmapStatusLabel, setRoadmapStatusLabel] = useState('');
+  const [roadmapProgress, setRoadmapProgress] = useState(50);
+  const [roadmapTarget, setRoadmapTarget] = useState('Desember 2026');
+  const [roadmapIcon, setRoadmapIcon] = useState<'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail' | 'Sparkles'>('Sparkles');
+  const [roadmapDescription, setRoadmapDescription] = useState('');
+  const [roadmapHighlights, setRoadmapHighlights] = useState<string[]>([]);
+  const [highlightInput, setHighlightInput] = useState('');
+  const [roadmapSuccessMessage, setRoadmapSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setNow(Date.now());
@@ -265,6 +302,164 @@ export default function PanelAdminPage() {
         message: `✗ Gagal: ${res.errorMessage || 'Kredensial tidak cocok.'}`
       });
     }
+  };
+
+  // Helper & Handler Manajemen Roadmap Fitur CMS
+  const getStatusMeta = (status: FeatureStatus) => {
+    switch (status) {
+      case 'segera_rilis':
+        return {
+          defaultLabel: 'Segera Rilis • v1.4',
+          badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+        };
+      case 'dalam_pengerjaan':
+        return {
+          defaultLabel: 'Sedang Dikembangkan',
+          badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/90 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+        };
+      case 'tahap_riset':
+        return {
+          defaultLabel: 'Tahap Desain & Fiqih',
+          badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-950/90 dark:text-sky-300 border-sky-300 dark:border-sky-700'
+        };
+      case 'rencana':
+      default:
+        return {
+          defaultLabel: 'Rencana Pembaruan',
+          badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/90 dark:text-purple-300 border-purple-300 dark:border-purple-700'
+        };
+    }
+  };
+
+  const renderAdminFeatureIcon = (iconName: RoadmapFeatureItem['iconName']) => {
+    const iconClass = "w-5 h-5";
+    switch (iconName) {
+      case 'Compass':
+        return <Compass className={iconClass} />;
+      case 'FileText':
+        return <FileText className={iconClass} />;
+      case 'Calculator':
+        return <Calculator className={iconClass} />;
+      case 'Headphones':
+        return <Headphones className={iconClass} />;
+      case 'Mail':
+        return <Mail className={iconClass} />;
+      default:
+        return <Sparkles className={iconClass} />;
+    }
+  };
+
+  const handleOpenAddRoadmap = () => {
+    setEditingRoadmapId(null);
+    setRoadmapTitle('');
+    setRoadmapCategory('ibadah');
+    setRoadmapStatus('dalam_pengerjaan');
+    setRoadmapStatusLabel('Sedang Dikembangkan');
+    setRoadmapProgress(50);
+    setRoadmapTarget('Desember 2026');
+    setRoadmapIcon('Sparkles');
+    setRoadmapDescription('');
+    setRoadmapHighlights(['Fitur Terintegrasi Otomatis', 'Mendukung Penuh Mode Offline']);
+    setHighlightInput('');
+    setIsRoadmapModalOpen(true);
+  };
+
+  const handleOpenEditRoadmap = (feat: RoadmapFeatureItem) => {
+    setEditingRoadmapId(feat.id);
+    setRoadmapTitle(feat.title);
+    setRoadmapCategory(feat.category);
+    setRoadmapStatus(feat.status);
+    setRoadmapStatusLabel(feat.statusLabel);
+    setRoadmapProgress(feat.progressPercent);
+    setRoadmapTarget(feat.estimatedRelease);
+    setRoadmapIcon(feat.iconName);
+    setRoadmapDescription(feat.description);
+    setRoadmapHighlights([...feat.highlights]);
+    setHighlightInput('');
+    setIsRoadmapModalOpen(true);
+  };
+
+  const handleSaveRoadmap = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roadmapTitle.trim() || !roadmapDescription.trim()) return;
+
+    const meta = getStatusMeta(roadmapStatus);
+    const finalLabel = roadmapStatusLabel.trim() || meta.defaultLabel;
+
+    if (editingRoadmapId) {
+      updateRoadmapFeature(editingRoadmapId, {
+        title: roadmapTitle.trim(),
+        category: roadmapCategory,
+        status: roadmapStatus,
+        statusLabel: finalLabel,
+        badgeColor: meta.badgeColor,
+        progressPercent: Number(roadmapProgress),
+        estimatedRelease: roadmapTarget.trim(),
+        iconName: roadmapIcon,
+        description: roadmapDescription.trim(),
+        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi']
+      });
+      setRoadmapSuccessMessage(`Inovasi "${roadmapTitle}" berhasil diperbarui!`);
+    } else {
+      addRoadmapFeature({
+        title: roadmapTitle.trim(),
+        category: roadmapCategory,
+        status: roadmapStatus,
+        statusLabel: finalLabel,
+        badgeColor: meta.badgeColor,
+        progressPercent: Number(roadmapProgress),
+        estimatedRelease: roadmapTarget.trim(),
+        iconName: roadmapIcon,
+        description: roadmapDescription.trim(),
+        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi']
+      });
+      setRoadmapSuccessMessage(`Inovasi baru "${roadmapTitle}" berhasil ditambahkan ke roadmap!`);
+    }
+
+    setIsRoadmapModalOpen(false);
+    setTimeout(() => setRoadmapSuccessMessage(null), 5000);
+  };
+
+  const handleDeleteRoadmap = (id: string, title: string) => {
+    if (window.confirm(`Yakin ingin menghapus inovasi "${title}" dari roadmap? Fitur ini tidak akan lagi tampil di halaman publik aplikasi.`)) {
+      deleteRoadmapFeature(id);
+      setRoadmapSuccessMessage(`Inovasi "${title}" berhasil dihapus.`);
+      setTimeout(() => setRoadmapSuccessMessage(null), 4000);
+    }
+  };
+
+  const handleResetRoadmapToDefault = () => {
+    if (window.confirm('Yakin ingin mereset seluruh daftar roadmap inovasi ke pengaturan default bawaan aplikasi?')) {
+      resetRoadmapFeatures();
+      setRoadmapSuccessMessage('Roadmap inovasi berhasil dikembalikan ke 5 fitur default bawaan!');
+      setTimeout(() => setRoadmapSuccessMessage(null), 4000);
+    }
+  };
+
+  const handleConvertUserRequest = (req: FeatureUserRequest) => {
+    setEditingRoadmapId(null);
+    setRoadmapTitle(req.text.slice(0, 45) + (req.text.length > 45 ? '...' : ''));
+    setRoadmapCategory('ibadah');
+    setRoadmapStatus('tahap_riset');
+    setRoadmapStatusLabel('Aspirasi User • Tahap Desain');
+    setRoadmapProgress(25);
+    setRoadmapTarget('2027');
+    setRoadmapIcon('Sparkles');
+    setRoadmapDescription(req.text);
+    setRoadmapHighlights(['Diambil langsung dari aspirasi pengguna', 'Fitur terpilih Jalur Langit Lab']);
+    setHighlightInput('');
+    setIsRoadmapModalOpen(true);
+  };
+
+  const handleAddHighlight = () => {
+    if (highlightInput.trim()) {
+      setRoadmapHighlights([...roadmapHighlights, highlightInput.trim()]);
+      setHighlightInput('');
+    }
+  };
+
+  const handleRemoveHighlight = (idx: number) => {
+    setRoadmapHighlights(roadmapHighlights.filter((_, i) => i !== idx));
   };
 
   const handleCopyWebhook = () => {
@@ -461,7 +656,7 @@ export default function PanelAdminPage() {
       id: 'roadmap', 
       label: 'Roadmap & Lab Fitur', 
       icon: Map, 
-      badge: '5 Lab', 
+      badge: `${roadmapFeatures ? roadmapFeatures.length : 5} Fitur`, 
       group: 'SISTEM & EKSPANSI' 
     },
     { 
@@ -1459,63 +1654,269 @@ export default function PanelAdminPage() {
                 </section>
               )}
 
-              {/* ================= SECTION: ROADMAP & LAB FITUR ================= */}
+              {/* ================= SECTION: ROADMAP & LAB FITUR (FULL CRUD & ASPIRASI) ================= */}
               {(activeMenu === 'roadmap' || activeMenu === 'all') && (
                 <section className="space-y-4 animate-fade-in">
-                  <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
+                  
+                  {/* Alert Notifikasi Sukses Roadmap */}
+                  {roadmapSuccessMessage && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 text-xs font-bold flex items-center gap-2.5 animate-fade-in shadow-xs">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>{roadmapSuccessMessage}</span>
+                    </div>
+                  )}
+
+                  <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-6">
+                    {/* Header Modul */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100 dark:border-emerald-900/40">
                       <div className="space-y-1">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300 text-[10px] font-bold uppercase">
                           <Map className="w-3 h-3" />
-                          <span>Roadmap Lab Fitur Aplikasi</span>
+                          <span>Jalur Langit Lab • Manajemen Inovasi CMS</span>
                         </div>
-                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                          Pengembangan Fitur Masa Depan yang Siap Ditambahkan
+                        <h3 className="text-base sm:text-lg font-bold font-serif text-stone-900 dark:text-stone-100">
+                          Roadmap Inovasi, Fitur Mendatang &amp; Aspirasi User
                         </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400">
+                          Tambah ide baru, atur progres pengerjaan, ubah status rilis, dan pantau voting pengguna secara real-time.
+                        </p>
                       </div>
 
-                      <Link
-                        href="/roadmap"
-                        className="text-xs font-bold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
-                      >
-                        <span>Lihat Halaman Publik Roadmap</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
+                      <div className="flex items-center flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={handleOpenAddRoadmap}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-800 to-teal-700 hover:from-emerald-700 hover:to-teal-600 active:scale-95 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>+ Tambah Inovasi Baru</span>
+                        </button>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-stone-900 dark:text-stone-100">AI Asisten Motivasi Jalur Langit</span>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800">Dalam Desain</span>
-                        </div>
-                        <p className="text-[11px] text-stone-500">Asisten cerdas pendamping doa dan muhasabah berbasis Al-Quran & Sunnah.</p>
-                      </div>
+                        <button
+                          type="button"
+                          onClick={handleResetRoadmapToDefault}
+                          className="px-3 py-2 rounded-xl border border-stone-200 dark:border-emerald-800 hover:bg-stone-100 dark:hover:bg-emerald-900/50 text-stone-600 dark:text-stone-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Reset ke 5 fitur default bawaan"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Reset Default</span>
+                        </button>
 
-                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-stone-900 dark:text-stone-100">Sedekah Subuh Tracker Terpadu</span>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800">Prioritas Tinggi</span>
-                        </div>
-                        <p className="text-[11px] text-stone-500">Pencatatan nominal tabungan sedekah subuh harian dengan kalkulasi otomatis.</p>
-                      </div>
-
-                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-stone-900 dark:text-stone-100">Audio Murottal & Dzikir Offline</span>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-800">Direncanakan</span>
-                        </div>
-                        <p className="text-[11px] text-stone-500">Putar audio dzikir pagi petang dan surat pilihan langsung tanpa kuota.</p>
-                      </div>
-
-                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-stone-900 dark:text-stone-100">Broadcast Pesan Semangat ke User</span>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-100 text-purple-800">Ide Lab</span>
-                        </div>
-                        <p className="text-[11px] text-stone-500">Admin bisa mengirimkan pesan mutiara hikmah harian ke dashboard semua pembeli.</p>
+                        <Link
+                          href="/roadmap"
+                          target="_blank"
+                          className="px-3 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-bold transition-all flex items-center gap-1.5"
+                        >
+                          <span>Halaman Publik</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
                     </div>
+
+                    {/* Metrik Mini Roadmap */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200/80 dark:border-emerald-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Total Inovasi Aktif</span>
+                        <div className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100 font-serif">
+                          {roadmapFeatures ? roadmapFeatures.length : 0} <span className="text-xs font-normal text-stone-500">Fitur</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Segera Rilis</span>
+                        <div className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-300 font-serif">
+                          {roadmapFeatures ? roadmapFeatures.filter(f => f.status === 'segera_rilis').length : 0} <span className="text-xs font-normal text-emerald-600">Fitur</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Dalam Pengerjaan</span>
+                        <div className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-300 font-serif">
+                          {roadmapFeatures ? roadmapFeatures.filter(f => f.status === 'dalam_pengerjaan').length : 0} <span className="text-xs font-normal text-amber-600">Fitur</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/60 space-y-1">
+                        <span className="text-[10px] font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider">Aspirasi Pengguna</span>
+                        <div className="text-lg sm:text-xl font-black text-rose-700 dark:text-rose-300 font-serif">
+                          {userFeatureRequests ? userFeatureRequests.length : 0} <span className="text-xs font-normal text-rose-600">Request</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Daftar Kartu Roadmap Aktif */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-amber-500" />
+                          <span>Daftar Inovasi Aktif di Tampilan Aplikasi ({roadmapFeatures?.length || 0})</span>
+                        </h4>
+                        <span className="text-[11px] text-stone-400">Tersinkronisasi otomatis ke /roadmap &amp; Beranda</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {roadmapFeatures && roadmapFeatures.map((feat) => {
+                          const votesCount = (featureVotes[feat.id] || 0) + (feat.category === 'ibadah' ? 142 : 88);
+                          return (
+                            <div
+                              key={feat.id}
+                              className="p-4 sm:p-5 rounded-2xl bg-stone-50 dark:bg-emerald-900/25 border border-stone-200 dark:border-emerald-800/70 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all flex flex-col justify-between space-y-3 relative group"
+                            >
+                              <div className="space-y-2.5">
+                                {/* Top Row: Icon, Status Badge, Target Date */}
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-emerald-950 border border-stone-200 dark:border-emerald-800 flex items-center justify-center shadow-xs">
+                                      {renderAdminFeatureIcon(feat.iconName)}
+                                    </div>
+                                    <div>
+                                      <span className="text-[10px] font-extrabold uppercase text-stone-400 tracking-wider">
+                                        {feat.category}
+                                      </span>
+                                      <h4 className="font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100 font-serif">
+                                        {feat.title}
+                                      </h4>
+                                    </div>
+                                  </div>
+
+                                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${feat.badgeColor}`}>
+                                    {feat.statusLabel}
+                                  </span>
+                                </div>
+
+                                <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed line-clamp-2">
+                                  {feat.description}
+                                </p>
+
+                                {/* Highlights Pill List */}
+                                {feat.highlights && feat.highlights.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 pt-0.5">
+                                    {feat.highlights.map((h, i) => (
+                                      <span
+                                        key={i}
+                                        className="text-[9px] px-2 py-0.5 rounded-lg bg-white dark:bg-emerald-950/80 border border-stone-200 dark:border-emerald-800 text-stone-600 dark:text-stone-300"
+                                      >
+                                        ✓ {h}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Progress & Actions Row */}
+                              <div className="pt-2.5 border-t border-stone-200/70 dark:border-emerald-900/60 space-y-2">
+                                <div className="flex items-center justify-between text-[11px]">
+                                  <span className="text-stone-500 flex items-center gap-1">
+                                    <Clock className="w-3 h-3 text-stone-400" />
+                                    <span>Target: <b>{feat.estimatedRelease}</b></span>
+                                  </span>
+                                  <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                                    {feat.progressPercent}% Selesai
+                                  </span>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full h-1.5 rounded-full bg-stone-200 dark:bg-emerald-900/60 overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-amber-400 transition-all"
+                                    style={{ width: `${feat.progressPercent}%` }}
+                                  />
+                                </div>
+
+                                {/* Bottom Row Buttons */}
+                                <div className="flex items-center justify-between pt-1">
+                                  <span className="text-[10px] text-rose-600 font-bold flex items-center gap-1">
+                                    <Heart className="w-3 h-3 fill-rose-500" />
+                                    <span>{votesCount} Suara Vote</span>
+                                  </span>
+
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditRoadmap(feat)}
+                                      className="px-2.5 py-1 rounded-lg bg-white dark:bg-emerald-950 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 border border-stone-200 dark:border-emerald-800 text-[11px] font-bold text-stone-700 dark:text-stone-200 transition-all flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Edit3 className="w-3 h-3 text-emerald-600" />
+                                      <span>Edit</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteRoadmap(feat.id, feat.title)}
+                                      className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50 text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                      title="Hapus Inovasi"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                      <span>Hapus</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Section Aspirasi & Usulan Ide Fitur dari Pengguna */}
+                    <div className="pt-4 border-t border-stone-100 dark:border-emerald-900/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            <span>Aspirasi &amp; Request Ide dari Pengguna ({userFeatureRequests?.length || 0})</span>
+                          </h4>
+                          <p className="text-[11px] text-stone-500">
+                            Masukan yang dikirimkan langsung oleh pembeli lewat formulir usulan ide di halaman /roadmap.
+                          </p>
+                        </div>
+                      </div>
+
+                      {(!userFeatureRequests || userFeatureRequests.length === 0) ? (
+                        <div className="p-4 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-dashed border-stone-200 dark:border-emerald-800/60 text-center text-xs text-stone-500">
+                          Belum ada request ide baru dari pengguna saat ini.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {userFeatureRequests.map((req) => (
+                            <div
+                              key={req.id}
+                              className="p-3.5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/70 dark:border-purple-800/40 space-y-2.5 flex flex-col justify-between"
+                            >
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{new Date(req.submittedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                </span>
+                                <p className="text-xs text-stone-800 dark:text-stone-200 italic leading-relaxed">
+                                  &ldquo;{req.text}&rdquo;
+                                </p>
+                              </div>
+
+                              <div className="flex items-center justify-end gap-2 pt-1 border-t border-purple-100 dark:border-purple-900/40">
+                                <button
+                                  type="button"
+                                  onClick={() => handleConvertUserRequest(req)}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>Jadikan Roadmap</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteFeatureRequest(req.id)}
+                                  className="px-2 py-1 rounded-lg hover:bg-rose-100 text-rose-600 dark:text-rose-300 text-[10px] font-bold transition-all cursor-pointer"
+                                  title="Hapus Usulan"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                   </div>
                 </section>
               )}
@@ -1910,6 +2311,229 @@ export default function PanelAdminPage() {
 
           </div>
 
+        </div>
+      )}
+
+      {/* MODAL TAMBAH & EDIT ROADMAP INOVASI */}
+      {isRoadmapModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-emerald-950 border border-stone-200 dark:border-emerald-800 shadow-2xl p-5 sm:p-6 space-y-4">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-emerald-900/50">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                  <Map className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100">
+                    {editingRoadmapId ? 'Edit Inovasi Fitur' : 'Tambah Inovasi Baru'}
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    {editingRoadmapId ? 'Perbarui informasi dan progres fitur' : 'Masukkan rencana fitur baru ke roadmap'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRoadmapModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/50 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveRoadmap} className="space-y-3.5">
+              
+              {/* Judul Fitur */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Judul Fitur / Inovasi *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={roadmapTitle}
+                  onChange={(e) => setRoadmapTitle(e.target.value)}
+                  placeholder="Contoh: Audio Murottal &amp; Dzikir Offline"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* Kategori & Ikon */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                    Kategori
+                  </label>
+                  <select
+                    value={roadmapCategory}
+                    onChange={(e) => setRoadmapCategory(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="ibadah">Ibadah</option>
+                    <option value="produktivitas">Produktivitas</option>
+                    <option value="finansial">Finansial</option>
+                    <option value="audio">Audio</option>
+                    <option value="doa">Doa</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                    Pilihan Ikon
+                  </label>
+                  <select
+                    value={roadmapIcon}
+                    onChange={(e) => setRoadmapIcon(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="Compass">🧭 Compass (Kiblat/Arah)</option>
+                    <option value="FileText">📄 FileText (Laporan/PDF)</option>
+                    <option value="Calculator">🔢 Calculator (Hitung/Zakat)</option>
+                    <option value="Headphones">🎧 Headphones (Audio/Murottal)</option>
+                    <option value="Mail">✉️ Mail (Surat/Doa)</option>
+                    <option value="Sparkles">✨ Sparkles (Inovasi Khusus)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Status & Target */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                    Status Rilis
+                  </label>
+                  <select
+                    value={roadmapStatus}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as FeatureStatus;
+                      setRoadmapStatus(newStatus);
+                      setRoadmapStatusLabel(getStatusMeta(newStatus).defaultLabel);
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="segera_rilis">Segera Rilis</option>
+                    <option value="dalam_pengerjaan">Dalam Pengerjaan</option>
+                    <option value="tahap_riset">Tahap Riset</option>
+                    <option value="rencana">Rencana Pembaruan</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                    Target Rilis
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={roadmapTarget}
+                    onChange={(e) => setRoadmapTarget(e.target.value)}
+                    placeholder="Contoh: Desember 2026"
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Progress Slider */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-stone-700 dark:text-stone-300">Progres Pengerjaan</span>
+                  <span className="text-emerald-700 dark:text-emerald-300 font-mono text-sm">{roadmapProgress}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={roadmapProgress}
+                  onChange={(e) => setRoadmapProgress(Number(e.target.value))}
+                  className="w-full accent-emerald-600 cursor-pointer"
+                />
+              </div>
+
+              {/* Deskripsi */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Deskripsi Fitur *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={roadmapDescription}
+                  onChange={(e) => setRoadmapDescription(e.target.value)}
+                  placeholder="Jelaskan kegunaan dan manfaat fitur ini bagi pengguna..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"
+                />
+              </div>
+
+              {/* Highlights / Keunggulan */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Poin Keunggulan Fitur
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={highlightInput}
+                    onChange={(e) => setHighlightInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddHighlight();
+                      }
+                    }}
+                    placeholder="Tambah keunggulan..."
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddHighlight}
+                    className="px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-emerald-800 hover:bg-stone-300 text-xs font-bold text-stone-800 dark:text-stone-100 cursor-pointer"
+                  >
+                    + Tambah
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {roadmapHighlights.map((hl, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-[11px]"
+                    >
+                      <span>✓ {hl}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveHighlight(idx)}
+                        className="text-stone-400 hover:text-rose-500 ml-1 cursor-pointer"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Form Action Buttons */}
+              <div className="pt-3 border-t border-stone-100 dark:border-emerald-900/50 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRoadmapModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 dark:border-emerald-800 text-stone-600 dark:text-stone-300 text-xs font-bold hover:bg-stone-100 dark:hover:bg-emerald-900/50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{editingRoadmapId ? 'Simpan Perubahan' : 'Terbitkan Inovasi'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

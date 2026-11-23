@@ -22,6 +22,7 @@ import {
   FileText,
   Calculator,
   Headphones,
+  Mail,
   Layers
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
@@ -51,6 +52,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     appTheme,
     setIsDrawerOpen,
     setDrawerActiveTab,
+    roadmapFeatures,
     featureVotes
   } = useJalurLangitStore();
 
@@ -58,6 +60,19 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     setDrawerActiveTab('lab');
     setIsDrawerOpen(true);
   };
+
+  const renderTeaserIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'Compass': return <Compass className="w-4 h-4" />;
+      case 'FileText': return <FileText className="w-4 h-4" />;
+      case 'Calculator': return <Calculator className="w-4 h-4" />;
+      case 'Headphones': return <Headphones className="w-4 h-4" />;
+      case 'Mail': return <Mail className="w-4 h-4" />;
+      default: return <Sparkles className="w-4 h-4" />;
+    }
+  };
+
+  const activeTeaserList = (roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : []).slice(0, 4);
 
   const totalAmalan = DEFAULT_AMALAN_LIST.length;
   const currentCompletion = getDateCompletionPercentage(selectedDate, totalAmalan);
@@ -417,121 +432,39 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
 
           {/* Quick Preview Grid 4 items */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            {/* Card 1 */}
-            <div 
-              onClick={handleOpenRoadmap}
-              className="p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-stone-200/80 dark:border-emerald-800/50 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 transition-all space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-7 h-7 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
-                  <Compass className="w-4 h-4" />
+            {activeTeaserList.map((feat) => {
+              const currentVotes = (featureVotes[feat.id] || 0) + (feat.category === 'ibadah' ? 142 : 88);
+              return (
+                <div 
+                  key={feat.id}
+                  onClick={handleOpenRoadmap}
+                  className="p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-stone-200/80 dark:border-emerald-800/50 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 transition-all space-y-2 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-7 h-7 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+                      {renderTeaserIcon(feat.iconName)}
+                    </div>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${feat.badgeColor}`}>
+                      {feat.statusLabel ? feat.statusLabel.split('•')[0].trim() : 'Inovasi'}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                      {feat.title}
+                    </h4>
+                    <p className="text-[11px] text-stone-500 line-clamp-1">
+                      {feat.description}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-stone-400 pt-1 border-t border-stone-100 dark:border-emerald-900/40">
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{feat.progressPercent}% Siap</span>
+                    <span className="flex items-center gap-0.5 text-rose-500 font-bold">
+                      <Heart className="w-3 h-3 fill-rose-500" /> {currentVotes}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
-                  v1.3 Segera
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                  Kiblat & Adzan GPS
-                </h4>
-                <p className="text-[11px] text-stone-500 line-clamp-1">
-                  Kompas Ka'bah & jadwal sholat otomatis
-                </p>
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-stone-400 pt-1 border-t border-stone-100 dark:border-emerald-900/40">
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">85% Siap</span>
-                <span className="flex items-center gap-0.5 text-rose-500 font-bold">
-                  <Heart className="w-3 h-3 fill-rose-500" /> {featureVotes['kiblat_adzan'] || 128}
-                </span>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div 
-              onClick={handleOpenRoadmap}
-              className="p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-stone-200/80 dark:border-emerald-800/50 cursor-pointer hover:border-amber-400 dark:hover:border-amber-600 transition-all space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-7 h-7 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
-                  Dikerjakan
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                  Rapor 30 Hari PDF
-                </h4>
-                <p className="text-[11px] text-stone-500 line-clamp-1">
-                  Grafik evaluasi & cetak rapor digital
-                </p>
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-stone-400 pt-1 border-t border-stone-100 dark:border-emerald-900/40">
-                <span className="font-semibold text-amber-600 dark:text-amber-400">68% Dikerjakan</span>
-                <span className="flex items-center gap-0.5 text-rose-500 font-bold">
-                  <Heart className="w-3 h-3 fill-rose-500" /> {featureVotes['rapor_pdf'] || 164}
-                </span>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div 
-              onClick={handleOpenRoadmap}
-              className="p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-stone-200/80 dark:border-emerald-800/50 cursor-pointer hover:border-sky-400 dark:hover:border-sky-600 transition-all space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-7 h-7 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 flex items-center justify-center">
-                  <Calculator className="w-4 h-4" />
-                </div>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-200 border border-sky-300 dark:border-sky-700">
-                  Riset Fiqih
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                  Kalkulator Zakat
-                </h4>
-                <p className="text-[11px] text-stone-500 line-clamp-1">
-                  Hitung zakat mal, profesi & fidyah
-                </p>
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-stone-400 pt-1 border-t border-stone-100 dark:border-emerald-900/40">
-                <span className="font-semibold text-sky-600 dark:text-sky-400">45% Riset</span>
-                <span className="flex items-center gap-0.5 text-rose-500 font-bold">
-                  <Heart className="w-3 h-3 fill-rose-500" /> {featureVotes['kalkulator_zakat'] || 95}
-                </span>
-              </div>
-            </div>
-
-            {/* Card 4 */}
-            <div 
-              onClick={handleOpenRoadmap}
-              className="p-3.5 rounded-2xl bg-white/90 dark:bg-emerald-950/50 border border-stone-200/80 dark:border-emerald-800/50 cursor-pointer hover:border-purple-400 dark:hover:border-purple-600 transition-all space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-7 h-7 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center">
-                  <Headphones className="w-4 h-4" />
-                </div>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-200 border border-purple-300 dark:border-purple-700">
-                  Rencana
-                </span>
-              </div>
-              <div>
-                <h4 className="font-bold text-xs text-stone-900 dark:text-stone-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                  Murottal & Audio
-                </h4>
-                <p className="text-[11px] text-stone-500 line-clamp-1">
-                  Soundscape alam & dzikir malam
-                </p>
-              </div>
-              <div className="flex justify-between items-center text-[10px] text-stone-400 pt-1 border-t border-stone-100 dark:border-emerald-900/40">
-                <span className="font-semibold text-purple-600 dark:text-purple-400">30% Konsep</span>
-                <span className="flex items-center gap-0.5 text-rose-500 font-bold">
-                  <Heart className="w-3 h-3 fill-rose-500" /> {featureVotes['soundscape_murottal'] || 142}
-                </span>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>

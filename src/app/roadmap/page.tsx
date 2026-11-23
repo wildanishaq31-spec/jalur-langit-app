@@ -23,6 +23,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 
 export default function RoadmapPage() {
   const { 
+    roadmapFeatures,
     featureVotes, 
     userVotedFeatures, 
     voteFeature, 
@@ -30,6 +31,8 @@ export default function RoadmapPage() {
     appTheme,
     toggleTheme 
   } = useJalurLangitStore();
+
+  const activeFeatures = roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : ROADMAP_FEATURES;
 
   const [newIdeaText, setNewIdeaText] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -108,7 +111,7 @@ export default function RoadmapPage() {
 
         {/* Feature Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-          {ROADMAP_FEATURES.map((feature) => {
+          {activeFeatures.map((feature) => {
             const hasVoted = userVotedFeatures.includes(feature.id);
             const currentVotes = (featureVotes[feature.id] || 0) + (feature.category === 'ibadah' ? 142 : 88);
 
