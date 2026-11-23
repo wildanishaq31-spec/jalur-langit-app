@@ -186,6 +186,7 @@ interface JalurLangitState {
   nextMonth: () => void;
   setSelectedDate: (dateStr: string) => void;
   jumpToToday: () => void;
+  syncToTodayIfOutdated: () => boolean;
 
   // Completed Amalan (Key: YYYY-MM-DD)
   completedAmalan: Record<string, string[]>;
@@ -389,9 +390,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         set({ activeTab: tab });
       },
 
-      calendarYear: 2026,
-      calendarMonth: 10,
-      selectedDate: '2026-11-17',
+      calendarYear: new Date().getFullYear(),
+      calendarMonth: new Date().getMonth(),
+      selectedDate: getTodayDateString(),
 
       setCalendarYear: (year) => set({ calendarYear: year }),
       setCalendarMonth: (month) => set({ calendarMonth: month }),
@@ -431,6 +432,21 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           calendarYear: y,
           calendarMonth: m - 1,
         });
+      },
+
+      syncToTodayIfOutdated: () => {
+        const todayStr = getTodayDateString();
+        const state = get();
+        if (state.selectedDate !== todayStr) {
+          const [y, m] = todayStr.split('-').map(Number);
+          set({
+            selectedDate: todayStr,
+            calendarYear: y,
+            calendarMonth: m - 1,
+          });
+          return true;
+        }
+        return false;
       },
 
       completedAmalan: {},
@@ -1198,6 +1214,16 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       name: 'jalur-langit-calendar-storage-v3',
       storage: createJSONStorage(() => localStorage),
       version: 2,
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Selalu pastikan tanggal otomatis mengikuti tanggal hari ini saat aplikasi baru dibuka
+          const todayStr = getTodayDateString();
+          const [y, m] = todayStr.split('-').map(Number);
+          state.selectedDate = todayStr;
+          state.calendarYear = y;
+          state.calendarMonth = m - 1;
+        }
+      },
       migrate: (persistedState: any) => {
         if (persistedState && (persistedState.appTheme === 'blush' || persistedState.appTheme === 'emerald')) {
           return {

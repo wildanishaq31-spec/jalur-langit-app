@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { TASBIH_PRESETS } from '@/data/amalanData';
-import { formatDateIndonesian } from '@/utils/dateUtils';
+import { formatDateIndonesian, getTodayDateString } from '@/utils/dateUtils';
 import { TasbihPreset } from '@/types';
 import { AnimatedTasbihBeads, TasbihTheme } from '@/components/tasbih/AnimatedTasbihBeads';
 import { playTasbihGlassClick, preloadTasbihSound } from '@/utils/tasbihAudio';
@@ -92,7 +92,7 @@ export const TasbihTab: React.FC = () => {
   const activePreset = TASBIH_PRESETS.find((p) => p.id === tasbihPresetId) || TASBIH_PRESETS[0];
 
   const currentDaily = dailyTasbihMap[selectedDate] || { totalCount: 0, completedPresetIds: [] };
-  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+  const isToday = selectedDate === getTodayDateString();
   const totalDzikirLabel = isToday ? 'Total Dzikir Hari Ini' : 'Total Dzikir Tanggal Ini';
 
   const filteredPresets = selectedCategory === 'semua'

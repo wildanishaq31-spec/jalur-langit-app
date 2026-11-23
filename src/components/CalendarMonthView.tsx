@@ -43,10 +43,14 @@ export const CalendarMonthView: React.FC<CalendarMonthViewProps> = ({ onOpenDate
   } = useJalurLangitStore();
 
   const totalAmalan = DEFAULT_AMALAN_LIST.length;
-  const [todayStr, setTodayStr] = React.useState<string>('2026-11-17');
+  const [todayStr, setTodayStr] = React.useState<string>(getTodayDateString);
 
   React.useEffect(() => {
     setTodayStr(getTodayDateString());
+    const interval = setInterval(() => {
+      setTodayStr(getTodayDateString());
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const daysCount = getDaysInMonth(calendarYear, calendarMonth);

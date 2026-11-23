@@ -95,7 +95,7 @@ export const AmalanTab: React.FC = () => {
 
   const totalAmalan = DEFAULT_AMALAN_LIST.length;
   const currentCompletion = getDateCompletionPercentage(selectedDate, totalAmalan);
-  const [todayStr, setTodayStr] = useState<string>('2026-11-17');
+  const [todayStr, setTodayStr] = useState<string>(getTodayDateString);
 
   // Klasifikasi dan Penghitungan Status Hukum
   const wajibList = DEFAULT_AMALAN_LIST.filter(a => getAmalanHukumType(a) === 'wajib');
@@ -113,11 +113,12 @@ export const AmalanTab: React.FC = () => {
     setNowClock(now);
     setActiveSlot(getCurrentTimeCategory(notificationTimes));
 
-    // Perbarui waktu HP dan amalan aktif setiap 5 detik secara realtime
+    // Perbarui waktu HP, tanggal hari ini, dan amalan aktif setiap 5 detik secara realtime
     const timer = setInterval(() => {
       const liveNow = new Date();
       setNowClock(liveNow);
       setCurrentTimeStr(getCurrentTimeString());
+      setTodayStr(getTodayDateString());
       const slot = getCurrentTimeCategory(notificationTimes);
       setActiveSlot(slot);
     }, 5000);

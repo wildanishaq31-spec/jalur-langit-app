@@ -18,9 +18,6 @@ export const MONTH_NAMES_ID = [
 export const DAY_NAMES_ID = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
 export const getTodayDateString = (): string => {
-  if (typeof window === 'undefined') {
-    return '2026-11-17';
-  }
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -29,9 +26,6 @@ export const getTodayDateString = (): string => {
 };
 
 export const getCurrentTimeString = (): string => {
-  if (typeof window === 'undefined') {
-    return '19:40 WIB';
-  }
   const now = new Date();
   const h = String(now.getHours()).padStart(2, '0');
   const m = String(now.getMinutes()).padStart(2, '0');

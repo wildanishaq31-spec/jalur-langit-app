@@ -2101,4 +2101,34 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 79 - Auto-Update Tanggal Realtime Mengikuti Hari Ini (Anti-Stale Date Saat Buka & Resume PWA)
+* **Permintaan Pengguna**:
+  - *"sekarang tampilan semua tanggal itu harus auto update mengikuti tanggal hari ini, jadi saat baru buka otomatis tanggal sekarang, soalnya saya coba buka kadang masih tanggal kemarinnya"*
+* **Akar Masalah**:
+  1. Pada `useJalurLangitStore.ts`, nilai awal `selectedDate` sempat tertulis `'2026-11-17'`, dan state `selectedDate` disimpan secara utuh ke `localStorage` melalui middleware `persist`.
+  2. Saat pengguna membuka aplikasi keesokan harinya, Zustand `persist` me-rehidrasi `selectedDate` dari `localStorage` yang menyimpan tanggal kemarin, sehingga tampilan beranda dan checklist amalan masih menampilkan tanggal kemarin sampai pengguna mengklik tombol manual.
+  3. Pada `dateUtils.ts`, fungsi `getTodayDateString()` dan `getCurrentTimeString()` memiliki percabangan `typeof window === 'undefined'` yang mengembalikan nilai statis `'2026-11-17'`.
+  4. Ketika aplikasi PWA ditinggalkan di latar belakang semalaman (*overnight sleep/lock screen*), tidak ada event listener yang mendeteksi pergantian tanggal kalender dunia nyata saat layar HP dinyalakan kembali (*app resume* atau tengah malam jam 00:00).
+* **Solusi Rekayasa & Implementasi**:
+  1. **Perbaikan `src/utils/dateUtils.ts`**:
+     - Menghapus nilai tanggal hardcoded `'2026-11-17'`.
+     - `getTodayDateString()` dan `getCurrentTimeString()` kini selalu menghitung tanggal dan waktu lokal perangkat secara murni (`new Date()`).
+  2. **Pembaruan Store & Rehidrasi Otomatis (`src/store/useJalurLangitStore.ts`)**:
+     - Nilai inisial `selectedDate`, `calendarYear`, dan `calendarMonth` dibuat dinamis menggunakan tanggal hari ini (`getTodayDateString()`).
+     - Menambahkan fungsi `syncToTodayIfOutdated(): boolean` pada store untuk mengecek dan memperbarui tanggal kalender ke hari ini jika tanggal aktif berbeda.
+     - Menambahkan hook `onRehydrateStorage` pada konfigurasi Zustand `persist`: begitu data lokal di-load ke memori saat baru buka, `state.selectedDate` langsung dipaksa diperbarui ke tanggal hari ini (`getTodayDateString()`), mencegah tanggal kemarin terbawa ke UI.
+  3. **Event Listener Sinkronisasi Global di `src/components/layout/AppShell.tsx`**:
+     - **On Mount**: Menjalankan `syncToTodayIfOutdated()` seketika saat aplikasi dimuat.
+     - **On Visibility Change & Focus**: Mendeteksi saat pengguna menyalakan layar ponsel, membuka kembali PWA dari background, atau berpindah tab browser, dan langsung memperbarui tanggal ke hari ini.
+     - **On Midnight Interval (Setiap 10 Detik)**: Melacak `lastKnownDate`. Begitu jam berdentang melewati tengah malam (00:00 WIB), aplikasi otomatis berganti ke hari berikutnya tanpa perlu refresh manual.
+  4. **Pembersihan Komponen Terkait**:
+     - `src/components/CalendarMonthView.tsx`: Menginisialisasi `todayStr` dengan `getTodayDateString()` dan menambahkan interval sync.
+     - `src/components/tabs/AmalanTab.tsx`: Menginisialisasi `todayStr` dengan `getTodayDateString()` dan menyinkronkan tanggal di dalam loop realtime 5 detik.
+     - `src/components/tabs/TasbihTab.tsx`: Mengubah pengecekan `isToday` dari `toISOString().split('T')[0]` (yang rawan bias UTC) menjadi `getTodayDateString()` lokal.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** pada seluruh 19/19 rute Next.js Turbopack.
+  - Saat aplikasi baru dibuka, tanggal otomatis selalu **Senin, 23 November 2026** (atau tanggal aktual hari ini).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

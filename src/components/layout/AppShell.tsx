@@ -7,6 +7,7 @@ import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
 import { PwaNotificationManager } from '@/components/pwa/PwaNotificationManager';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { getTodayDateString } from '@/utils/dateUtils';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ let isAppHydrated = false;
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
-  const { appTheme } = useJalurLangitStore();
+  const { appTheme, syncToTodayIfOutdated } = useJalurLangitStore();
   const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity } = useAuthStore();
   
   // Jika sudah terhidrasi di sesi klien, langsung mounted = true tanpa flash blank screen
@@ -30,6 +31,43 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       touchUserActivity();
     }
   }, [isAuthenticated, touchUserActivity]);
+
+  // Auto-update tanggal mengikuti tanggal hari ini secara otomatis
+  useEffect(() => {
+    // 1. Sinkronisasi instan saat aplikasi pertama kali dimuat / dibuka
+    syncToTodayIfOutdated();
+
+    let lastKnownDate = getTodayDateString();
+
+    // 2. Deteksi saat pengguna membuka/kembali ke tab PWA (layar HP aktif / tab focus)
+    const handleVisibilityOrFocus = () => {
+      const currentRealDate = getTodayDateString();
+      if (currentRealDate !== lastKnownDate) {
+        lastKnownDate = currentRealDate;
+        syncToTodayIfOutdated();
+      } else if (document.visibilityState === 'visible') {
+        syncToTodayIfOutdated();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
+    // 3. Interval pengecekan pergantian tanggal (misal berganti hari saat jam 00:00 tengah malam)
+    const midnightCheckTimer = setInterval(() => {
+      const currentRealDate = getTodayDateString();
+      if (currentRealDate !== lastKnownDate) {
+        lastKnownDate = currentRealDate;
+        syncToTodayIfOutdated();
+      }
+    }, 10000); // Periksa setiap 10 detik
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      clearInterval(midnightCheckTimer);
+    };
+  }, [syncToTodayIfOutdated]);
 
   // Prefetch semua rute navigasi aplikasi agar perpindahan halaman 0 delay
   useEffect(() => {
