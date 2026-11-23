@@ -22,7 +22,7 @@ import {
   JalurLangitBackupMeta
 } from '@/types';
 import { TASBIH_PRESETS } from '@/data/amalanData';
-import { ROADMAP_FEATURES } from '@/data/roadmapData';
+import { ROADMAP_FEATURES, DEFAULT_ROADMAP_MILESTONES, calculateMilestoneProgress } from '@/data/roadmapData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
 import { QuranBookmark, QuranPaceMode } from '@/data/quranJuzCatalog';
 import { 
@@ -174,6 +174,7 @@ interface JalurLangitState {
   updateRoadmapFeature: (id: string, updates: Partial<RoadmapFeatureItem>) => void;
   deleteRoadmapFeature: (id: string) => void;
   resetRoadmapFeatures: () => void;
+  toggleRoadmapMilestone: (featureId: string, milestoneId: string) => void;
 
   // Active Tab & Cross-menu Navigation
   activeTab: ActiveTab;
@@ -375,13 +376,23 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         userFeatureRequests: state.userFeatureRequests.filter((r) => r.id !== id),
       })),
 
-      // Roadmap & Inovasi Fitur Lab Store
+      // Roadmap & Inovasi Fitur Lab Store (Dengan Sistem Milestone)
       roadmapFeatures: ROADMAP_FEATURES,
       addRoadmapFeature: (feature) => set((state) => {
         const newId = feature.id || `feat-${Date.now()}`;
+        const finalMilestones = feature.milestones && feature.milestones.length > 0
+          ? feature.milestones
+          : DEFAULT_ROADMAP_MILESTONES.map(m => ({ ...m }));
+        const milestoneCalc = calculateMilestoneProgress(finalMilestones);
+
         const newFeature: RoadmapFeatureItem = {
           ...feature,
           id: newId,
+          milestones: finalMilestones,
+          progressPercent: feature.progressPercent !== undefined ? feature.progressPercent : milestoneCalc.progressPercent,
+          status: feature.status || milestoneCalc.status,
+          statusLabel: feature.statusLabel || milestoneCalc.statusLabel,
+          badgeColor: feature.badgeColor || milestoneCalc.badgeColor,
           createdAt: new Date().toISOString()
         };
         return {
@@ -393,9 +404,18 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         };
       }),
       updateRoadmapFeature: (id, updates) => set((state) => ({
-        roadmapFeatures: state.roadmapFeatures.map((f) =>
-          f.id === id ? { ...f, ...updates } : f
-        )
+        roadmapFeatures: state.roadmapFeatures.map((f) => {
+          if (f.id !== id) return f;
+          const merged = { ...f, ...updates };
+          if (updates.milestones) {
+            const calc = calculateMilestoneProgress(updates.milestones);
+            merged.progressPercent = calc.progressPercent;
+            merged.status = calc.status;
+            merged.statusLabel = calc.statusLabel;
+            merged.badgeColor = calc.badgeColor;
+          }
+          return merged;
+        })
       })),
       deleteRoadmapFeature: (id) => set((state) => ({
         roadmapFeatures: state.roadmapFeatures.filter((f) => f.id !== id)
@@ -403,6 +423,37 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       resetRoadmapFeatures: () => set({
         roadmapFeatures: ROADMAP_FEATURES
       }),
+      toggleRoadmapMilestone: (featureId, milestoneId) => set((state) => ({
+        roadmapFeatures: state.roadmapFeatures.map((f) => {
+          if (f.id !== featureId) return f;
+          const currentMilestones = f.milestones && f.milestones.length > 0
+            ? f.milestones
+            : DEFAULT_ROADMAP_MILESTONES.map(m => ({ ...m }));
+          
+          const updatedMilestones = currentMilestones.map((m) => {
+            if (m.id === milestoneId) {
+              const nextStatus = !m.isCompleted;
+              return {
+                ...m,
+                isCompleted: nextStatus,
+                completedAt: nextStatus ? new Date().toISOString() : undefined
+              };
+            }
+            return m;
+          });
+
+          const calc = calculateMilestoneProgress(updatedMilestones);
+
+          return {
+            ...f,
+            milestones: updatedMilestones,
+            progressPercent: calc.progressPercent,
+            status: calc.status,
+            statusLabel: calc.statusLabel,
+            badgeColor: calc.badgeColor
+          };
+        })
+      })),
 
       // Navigation & Cross-menu integration
       activeTab: 'home',
@@ -1266,6 +1317,24 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           state.calendarMonth = m - 1;
           if (!state.roadmapFeatures || state.roadmapFeatures.length === 0) {
             state.roadmapFeatures = ROADMAP_FEATURES;
+          } else {
+            // Pastikan setiap fitur memiliki array milestones
+            state.roadmapFeatures = state.roadmapFeatures.map((f) => {
+              if (!f.milestones || f.milestones.length === 0) {
+                const defaultList = DEFAULT_ROADMAP_MILESTONES.map((m, idx) => {
+                  const threshold = (idx + 1) * 20;
+                  return {
+                    ...m,
+                    isCompleted: (f.progressPercent || 0) >= threshold - 5
+                  };
+                });
+                return {
+                  ...f,
+                  milestones: defaultList
+                };
+              }
+              return f;
+            });
           }
         }
       },

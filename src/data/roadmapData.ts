@@ -1,4 +1,70 @@
-import { RoadmapFeatureItem } from '@/types';
+import { RoadmapFeatureItem, RoadmapMilestone, FeatureStatus } from '@/types';
+
+export const DEFAULT_ROADMAP_MILESTONES: RoadmapMilestone[] = [
+  { id: 'm1', title: 'Tahap 1: Riset Kebutuhan & Wireframe UI/UX', percentageWeight: 20, isCompleted: false },
+  { id: 'm2', title: 'Tahap 2: Pembuatan Desain Komponen & Interaksi', percentageWeight: 25, isCompleted: false },
+  { id: 'm3', title: 'Tahap 3: Koding Logika, Data Store & Algoritma', percentageWeight: 30, isCompleted: false },
+  { id: 'm4', title: 'Tahap 4: Pengujian QA, Edge Cases & Beta Test VIP', percentageWeight: 15, isCompleted: false },
+  { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 10, isCompleted: false },
+];
+
+export function calculateMilestoneProgress(milestones: RoadmapMilestone[]): {
+  progressPercent: number;
+  status: FeatureStatus;
+  statusLabel: string;
+  badgeColor: string;
+} {
+  if (!milestones || milestones.length === 0) {
+    return {
+      progressPercent: 0,
+      status: 'rencana',
+      statusLabel: 'Rencana Pembaruan',
+      badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/90 dark:text-purple-300 border-purple-300 dark:border-purple-700'
+    };
+  }
+
+  const completed = milestones.filter(m => m.isCompleted);
+  const totalWeight = milestones.reduce((acc, m) => acc + m.percentageWeight, 0) || 100;
+  const completedWeight = completed.reduce((acc, m) => acc + m.percentageWeight, 0);
+  const progressPercent = Math.min(100, Math.round((completedWeight / totalWeight) * 100));
+
+  if (progressPercent >= 100) {
+    return {
+      progressPercent: 100,
+      status: 'segera_rilis',
+      statusLabel: '100% Selesai • Siap Rilis',
+      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+    };
+  } else if (progressPercent >= 75) {
+    return {
+      progressPercent,
+      status: 'segera_rilis',
+      statusLabel: 'Segera Rilis • v1.4',
+      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+    };
+  } else if (progressPercent >= 35) {
+    return {
+      progressPercent,
+      status: 'dalam_pengerjaan',
+      statusLabel: 'Sedang Dikembangkan',
+      badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/90 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+    };
+  } else if (progressPercent >= 15) {
+    return {
+      progressPercent,
+      status: 'tahap_riset',
+      statusLabel: 'Tahap Desain & Fiqih',
+      badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-950/90 dark:text-sky-300 border-sky-300 dark:border-sky-700'
+    };
+  } else {
+    return {
+      progressPercent,
+      status: 'rencana',
+      statusLabel: 'Rencana Pembaruan',
+      badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-950/90 dark:text-purple-300 border-purple-300 dark:border-purple-700'
+    };
+  }
+}
 
 export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
   {
@@ -17,7 +83,14 @@ export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
       'Dukungan Penuh Mode Offline'
     ],
     estimatedRelease: 'Desember 2026',
-    iconName: 'Compass'
+    iconName: 'Compass',
+    milestones: [
+      { id: 'm1', title: 'Tahap 1: Riset Koordinat Ka\'bah & Formula Arah Kiblat', percentageWeight: 20, isCompleted: true },
+      { id: 'm2', title: 'Tahap 2: Desain Visual Piringan Kompas 3D & Needle', percentageWeight: 25, isCompleted: true },
+      { id: 'm3', title: 'Tahap 3: Integrasi Sensor Gyroscope & Perhitungan GPS', percentageWeight: 25, isCompleted: true },
+      { id: 'm4', title: 'Tahap 4: Audio Suara Adzan & Uji Coba Offline', percentageWeight: 15, isCompleted: true },
+      { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 15, isCompleted: false }
+    ]
   },
   {
     id: 'rapor_pdf',
@@ -35,7 +108,14 @@ export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
       'Rangkuman Target & Hajat Tercapai'
     ],
     estimatedRelease: 'Januari 2027',
-    iconName: 'FileText'
+    iconName: 'FileText',
+    milestones: [
+      { id: 'm1', title: 'Tahap 1: Riset Format Rapor Spiritual & Metrik Evaluasi', percentageWeight: 20, isCompleted: true },
+      { id: 'm2', title: 'Tahap 2: Desain Visual Kartu Prestasi & Layout Dokumen', percentageWeight: 25, isCompleted: true },
+      { id: 'm3', title: 'Tahap 3: Mesin Generator Grafik Statistik & Parser Data', percentageWeight: 23, isCompleted: true },
+      { id: 'm4', title: 'Tahap 4: Integrasi Renderer PDF Canvas & Resolusi Cetak', percentageWeight: 17, isCompleted: false },
+      { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 15, isCompleted: false }
+    ]
   },
   {
     id: 'kalkulator_zakat',
@@ -53,7 +133,14 @@ export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
       'Terhubung Langsung ke Catatan Sedekah'
     ],
     estimatedRelease: 'Februari 2027',
-    iconName: 'Calculator'
+    iconName: 'Calculator',
+    milestones: [
+      { id: 'm1', title: 'Tahap 1: Riset Fiqih Zakat 4 Mazhab & Rumus Nisab Emas', percentageWeight: 20, isCompleted: true },
+      { id: 'm2', title: 'Tahap 2: Desain Antarmuka Form Kalkulator Cepat', percentageWeight: 25, isCompleted: true },
+      { id: 'm3', title: 'Tahap 3: Algoritma Perhitungan Realtime Kurs Emas & Perak', percentageWeight: 25, isCompleted: false },
+      { id: 'm4', title: 'Tahap 4: Integrasi Langsung ke Riwayat Sedekah Subuh', percentageWeight: 15, isCompleted: false },
+      { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 15, isCompleted: false }
+    ]
   },
   {
     id: 'soundscape_murottal',
@@ -71,7 +158,14 @@ export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
       'Tersinkronisasi dengan Modul Tasbih'
     ],
     estimatedRelease: 'Maret 2027',
-    iconName: 'Headphones'
+    iconName: 'Headphones',
+    milestones: [
+      { id: 'm1', title: 'Tahap 1: Kurasi Audio Bebas Royalti & Rekaman Alam Fajar', percentageWeight: 20, isCompleted: true },
+      { id: 'm2', title: 'Tahap 2: Desain Player Audio Minimalis & Ambient Background', percentageWeight: 10, isCompleted: true },
+      { id: 'm3', title: 'Tahap 3: Mesin Pemutar Audio Offline (HTML5 Audio Web API)', percentageWeight: 35, isCompleted: false },
+      { id: 'm4', title: 'Tahap 4: Fitur Sleep Timer Otomatis & Sinkron Tasbih', percentageWeight: 20, isCompleted: false },
+      { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 15, isCompleted: false }
+    ]
   },
   {
     id: 'future_letters',
@@ -89,6 +183,13 @@ export const ROADMAP_FEATURES: RoadmapFeatureItem[] = [
       'Arsip Rahasia Perjalanan Spiritual'
     ],
     estimatedRelease: 'April 2027',
-    iconName: 'Mail'
+    iconName: 'Mail',
+    milestones: [
+      { id: 'm1', title: 'Tahap 1: Konsep Time-Capsule & Desain Surat Digital Kuno', percentageWeight: 20, isCompleted: true },
+      { id: 'm2', title: 'Tahap 2: Sistem Enkripsi Lokal Kunci Waktu Rahasia', percentageWeight: 25, isCompleted: false },
+      { id: 'm3', title: 'Tahap 3: Mekanisme Countdown Pembuka Gembok Otomatis', percentageWeight: 25, isCompleted: false },
+      { id: 'm4', title: 'Tahap 4: Notifikasi Pengingat Saat Waktu Buka Tiba', percentageWeight: 15, isCompleted: false },
+      { id: 'm5', title: 'Tahap 5: Rilis Publik Resmi & Update Aplikasi PWA', percentageWeight: 15, isCompleted: false }
+    ]
   }
 ];

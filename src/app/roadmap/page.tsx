@@ -15,7 +15,8 @@ import {
   Mail, 
   Moon, 
   Sun,
-  Clock
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { RoadmapFeatureItem } from '@/types';
@@ -162,6 +163,57 @@ export default function RoadmapPage() {
                       ))}
                     </ul>
                   </div>
+
+                  {/* Milestone Tracker untuk Pengguna */}
+                  {feature.milestones && feature.milestones.length > 0 && (
+                    <div className="pt-2">
+                      <div className="p-3 rounded-2xl bg-stone-50 dark:bg-emerald-950/60 border border-stone-200/80 dark:border-emerald-800/60 space-y-2">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                          <span className="flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Tahapan Pengerjaan ({feature.milestones.filter(m => m.isCompleted).length}/{feature.milestones.length})</span>
+                          </span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                            {feature.progressPercent >= 100 ? 'Siap Rilis 🎉' : 'Sedang Dikerjakan ⚡'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          {feature.milestones.map((m, idx) => {
+                            const isCurrentActive = !m.isCompleted && (idx === 0 || feature.milestones![idx - 1].isCompleted);
+                            return (
+                              <div
+                                key={m.id}
+                                className={`text-[11px] px-2.5 py-1.5 rounded-xl flex items-center gap-2 transition-all ${
+                                  m.isCompleted
+                                    ? 'text-emerald-800 dark:text-emerald-300 font-medium bg-emerald-100/60 dark:bg-emerald-900/30'
+                                    : isCurrentActive
+                                    ? 'text-amber-800 dark:text-amber-200 font-bold bg-amber-100/70 dark:bg-amber-950/50 border border-amber-300/70 dark:border-amber-700/60'
+                                    : 'text-stone-400 dark:text-stone-500 opacity-80'
+                                }`}
+                              >
+                                {m.isCompleted ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                ) : isCurrentActive ? (
+                                  <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
+                                ) : (
+                                  <span className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 flex items-center justify-center text-[8px] font-mono shrink-0">
+                                    {idx + 1}
+                                  </span>
+                                )}
+                                <span className="truncate flex-1">{m.title}</span>
+                                {isCurrentActive && (
+                                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-950 dark:text-amber-100 uppercase tracking-wider font-extrabold shrink-0 shadow-xs">
+                                    Fase Aktif
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress Bar & Vote Action */}

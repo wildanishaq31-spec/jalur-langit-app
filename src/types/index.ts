@@ -159,6 +159,14 @@ export type AppTheme = 'light' | 'dark';
 
 export type FeatureStatus = 'segera_rilis' | 'dalam_pengerjaan' | 'tahap_riset' | 'rencana';
 
+export interface RoadmapMilestone {
+  id: string;
+  title: string;
+  percentageWeight: number; // Persentase bobot tahap ini (cth: 20, 25, 30, 15, 10)
+  isCompleted: boolean;
+  completedAt?: string;
+}
+
 export interface RoadmapFeatureItem {
   id: string;
   title: string;
@@ -173,6 +181,7 @@ export interface RoadmapFeatureItem {
   iconName: 'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail' | 'Sparkles';
   votes?: number;
   createdAt?: string;
+  milestones?: RoadmapMilestone[];
 }
 
 export interface FeatureUserRequest {

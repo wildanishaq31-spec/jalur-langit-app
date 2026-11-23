@@ -37,6 +37,8 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  CheckSquare,
+  Square,
   CheckCircle2,
   RefreshCw,
   Plus,
@@ -52,7 +54,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { decryptPassword } from '@/utils/cryptoUtils';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
-import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest } from '@/types';
+import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest, RoadmapMilestone } from '@/types';
+import { DEFAULT_ROADMAP_MILESTONES, calculateMilestoneProgress } from '@/data/roadmapData';
 import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
 import ActiveUsersCard, { ActivityFilterType } from '@/components/admin/ActiveUsersCard';
 
@@ -158,6 +161,7 @@ export default function PanelAdminPage() {
     updateRoadmapFeature,
     deleteRoadmapFeature,
     resetRoadmapFeatures,
+    toggleRoadmapMilestone,
     featureVotes,
     userFeatureRequests,
     deleteFeatureRequest
@@ -175,6 +179,7 @@ export default function PanelAdminPage() {
   const [roadmapIcon, setRoadmapIcon] = useState<'Compass' | 'FileText' | 'Calculator' | 'Headphones' | 'Mail' | 'Sparkles'>('Sparkles');
   const [roadmapDescription, setRoadmapDescription] = useState('');
   const [roadmapHighlights, setRoadmapHighlights] = useState<string[]>([]);
+  const [roadmapMilestones, setRoadmapMilestones] = useState<RoadmapMilestone[]>([]);
   const [highlightInput, setHighlightInput] = useState('');
   const [roadmapSuccessMessage, setRoadmapSuccessMessage] = useState<string | null>(null);
 
@@ -353,9 +358,12 @@ export default function PanelAdminPage() {
     setEditingRoadmapId(null);
     setRoadmapTitle('');
     setRoadmapCategory('ibadah');
-    setRoadmapStatus('dalam_pengerjaan');
-    setRoadmapStatusLabel('Sedang Dikembangkan');
-    setRoadmapProgress(50);
+    const initialMilestones = DEFAULT_ROADMAP_MILESTONES.map(m => ({ ...m, isCompleted: false }));
+    setRoadmapMilestones(initialMilestones);
+    const calc = calculateMilestoneProgress(initialMilestones);
+    setRoadmapStatus(calc.status);
+    setRoadmapStatusLabel(calc.statusLabel);
+    setRoadmapProgress(calc.progressPercent);
     setRoadmapTarget('Desember 2026');
     setRoadmapIcon('Sparkles');
     setRoadmapDescription('');
@@ -375,8 +383,29 @@ export default function PanelAdminPage() {
     setRoadmapIcon(feat.iconName);
     setRoadmapDescription(feat.description);
     setRoadmapHighlights([...feat.highlights]);
+    const currentMilestones = feat.milestones && feat.milestones.length > 0
+      ? feat.milestones.map(m => ({ ...m }))
+      : DEFAULT_ROADMAP_MILESTONES.map((m, idx) => ({
+          ...m,
+          isCompleted: (feat.progressPercent || 0) >= (idx + 1) * 20 - 5
+        }));
+    setRoadmapMilestones(currentMilestones);
     setHighlightInput('');
     setIsRoadmapModalOpen(true);
+  };
+
+  const handleToggleModalMilestone = (mId: string) => {
+    const updated = roadmapMilestones.map((m) => {
+      if (m.id === mId) {
+        return { ...m, isCompleted: !m.isCompleted };
+      }
+      return m;
+    });
+    setRoadmapMilestones(updated);
+    const calc = calculateMilestoneProgress(updated);
+    setRoadmapProgress(calc.progressPercent);
+    setRoadmapStatus(calc.status);
+    setRoadmapStatusLabel(calc.statusLabel);
   };
 
   const handleSaveRoadmap = (e: React.FormEvent) => {
@@ -397,7 +426,8 @@ export default function PanelAdminPage() {
         estimatedRelease: roadmapTarget.trim(),
         iconName: roadmapIcon,
         description: roadmapDescription.trim(),
-        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi']
+        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi'],
+        milestones: roadmapMilestones
       });
       setRoadmapSuccessMessage(`Inovasi "${roadmapTitle}" berhasil diperbarui!`);
     } else {
@@ -411,7 +441,8 @@ export default function PanelAdminPage() {
         estimatedRelease: roadmapTarget.trim(),
         iconName: roadmapIcon,
         description: roadmapDescription.trim(),
-        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi']
+        highlights: roadmapHighlights.length > 0 ? roadmapHighlights : ['Fitur Inovasi Terintegrasi'],
+        milestones: roadmapMilestones
       });
       setRoadmapSuccessMessage(`Inovasi baru "${roadmapTitle}" berhasil ditambahkan ke roadmap!`);
     }
@@ -1801,6 +1832,54 @@ export default function PanelAdminPage() {
                                     ))}
                                   </div>
                                 )}
+
+                                {/* Milestone Checklist (Sistem Milestone 5 Tahap) */}
+                                <div className="mt-1 space-y-1.5 bg-stone-100/70 dark:bg-emerald-950/50 p-2.5 rounded-xl border border-stone-200/80 dark:border-emerald-800/50">
+                                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                                    <span className="flex items-center gap-1 text-emerald-800 dark:text-emerald-300">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                      <span>Milestone Tahapan Pengerjaan</span>
+                                    </span>
+                                    <span className="font-mono text-stone-500 dark:text-stone-400">
+                                      {(feat.milestones || []).filter(m => m.isCompleted).length} / {(feat.milestones || []).length || 5} Selesai
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    {(feat.milestones || DEFAULT_ROADMAP_MILESTONES).map((m) => {
+                                      const isDone = m.isCompleted;
+                                      return (
+                                        <button
+                                          key={m.id}
+                                          type="button"
+                                          onClick={() => {
+                                            toggleRoadmapMilestone(feat.id, m.id);
+                                            setRoadmapSuccessMessage(`Milestone "${m.title}" diperbarui!`);
+                                            setTimeout(() => setRoadmapSuccessMessage(null), 3000);
+                                          }}
+                                          className={`w-full text-left px-2 py-1 rounded-lg text-[11px] transition-all flex items-center gap-2 cursor-pointer ${
+                                            isDone
+                                              ? 'bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200 font-semibold'
+                                              : 'hover:bg-white dark:hover:bg-emerald-900/30 text-stone-600 dark:text-stone-400 font-normal'
+                                          }`}
+                                          title={isDone ? 'Klik untuk tandai belum selesai' : 'Klik untuk tandai selesai'}
+                                        >
+                                          {isDone ? (
+                                            <CheckSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                          ) : (
+                                            <Square className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                                          )}
+                                          <span className={`truncate flex-1 ${isDone ? 'line-through opacity-80' : ''}`}>
+                                            {m.title}
+                                          </span>
+                                          <span className="text-[9px] font-mono font-bold opacity-75 shrink-0">
+                                            +{m.percentageWeight}%
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               </div>
 
                               {/* Progress & Actions Row */}
@@ -2434,6 +2513,43 @@ export default function PanelAdminPage() {
                     placeholder="Contoh: Desember 2026"
                     className="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
+                </div>
+              </div>
+
+              {/* Milestone Checklist Setting */}
+              <div className="space-y-2 p-3 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-1.5">
+                    <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Tahapan Pengerjaan (Milestones)</span>
+                  </label>
+                  <span className="text-[10px] text-stone-500 font-medium">
+                    Centang untuk set progres otomatis
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {roadmapMilestones.map((m) => (
+                    <div
+                      key={m.id}
+                      onClick={() => handleToggleModalMilestone(m.id)}
+                      className={`p-2 rounded-xl border text-xs flex items-center gap-2 cursor-pointer transition-all ${
+                        m.isCompleted
+                          ? 'bg-emerald-100/70 dark:bg-emerald-900/40 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 font-medium'
+                          : 'bg-white dark:bg-emerald-950/60 border-stone-200 dark:border-emerald-800/60 text-stone-700 dark:text-stone-300 hover:border-emerald-300'
+                      }`}
+                    >
+                      {m.isCompleted ? (
+                        <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <Square className="w-4 h-4 text-stone-400 shrink-0" />
+                      )}
+                      <span className="flex-1 truncate">{m.title}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-stone-200 dark:bg-emerald-800 text-stone-700 dark:text-stone-200 shrink-0">
+                        +{m.percentageWeight}%
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
