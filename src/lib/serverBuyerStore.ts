@@ -1,51 +1,15 @@
 import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
 
-// Initial default buyers (Admin & initial testing accounts)
+// Initial default buyers (Hanya Owner sebagai Superuser)
 const DEFAULT_BUYERS: AuthUser[] = [
   {
     email: 'agung.siswoyo14@gmail.com',
-    name: 'Agung Siswoyo (Owner)',
+    name: 'Agung Siswoyo (Superuser / Owner)',
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
     orderId: 'LYNK-OWNER-VIP',
     lastActiveAt: new Date().toISOString()
-  },
-  {
-    email: 'agung@gmail.com',
-    name: 'Agung (Owner)',
-    tier: 'vip',
-    tierLabel: TIER_CONFIG.vip.name,
-    purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-001',
-    lastActiveAt: new Date(Date.now() - 4 * 60 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.ultimate@gmail.com',
-    name: 'Sarah Muslimah',
-    tier: 'ultimate',
-    tierLabel: TIER_CONFIG.ultimate.name,
-    purchasedAt: '2026-11-18T10:30:00.000Z',
-    orderId: 'LYNK-ORD-89012',
-    lastActiveAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.starter@gmail.com',
-    name: 'Rian Pratama',
-    tier: 'starter',
-    tierLabel: TIER_CONFIG.starter.name,
-    purchasedAt: '2026-11-18T12:15:00.000Z',
-    orderId: 'LYNK-ORD-49033',
-    lastActiveAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.vip@gmail.com',
-    name: 'Aisyah Humaira',
-    tier: 'vip',
-    tierLabel: TIER_CONFIG.vip.name,
-    purchasedAt: '2026-11-18T14:45:00.000Z',
-    orderId: 'LYNK-ORD-14908',
-    lastActiveAt: new Date(Date.now() - 55 * 60 * 1000).toISOString()
   }
 ];
 

@@ -2314,4 +2314,35 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 87 - Reset Suara Vote ke 0, Reset Daftar Pembeli Hanya Owner (Superuser), & Perbaikan Kontras Teks Panel Admin
+* **Permintaan Pengguna**:
+  - *"nah sekarang kita reset untuk suara votenya menjadi 0 agar bisa di vote oleh user real, dan di menu daftar pembeli juga di reset hanya tinggal owner saja sebagai superuser. dan seperti gambar 2 perbaiki warna textnya agar tidak bentrok dengan warna latarnya"*
+* **Analisis Kebutuhan**:
+  1. Suara vote inovasi fitur sebelumnya memiliki offset simulasi (142 / 88 / dummy seeds) sehingga angka terlihat ratusan. Pengguna menghendaki voting dimulai murni dari angka 0 agar dapat dipilih langsung oleh pengguna nyata (*real users*).
+  2. Daftar pembeli (*buyer whitelist*) sebelumnya menyertakan beberapa akun sampel/dummy testing (`pembeli.ultimate@gmail.com`, `pembeli.starter@gmail.com`, `demo@jalurlangit.com`, dsb). Pengguna meminta agar seluruh akun dummy dibersihkan, dan hanya menyisakan satu akun Owner (`agung.siswoyo14@gmail.com`) sebagai Superuser.
+  3. Berdasarkan tangkapan layar (Gambar 2), beberapa teks memiliki kontras rendah (*washed out*) atau bentrok dengan latar belakang terang: badge menu sidebar (*Auto ⚡*, *Email, Pass, PIN*, *1 Online* yang berwarna kuning/hijau muda pucat di atas latar putih), tombol topbar *Setting Login Admin*, header tabel pembeli, email pembeli, pill aktivitas *Belum pernah login*, serta teks pagination.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Reset Suara Vote Murni Menjadi 0 ([src/store/useJalurLangitStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useJalurLangitStore.ts), [src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx), [src/app/roadmap/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/roadmap/page.tsx), [src/components/tabs/HomeTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/HomeTab.tsx))**:
+     - Mengubah `INITIAL_FEATURE_VOTES` menjadi 0 untuk seluruh inovasi roadmap.
+     - Menghapus offset tambahan buatan (`+ (category === 'ibadah' ? 142 : 88)`) pada Panel Admin, Halaman Publik `/roadmap`, dan Teaser Beranda.
+     - Menambahkan fungsi `resetFeatureVotes` pada store dan migrasi rehidrasi otomatis (`isFeatureVotesResetV1`) agar data suara lama di cache browser pengguna otomatis tereset ke 0.
+     - Menambahkan tombol interaktif `[ 🔄 Reset Suara Vote (0) ]` di header bagian Roadmap Panel Admin CMS.
+  2. **Reset Daftar Pembeli Whitelist Hanya Akun Owner ([src/store/useAuthStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useAuthStore.ts) & [src/lib/serverBuyerStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/lib/serverBuyerStore.ts))**:
+     - Mengubah `INITIAL_BUYER_WHITELIST` dan `DEFAULT_BUYERS` sehingga hanya memuat 1 entri akun Owner: `agung.siswoyo14@gmail.com` dengan nama `"Agung Siswoyo (Superuser / Owner)"` dan lisensi VIP.
+     - Menambahkan aksi `resetWhitelistToOwnerOnly` pada `useAuthStore` serta filter pembersih akun dummy pada `onRehydrateStorage`.
+     - Menambahkan tombol interaktif `[ 🔄 Reset Hanya Owner ]` pada header tabel Daftar Pembeli di Panel Admin.
+  3. **Perbaikan Kontras Warna Teks & UI Panel Admin ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - Memperbaiki badge sidebar (`presence`, `webhook`, `admin-auth`): menggunakan teks warna gelap pekat pada mode terang (`text-amber-800`, `text-emerald-800`) dan teks cerah pada mode gelap (`dark:text-amber-300`, `dark:text-emerald-300`), dilengkapi border yang jelas.
+     - Mempertegas tombol `[ 🔑 Setting Login Admin ]` dengan latar `bg-amber-100`, border `border-amber-400`, ikon `text-amber-700`, dan teks `text-amber-950 font-bold`.
+     - Mempertegas pill `[ • Webhook Aktif ]` dengan `bg-emerald-100 text-emerald-950 border-emerald-400 font-bold`.
+     - Meningkatkan kontras kolom header tabel pembeli (`text-stone-700 dark:text-emerald-400 font-extrabold uppercase text-[11px]`).
+     - Memperjelas teks email pembeli (`text-stone-600 dark:text-stone-300 font-mono font-medium`).
+     - Mempertegas badge pill aktivitas (*Online Sekarang*, *Aktif Hari Ini*, *Belum pernah login* dengan border dan teks `font-bold` berkontras tinggi).
+     - Mengubah dropdown paket lisensi menjadi berlatar `bg-stone-50 border-stone-300 text-stone-900` dengan efek fokus cincin hijau.
+     - Memperjelas font teks nomor Order ID dan kontrol pagination.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

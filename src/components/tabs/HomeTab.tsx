@@ -433,7 +433,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
           {/* Quick Preview Grid 4 items */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
             {activeTeaserList.map((feat) => {
-              const currentVotes = (featureVotes[feat.id] || 0) + (feat.category === 'ibadah' ? 142 : 88);
+              const currentVotes = featureVotes[feat.id] || 0;
               return (
                 <div 
                   key={feat.id}

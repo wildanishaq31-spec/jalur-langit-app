@@ -114,7 +114,7 @@ export default function RoadmapPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {activeFeatures.map((feature) => {
             const hasVoted = userVotedFeatures.includes(feature.id);
-            const currentVotes = (featureVotes[feature.id] || 0) + (feature.category === 'ibadah' ? 142 : 88);
+            const currentVotes = featureVotes[feature.id] || 0;
 
             return (
               <div 

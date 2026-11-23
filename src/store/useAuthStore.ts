@@ -15,57 +15,12 @@ export const DEFAULT_ADMIN_CREDENTIALS: AdminCredentials = {
 const INITIAL_BUYER_WHITELIST: AuthUser[] = [
   {
     email: 'agung.siswoyo14@gmail.com',
-    name: 'Agung Siswoyo',
+    name: 'Agung Siswoyo (Superuser / Owner)',
     tier: 'vip',
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
     orderId: 'LYNK-OWNER-VIP',
     lastActiveAt: new Date().toISOString()
-  },
-  {
-    email: 'agung@gmail.com',
-    name: 'Agung (Owner)',
-    tier: 'vip',
-    tierLabel: TIER_CONFIG.vip.name,
-    purchasedAt: '2026-11-18T00:00:00.000Z',
-    orderId: 'LYNK-OWNER-001',
-    lastActiveAt: new Date(Date.now() - 4 * 60 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.ultimate@gmail.com',
-    name: 'Sarah Muslimah',
-    tier: 'ultimate',
-    tierLabel: TIER_CONFIG.ultimate.name,
-    purchasedAt: '2026-11-18T10:30:00.000Z',
-    orderId: 'LYNK-ORD-89012',
-    lastActiveAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.starter@gmail.com',
-    name: 'Rian Pratama',
-    tier: 'starter',
-    tierLabel: TIER_CONFIG.starter.name,
-    purchasedAt: '2026-11-18T12:15:00.000Z',
-    orderId: 'LYNK-ORD-49033',
-    lastActiveAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
-  },
-  {
-    email: 'pembeli.vip@gmail.com',
-    name: 'Aisyah Humaira',
-    tier: 'vip',
-    tierLabel: TIER_CONFIG.vip.name,
-    purchasedAt: '2026-11-18T14:45:00.000Z',
-    orderId: 'LYNK-ORD-14908',
-    lastActiveAt: new Date(Date.now() - 55 * 60 * 1000).toISOString()
-  },
-  {
-    email: 'demo@jalurlangit.com',
-    name: 'Pengguna Demo',
-    tier: 'ultimate',
-    tierLabel: TIER_CONFIG.ultimate.name,
-    purchasedAt: '2026-11-18T08:00:00.000Z',
-    orderId: 'LYNK-DEMO-001',
-    lastActiveAt: new Date(Date.now() - 26 * 3600 * 1000).toISOString()
   }
 ];
 
@@ -94,6 +49,7 @@ interface AuthState {
   clearAuthError: () => void;
   addBuyerToWhitelist: (buyer: AuthUser) => void;
   removeBuyerFromWhitelist: (email: string) => void;
+  resetWhitelistToOwnerOnly: () => void;
   updateBuyerTier: (email: string, tier: UserTier) => void;
   touchUserActivity: () => void;
   loginAsAdmin: () => void;
@@ -305,6 +261,22 @@ export const useAuthStore = create<AuthState>()(
         }));
       },
 
+      resetWhitelistToOwnerOnly: () => {
+        set({
+          whitelist: [
+            {
+              email: 'agung.siswoyo14@gmail.com',
+              name: 'Agung Siswoyo (Superuser / Owner)',
+              tier: 'vip',
+              tierLabel: TIER_CONFIG.vip.name,
+              purchasedAt: '2026-11-18T00:00:00.000Z',
+              orderId: 'LYNK-OWNER-VIP',
+              lastActiveAt: new Date().toISOString()
+            }
+          ]
+        });
+      },
+
       updateBuyerTier: (email: string, tier: UserTier) => {
         set((state) => ({
           whitelist: state.whitelist.map((b) => {
@@ -355,6 +327,27 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'jalur-langit-auth-storage-v1',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.whitelist)) {
+          // Bersihkan akun dummy lama jika masih tersimpan di cache browser pengguna
+          const hasDummyAccounts = state.whitelist.some((b) =>
+            ['agung@gmail.com', 'pembeli.ultimate@gmail.com', 'pembeli.starter@gmail.com', 'pembeli.vip@gmail.com', 'demo@jalurlangit.com'].includes(b.email.toLowerCase())
+          );
+          if (hasDummyAccounts) {
+            state.whitelist = [
+              {
+                email: 'agung.siswoyo14@gmail.com',
+                name: 'Agung Siswoyo (Superuser / Owner)',
+                tier: 'vip',
+                tierLabel: TIER_CONFIG.vip.name,
+                purchasedAt: '2026-11-18T00:00:00.000Z',
+                orderId: 'LYNK-OWNER-VIP',
+                lastActiveAt: new Date().toISOString()
+              }
+            ];
+          }
+        }
+      },
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         currentUser: state.currentUser,

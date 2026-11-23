@@ -143,11 +143,11 @@ const INITIAL_TADABBUR: QuranTadabburItem[] = [
 ];
 
 const INITIAL_FEATURE_VOTES: Record<string, number> = {
-  kiblat_adzan: 128,
-  rapor_pdf: 164,
-  kalkulator_zakat: 95,
-  soundscape_murottal: 142,
-  future_letters: 78,
+  kiblat_adzan: 0,
+  rapor_pdf: 0,
+  kalkulator_zakat: 0,
+  soundscape_murottal: 0,
+  future_letters: 0,
 };
 
 interface JalurLangitState {
@@ -164,6 +164,8 @@ interface JalurLangitState {
   featureVotes: Record<string, number>;
   userVotedFeatures: string[];
   voteFeature: (featureId: string) => void;
+  resetFeatureVotes: () => void;
+  isFeatureVotesResetV1?: boolean;
   userFeatureRequests: FeatureUserRequest[];
   addFeatureRequest: (text: string) => void;
   deleteFeatureRequest: (id: string) => void;
@@ -349,6 +351,17 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             },
           };
         }
+      }),
+      resetFeatureVotes: () => set({
+        featureVotes: {
+          kiblat_adzan: 0,
+          rapor_pdf: 0,
+          kalkulator_zakat: 0,
+          soundscape_murottal: 0,
+          future_letters: 0,
+        },
+        userVotedFeatures: [],
+        isFeatureVotesResetV1: true,
       }),
       userFeatureRequests: [
         {
@@ -1335,6 +1348,19 @@ export const useJalurLangitStore = create<JalurLangitState>()(
               }
               return f;
             });
+          }
+
+          // Reset suara vote inovasi menjadi 0 murni untuk pemilihan oleh user real
+          if (!state.isFeatureVotesResetV1) {
+            state.featureVotes = {
+              kiblat_adzan: 0,
+              rapor_pdf: 0,
+              kalkulator_zakat: 0,
+              soundscape_murottal: 0,
+              future_letters: 0,
+            };
+            state.userVotedFeatures = [];
+            state.isFeatureVotesResetV1 = true;
           }
         }
       },

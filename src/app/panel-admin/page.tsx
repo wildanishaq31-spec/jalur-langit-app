@@ -99,6 +99,7 @@ export default function PanelAdminPage() {
     whitelist, 
     addBuyerToWhitelist, 
     removeBuyerFromWhitelist, 
+    resetWhitelistToOwnerOnly,
     updateBuyerTier, 
     loginAsAdmin,
     adminCredentials,
@@ -163,6 +164,7 @@ export default function PanelAdminPage() {
     resetRoadmapFeatures,
     toggleRoadmapMilestone,
     featureVotes,
+    resetFeatureVotes,
     userFeatureRequests,
     deleteFeatureRequest
   } = useJalurLangitStore();
@@ -467,6 +469,21 @@ export default function PanelAdminPage() {
     }
   };
 
+  const handleResetWhitelistToOwnerOnly = () => {
+    if (window.confirm('Yakin ingin mereset daftar pembeli? Semua akun pembeli dummy/tes akan dibersihkan, dan hanya tersisa akun Owner (Superuser).')) {
+      resetWhitelistToOwnerOnly();
+      alert('Daftar pembeli berhasil direset! Sekarang hanya tersisa akun Owner sebagai Superuser.');
+    }
+  };
+
+  const handleResetAllVotes = () => {
+    if (window.confirm('Yakin ingin mereset seluruh perolehan suara vote inovasi menjadi 0? Suara akan dimulai murni dari awal oleh pengguna nyata.')) {
+      resetFeatureVotes();
+      setRoadmapSuccessMessage('Semua suara vote berhasil direset menjadi 0!');
+      setTimeout(() => setRoadmapSuccessMessage(null), 4000);
+    }
+  };
+
   const handleConvertUserRequest = (req: FeatureUserRequest) => {
     setEditingRoadmapId(null);
     setRoadmapTitle(req.text.slice(0, 45) + (req.text.length > 45 ? '...' : ''));
@@ -664,7 +681,7 @@ export default function PanelAdminPage() {
       label: 'User Aktif (Presence)', 
       icon: Activity, 
       badge: `${onlineCount} Online`, 
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30',
+      badgeColor: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/30 font-bold',
       group: 'UTAMA' 
     },
     { 
@@ -680,7 +697,7 @@ export default function PanelAdminPage() {
       label: 'Webhook Lynk.id', 
       icon: Webhook, 
       badge: 'Auto ⚡', 
-      badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-400/30',
+      badgeColor: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30 font-bold',
       group: 'SISTEM & EKSPANSI' 
     },
     { 
@@ -695,7 +712,7 @@ export default function PanelAdminPage() {
       label: 'Pengaturan Login Admin', 
       icon: KeyRound, 
       badge: 'Email, Pass, PIN', 
-      badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-400/30', 
+      badgeColor: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30 font-bold', 
       group: 'SISTEM & EKSPANSI' 
     },
     { id: 'settings', label: 'Pengaturan & Backup', icon: Settings, group: 'SISTEM & EKSPANSI' },
@@ -935,7 +952,7 @@ export default function PanelAdminPage() {
               
               {/* Group 1: UTAMA */}
               <div className="space-y-1">
-                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-400 dark:text-emerald-500/70">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-500 dark:text-emerald-400">
                   Ringkasan & Aktivitas
                 </div>
                 {CMS_MENU_ITEMS.filter(m => m.group === 'UTAMA').map((item) => {
@@ -951,7 +968,7 @@ export default function PanelAdminPage() {
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-emerald-800 text-white shadow-xs'
-                          : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
+                          : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -959,7 +976,7 @@ export default function PanelAdminPage() {
                         <span>{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${item.badgeColor || 'bg-stone-100 dark:bg-emerald-900 text-stone-700 dark:text-stone-200'}`}>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${item.badgeColor || 'bg-stone-200 dark:bg-emerald-900 text-stone-800 dark:text-stone-100'}`}>
                           {item.badge}
                         </span>
                       )}
@@ -970,7 +987,7 @@ export default function PanelAdminPage() {
 
               {/* Group 2: MANAJEMEN LISENSI */}
               <div className="space-y-1">
-                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-400 dark:text-emerald-500/70">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-500 dark:text-emerald-400">
                   Manajemen Pembeli
                 </div>
                 {CMS_MENU_ITEMS.filter(m => m.group === 'MANAJEMEN LISENSI').map((item) => {
@@ -986,7 +1003,7 @@ export default function PanelAdminPage() {
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-emerald-800 text-white shadow-xs'
-                          : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
+                          : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -994,7 +1011,7 @@ export default function PanelAdminPage() {
                         <span>{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-stone-100 dark:bg-emerald-900 text-stone-700 dark:text-stone-200">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-stone-200 dark:bg-emerald-900 text-stone-800 dark:text-stone-100">
                           {item.badge}
                         </span>
                       )}
@@ -1005,7 +1022,7 @@ export default function PanelAdminPage() {
 
               {/* Group 3: SISTEM & EKSPANSI */}
               <div className="space-y-1">
-                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-400 dark:text-emerald-500/70">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-stone-500 dark:text-emerald-400">
                   Sistem & Pengembangan
                 </div>
                 {CMS_MENU_ITEMS.filter(m => m.group === 'SISTEM & EKSPANSI').map((item) => {
@@ -1021,7 +1038,7 @@ export default function PanelAdminPage() {
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-bold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-emerald-800 text-white shadow-xs'
-                          : 'text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
+                          : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-emerald-900/30'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -1029,7 +1046,7 @@ export default function PanelAdminPage() {
                         <span>{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${item.badgeColor || 'bg-stone-100 dark:bg-emerald-900 text-stone-700 dark:text-stone-200'}`}>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${item.badgeColor || 'bg-stone-200 dark:bg-emerald-900 text-stone-800 dark:text-stone-100'}`}>
                           {item.badge}
                         </span>
                       )}
@@ -1084,10 +1101,10 @@ export default function PanelAdminPage() {
                 </button>
 
                 <div>
-                  <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="text-[10px] font-extrabold text-stone-500 dark:text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>Jalur Langit CMS</span>
                     <span>/</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-black">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-black">
                       {CMS_MENU_ITEMS.find(m => m.id === activeMenu)?.label || 'Dashboard'}
                     </span>
                   </div>
@@ -1113,16 +1130,16 @@ export default function PanelAdminPage() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     activeMenu === 'admin-auth'
                       ? 'bg-amber-500 text-white shadow-xs'
-                      : 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100'
+                      : 'bg-amber-100 dark:bg-amber-950/70 border border-amber-400 dark:border-amber-600 text-amber-950 dark:text-amber-200 hover:bg-amber-200 shadow-xs'
                   }`}
                   title="Pengaturan Email, Password, & PIN Login Admin"
                 >
-                  <KeyRound className="w-3.5 h-3.5 text-amber-600 dark:text-amber-300" />
+                  <KeyRound className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300 shrink-0" />
                   <span className="hidden sm:inline">Setting Login Admin</span>
                 </button>
 
-                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300/70 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-400 dark:border-emerald-700 text-xs font-bold text-emerald-950 dark:text-emerald-300 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                   <span>Webhook Aktif</span>
                 </div>
 
@@ -1292,8 +1309,20 @@ export default function PanelAdminPage() {
                         <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
                           Daftar Pembeli Terdaftar ({filteredBuyers.length})
                         </h3>
+
+                        {/* Tombol Reset Daftar Hanya Owner */}
+                        <button
+                          type="button"
+                          onClick={handleResetWhitelistToOwnerOnly}
+                          className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-stone-700 dark:text-stone-200 border border-stone-300 dark:border-emerald-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          title="Reset daftar pembeli agar hanya tersisa akun Owner sebagai Superuser"
+                        >
+                          <RefreshCw className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
+                          <span>Reset Hanya Owner</span>
+                        </button>
+
                         {selectedTierFilter !== 'all' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-800">
                             <span>Filter: {TIER_CONFIG[selectedTierFilter].name}</span>
                             <button
                               type="button"
@@ -1305,7 +1334,7 @@ export default function PanelAdminPage() {
                           </span>
                         )}
                         {activityFilter !== 'all' && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800">
                             <span>Status: {activityFilter === 'online' ? '🟢 Online Sekarang' : '📅 Aktif Hari Ini'}</span>
                             <button
                               type="button"
@@ -1322,13 +1351,13 @@ export default function PanelAdminPage() {
                       </div>
 
                       <div className="relative w-full sm:w-64">
-                        <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5" />
+                        <Search className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-2.5" />
                         <input
                           type="text"
                           value={searchQuery}
                           onChange={(e) => handleSearchChange(e.target.value)}
                           placeholder="Cari email, nama, order ID..."
-                          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </div>
                     </div>
@@ -1337,7 +1366,7 @@ export default function PanelAdminPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
-                          <tr className="border-b border-stone-200 dark:border-emerald-900/60 text-stone-400 font-bold uppercase text-[10px]">
+                          <tr className="border-b border-stone-200 dark:border-emerald-900/60 text-stone-700 dark:text-emerald-400 font-extrabold uppercase text-[11px] tracking-wider">
                             <th className="py-2.5 px-3">Pembeli</th>
                             <th className="py-2.5 px-3">Aktivitas Terakhir</th>
                             <th className="py-2.5 px-3">Paket Lisensi</th>
@@ -1361,23 +1390,23 @@ export default function PanelAdminPage() {
                                     <div className="font-bold text-stone-900 dark:text-stone-100">
                                       {buyer.name}
                                     </div>
-                                    <div className="text-[11px] text-stone-400 font-mono">
+                                    <div className="text-[11px] text-stone-600 dark:text-stone-300 font-mono font-medium">
                                       {buyer.email}
                                     </div>
                                   </td>
                                   <td className="py-3 px-3">
                                     {activity.status === 'online' ? (
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-xs">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-400 dark:border-emerald-700 shadow-xs">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                                         Online Sekarang
                                       </span>
                                     ) : activity.status === 'today' ? (
-                                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
                                         <Clock className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
                                         {activity.label}
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 dark:bg-stone-900/60 text-stone-500 border border-stone-200 dark:border-stone-800">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 dark:bg-stone-800/80 text-stone-700 dark:text-stone-200 border border-stone-300 dark:border-stone-700 shadow-xs">
                                         {activity.label}
                                       </span>
                                     )}
@@ -1386,14 +1415,14 @@ export default function PanelAdminPage() {
                                     <select
                                       value={buyer.tier}
                                       onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
-                                      className="px-2 py-1 rounded-lg border text-xs font-bold bg-white dark:bg-emerald-950 border-stone-200 dark:border-emerald-800 text-stone-800 dark:text-stone-200"
+                                      className="px-2 py-1 rounded-lg border text-xs font-bold bg-stone-50 dark:bg-emerald-950 border-stone-300 dark:border-emerald-700 text-stone-900 dark:text-stone-100 shadow-xs focus:ring-1 focus:ring-emerald-500"
                                     >
                                       <option value="starter">Starter (Rp 49k)</option>
                                       <option value="ultimate">Ultimate (Rp 89k)</option>
                                       <option value="vip">VIP (Rp 149k)</option>
                                     </select>
                                   </td>
-                                  <td className="py-3 px-3 font-mono text-[11px] text-stone-500">
+                                  <td className="py-3 px-3 font-mono text-[11px] text-stone-700 dark:text-stone-300 font-semibold">
                                     {buyer.orderId}
                                   </td>
                                   <td className="py-3 px-3 text-right">
@@ -1423,7 +1452,7 @@ export default function PanelAdminPage() {
                       
                       {/* Left: Range Info & Page Size Selector */}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-stone-500 dark:text-stone-400 font-medium">
+                        <span className="text-stone-700 dark:text-stone-300 font-medium">
                           {totalItems > 0 ? (
                             <>Menampilkan <b>{startIndex + 1} - {endIndex}</b> dari <b>{totalItems}</b> pembeli</>
                           ) : (
@@ -1431,8 +1460,8 @@ export default function PanelAdminPage() {
                           )}
                         </span>
 
-                        <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300">
-                          <span className="text-stone-400">| Per halaman:</span>
+                        <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
+                          <span className="text-stone-500 dark:text-stone-400 font-medium">| Per halaman:</span>
                           <select
                             value={pageSize}
                             onChange={(e) => {
@@ -1777,17 +1806,30 @@ export default function PanelAdminPage() {
 
                     {/* Daftar Kartu Roadmap Aktif */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-amber-500" />
-                          <span>Daftar Inovasi Aktif di Tampilan Aplikasi ({roadmapFeatures?.length || 0})</span>
-                        </h4>
-                        <span className="text-[11px] text-stone-400">Tersinkronisasi otomatis ke /roadmap &amp; Beranda</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            <span>Daftar Inovasi Aktif di Tampilan Aplikasi ({roadmapFeatures?.length || 0})</span>
+                          </h4>
+                          <span className="text-[11px] text-stone-500 hidden sm:inline">• Tersinkronisasi otomatis</span>
+                        </div>
+
+                        {/* Tombol Reset Seluruh Suara Vote ke 0 */}
+                        <button
+                          type="button"
+                          onClick={handleResetAllVotes}
+                          className="px-2.5 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
+                          title="Reset perolehan suara vote ke 0 agar di-vote murni oleh user real"
+                        >
+                          <RefreshCw className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                          <span>Reset Suara Vote (0)</span>
+                        </button>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {roadmapFeatures && roadmapFeatures.map((feat) => {
-                          const votesCount = (featureVotes[feat.id] || 0) + (feat.category === 'ibadah' ? 142 : 88);
+                          const votesCount = featureVotes[feat.id] || 0;
                           return (
                             <div
                               key={feat.id}
