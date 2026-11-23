@@ -534,7 +534,7 @@ export default function PanelAdminPage() {
                       setAdminEmailInput(e.target.value);
                       if (loginError) setLoginError(null);
                     }}
-                    placeholder="Contoh: agung.siswoyo14@gmail.com"
+                    placeholder=""
                     className={`w-full px-3.5 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 ${
                       errorField === 'email'
                         ? 'border-rose-400 focus:ring-rose-400'
@@ -1628,7 +1628,7 @@ export default function PanelAdminPage() {
                             required
                             value={settingEmail}
                             onChange={(e) => setSettingEmail(e.target.value)}
-                            placeholder="Contoh: agung.siswoyo14@gmail.com"
+                            placeholder=""
                             className="w-full px-4 py-2.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-300 dark:border-emerald-700 text-xs sm:text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                           />
                           <p className="text-[10px] text-stone-500">
