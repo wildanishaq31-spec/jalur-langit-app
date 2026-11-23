@@ -2239,4 +2239,17 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 84 - Penyesuaian Teks Placeholder Email Admin Menjadi "Masukkan email"
+* **Permintaan Pengguna**:
+  - *"ya jangan di hapus juga tapi ganti menjadi masukkan email placeholdernya"*
+* **Kebutuhan Desain**:
+  - Mengubah placeholder kolom input email admin agar tidak kosong, melainkan menampilkan instruksi ramah dan netral: `"Masukkan email"`.
+  - Berlaku pada layar login pintu gerbang Panel Admin CMS serta form pembaruan email di tab Pengaturan Kredensial.
+* **Solusi Rekayasa & Implementasi ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+  - Mengganti atribut placeholder input email menjadi `placeholder="Masukkan email"`.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
