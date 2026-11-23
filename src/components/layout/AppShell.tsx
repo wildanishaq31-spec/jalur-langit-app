@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
 import { PwaNotificationManager } from '@/components/pwa/PwaNotificationManager';
+import { TierGateView } from '@/components/layout/TierGateView';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { TIER_CONFIG, UserTier } from '@/types/auth';
 import { getTodayDateString } from '@/utils/dateUtils';
 
 interface AppShellProps {
@@ -18,8 +20,9 @@ let isAppHydrated = false;
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const { appTheme, syncToTodayIfOutdated } = useJalurLangitStore();
-  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity } = useAuthStore();
+  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity, currentUser } = useAuthStore();
   
   // Jika sudah terhidrasi di sesi klien, langsung mounted = true tanpa flash blank screen
   const [mounted, setMounted] = useState(() => isAppHydrated);
@@ -111,12 +114,55 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     );
   }
 
+  // Deteksi perlindungan hak akses (Tier Gating)
+  const currentTab = 
+    pathname === '/dashboard' ? 'home' :
+    pathname === '/amalan' ? 'amalan' :
+    pathname === '/tasbih' ? 'tasbih' :
+    pathname === '/glowup' ? 'glowup' :
+    pathname === '/vision' ? 'vision' :
+    pathname === '/hajat' ? 'hajat' :
+    pathname === '/quran' ? 'quran' : null;
+
+  const userTier: UserTier = currentUser?.tier || 'vip';
+  const accessibleTabs = TIER_CONFIG[userTier]?.accessibleTabs || [
+    'home', 'amalan', 'tasbih', 'glowup', 'vision', 'hajat', 'quran'
+  ];
+
+  const isTabLocked = currentTab !== null && !accessibleTabs.includes(currentTab);
+
+  // Tentukan tier dan informasi yang dibutuhkan jika tab terkunci
+  const gateInfo = {
+    requiredTier: (currentTab === 'glowup' ? 'vip' : 'ultimate') as UserTier,
+    featureTitle: 
+      currentTab === 'glowup' ? 'Self-Care & Glow Up Habits' :
+      currentTab === 'vision' ? 'Vision Board & Impian' :
+      currentTab === 'hajat' ? 'Papan Hajat & Sedekah Subuh' :
+      currentTab === 'quran' ? 'Al-Qur\'an Journaling & Tadabbur' : 'Fitur Eksklusif',
+    featureDescription:
+      currentTab === 'glowup' 
+        ? 'Rutinitas perawatan diri islami, hidrasi harian, skincare sunnah, dan jurnal refleksi diri untuk muslimah istiqomah.'
+        : currentTab === 'vision'
+        ? 'Papan visualisasi impian, target ibadah jangka panjang, dan doa mustajab untuk masa depan yang berkah.'
+        : currentTab === 'hajat'
+        ? 'Manajemen doa spesifik, afirmasi langit, dan pencatatan kebiasaan sedekah subuh berlimpah kebaikan.'
+        : 'Khatam Qur\'an planner harian, catatan mutaba\'ah tilawah, dan ruang tadabbur ayat suci Al-Qur\'an.'
+  };
+
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]">
       <PwaNotificationManager />
       <Navigation />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-24">
-        {children}
+        {isTabLocked ? (
+          <TierGateView
+            requiredTier={gateInfo.requiredTier}
+            featureTitle={gateInfo.featureTitle}
+            featureDescription={gateInfo.featureDescription}
+          />
+        ) : (
+          children
+        )}
       </main>
     </div>
   );

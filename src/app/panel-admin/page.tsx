@@ -679,6 +679,52 @@ export default function PanelAdminPage() {
     }
   };
 
+  // Simulasi Webhook Lynk.id Otomatis (Menguji Alur Upgrade Lisensi)
+  const handleSimulateUpgrade = async () => {
+    setIsSimulating(true);
+    // Cari pembeli starter yang ada di whitelist, atau default ke pembeli starter tes
+    const existingStarter = whitelist.find((b) => b.tier === 'starter');
+    const targetEmail = existingStarter ? existingStarter.email : 'pembeli.starter@gmail.com';
+    const targetName = existingStarter ? existingStarter.name : 'Rina Marlina (Tes Upgrade)';
+
+    try {
+      const res = await fetch('/api/webhook/lynkid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: `LYNK-UPG-${Date.now().toString().slice(-6)}`,
+          customer: {
+            email: targetEmail,
+            name: targetName
+          },
+          product_name: 'Jalur Langit - Paket VIP Ultimate + Lab',
+          amount: 149000,
+          status: 'PAID'
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.buyer) {
+        addBuyerToWhitelist(data.buyer);
+        alert(
+          `🚀 SIMULASI UPGRADE SUKSES!\n\nLynk.id berhasil memproses pembayaran upgrade:\n` +
+          `• Email: ${data.buyer.email}\n` +
+          `• Nama: ${data.buyer.name}\n` +
+          `• Paket Baru: ${data.buyer.tierLabel} (VIP)\n` +
+          `• Order ID Baru: ${data.buyer.orderId}\n\n` +
+          `Hak akses pembeli (${targetEmail}) otomatis naik ke VIP! Seluruh 7 tab terbuka seketika tanpa menghapus data amalan lamanya.`
+        );
+      } else {
+        alert('Gagal mengirim simulasi upgrade: ' + (data.message || 'Error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Gagal memanggil endpoint webhook upgrade.');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
   const handleAddBuyer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim() || !newName.trim()) return;
@@ -1726,7 +1772,7 @@ export default function PanelAdminPage() {
                         Klik tombol di bawah untuk menyimulasikan pembeli yang checkout di Lynk.id. Server otomatis memproses dan mencatatnya ke whitelist:
                       </p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
                         <button
                           type="button"
                           onClick={() => handleSimulateWebhook('starter')}
@@ -1752,6 +1798,16 @@ export default function PanelAdminPage() {
                           className="p-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 border border-purple-400/70 text-xs font-bold text-white transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
                         >
                           <span>🧪 Tes Beli VIP (149k)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSimulateUpgrade}
+                          disabled={isSimulating}
+                          className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 border border-amber-300 text-xs font-bold text-stone-900 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer"
+                          title="Simulasikan pembeli starter yang meng-upgrade paketnya ke VIP di Lynk.id"
+                        >
+                          <span>🚀 Tes Upgrade ke VIP</span>
                         </button>
                       </div>
                     </div>

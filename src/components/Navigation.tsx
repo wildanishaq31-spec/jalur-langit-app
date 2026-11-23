@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { TIER_CONFIG, UserTier } from '@/types/auth';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
 import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
 import { AlarmNotificationModal } from '@/components/modals/AlarmNotificationModal';
@@ -46,6 +47,17 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
     pathname === '/hajat' ? 'hajat' :
     pathname === '/quran' ? 'quran' :
     pathname === '/dashboard' ? 'home' : (activeTab || 'home');
+
+  // Deteksi hak akses tab berdasarkan tier lisensi pengguna
+  const userTier: UserTier = currentUser?.tier || 'vip';
+  const accessibleTabs = TIER_CONFIG[userTier]?.accessibleTabs || [
+    'home', 'amalan', 'tasbih', 'glowup', 'vision', 'hajat', 'quran'
+  ];
+
+  const isGlowUpLocked = !accessibleTabs.includes('glowup');
+  const isVisionLocked = !accessibleTabs.includes('vision');
+  const isHajatLocked = !accessibleTabs.includes('hajat');
+  const isQuranLocked = !accessibleTabs.includes('quran');
 
   const handleNavigate = (tab: ActiveTab) => {
     if (onTabChange) onTabChange(tab);
@@ -195,13 +207,20 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             href="/glowup"
             prefetch={true}
             onClick={() => onTabChange && onTabChange('glowup')}
-            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform relative ${
               currentTab === 'glowup'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
-            <Droplets className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+            <div className="relative">
+              <Droplets className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+              {isGlowUpLocked && (
+                <span className="absolute -top-1.5 -right-2 text-[9px] leading-none select-none" title="Eksklusif Paket VIP">
+                  👑
+                </span>
+              )}
+            </div>
             <span className="text-[10px]">Self-Care</span>
           </Link>
 
@@ -230,13 +249,20 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             href="/vision"
             prefetch={true}
             onClick={() => onTabChange && onTabChange('vision')}
-            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform relative ${
               currentTab === 'vision'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
-            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+            <div className="relative">
+              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+              {isVisionLocked && (
+                <span className="absolute -top-1.5 -right-2 text-[9px] leading-none select-none" title="Terkunci (Perlu Upgrade)">
+                  🔒
+                </span>
+              )}
+            </div>
             <span className="text-[10px]">Vision</span>
           </Link>
 
@@ -244,13 +270,20 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             href="/hajat"
             prefetch={true}
             onClick={() => onTabChange && onTabChange('hajat')}
-            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform relative ${
               currentTab === 'hajat'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
-            <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+            <div className="relative">
+              <HeartHandshake className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+              {isHajatLocked && (
+                <span className="absolute -top-1.5 -right-2 text-[9px] leading-none select-none" title="Terkunci (Perlu Upgrade)">
+                  🔒
+                </span>
+              )}
+            </div>
             <span className="text-[10px]">Hajat</span>
           </Link>
 
@@ -258,13 +291,20 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             href="/quran"
             prefetch={true}
             onClick={() => onTabChange && onTabChange('quran')}
-            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform ${
+            className={`touch-manipulation select-none flex flex-col items-center py-1 px-2 rounded-2xl transition-transform relative ${
               currentTab === 'quran'
                 ? 'text-emerald-700 dark:text-emerald-400 font-bold scale-105'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-200'
             }`}
           >
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+            <div className="relative">
+              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+              {isQuranLocked && (
+                <span className="absolute -top-1.5 -right-2 text-[9px] leading-none select-none" title="Terkunci (Perlu Upgrade)">
+                  🔒
+                </span>
+              )}
+            </div>
             <span className="text-[10px]">Quran</span>
           </Link>
         </div>

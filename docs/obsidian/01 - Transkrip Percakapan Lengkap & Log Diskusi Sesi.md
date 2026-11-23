@@ -2469,4 +2469,42 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 92 - Pengujian End-to-End Pembelian Lynk.id Sesuai Paket, Alur Upgrade Lisensi, & Proteksi Tier Gate
+* **Permintaan Pengguna**:
+  - *"kita kan sudah ada pembelian aplikasi via lynk yang terintegrasi dengan aplikasinya dan sekarang kita tes pembelian via lynk dan membeli sesuai paketnya dan alur saat upgrade paket dan pembayarannya bagaimana"*
+* **Analisis Kebutuhan & Desain Solusi**:
+  1. **Struktur 3 Tingkatan Paket (Tier)**:
+     - **Paket Starter (Rp 49.000)**: Akses 3 Tab utama (`['home', 'amalan', 'tasbih']`).
+     - **Paket Full Bundling / Ultimate (Rp 89.000)**: Akses 6 Tab spiritual (`['home', 'amalan', 'tasbih', 'vision', 'hajat', 'quran']`).
+     - **Paket VIP Ultimate + Lab (Rp 149.000)**: Seluruh 7 Tab lengkap (`['home', 'amalan', 'tasbih', 'glowup', 'vision', 'hajat', 'quran']`) + Glow Up Habits + Surat Masa Depan + Akses Gratis Update Fitur Lab.
+  2. **Alur Pembayaran di Lynk.id**:
+     - Pembeli memilih paket di halaman toko Lynk.id (mendukung QRIS, GoPay, OVO, ShopeePay, DANA, serta Virtual Account BCA/Mandiri/BRI/BNI).
+     - Pembeli menginput nama dan email saat checkout.
+     - Setelah pembayaran lunas (`status: 'PAID'`), server Lynk.id otomatis mengirimkan payload webhook HTTP POST ke endpoint:
+       `https://jalur-langit-app.vercel.app/api/webhook/lynkid`.
+  3. **Mekanisme Otomasi Upgrade Paket**:
+     - Jika pembeli lama (misal Starter) ingin upgrade ke VIP, pembeli cukup membeli paket VIP di Lynk.id dengan **email yang sama**.
+     - Webhook server mengekstraksi email dan mendeteksi harga/nama produk (`determineTierFromLynkData`).
+     - Fungsi `addOrUpdateBuyer` melakukan operasi *upsert*: menggantikan tier lama menjadi VIP secara seketika di database/server store.
+     - Data amalan pribadi pembeli (checklist 30 hari, tasbih, hajat doa, impian vision board) **tidak akan hilang atau tereset** karena tersimpan di storage pengguna. Yang berubah seketika adalah hak akses tab.
+  4. **Proteksi & Visualisasi Tier Gate di Aplikasi PWA**:
+     - Menghadirkan komponen [src/components/layout/TierGateView.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/layout/TierGateView.tsx) di dalam `AppShell`. Jika pengguna Starter membuka tab di luar paketnya (misal Vision/Hajat/Quran/Glow Up), sistem menampilkan layar upgrade yang elegan dengan informasi garansi data aman, tombol direct checkout Lynk.id, dan tombol verifikasi instan *[ 🔄 Cek Status Lisensi ]*.
+     - Di Bottom Floating Navigation bar, tab yang belum termasuk dalam paket pembeli diberi indikator visual halus (🔒 untuk paket di atas Starter, 👑 untuk fitur eksklusif VIP).
+  5. **Pengembangan Fitur Uji Coba di Panel Admin CMS**:
+     - Menambahkan tombol simulasi ke-4 pada tab Webhook Lynk.id: **[ 🚀 Tes Upgrade ke VIP ]**.
+     - Memungkinkan Super Admin/Owner menguji skenario upgrade pembeli dengan 1 klik langsung di antarmuka CMS.
+* **Hasil Pengujian Otomatisasi (Scripts: `scripts/test-lynk-integration.mjs`)**:
+  - **Uji 1 - Healthcheck Webhook**: `GET /api/webhook/lynkid` ➔ Status Online 200 OK.
+  - **Uji 2 - Pembelian Starter (Rp 49.000)**: `siti.nurhaliza@gmail.com` tercatat otomatis sebagai `starter`, verifikasi login sukses.
+  - **Uji 3 - Pembelian Ultimate (Rp 89.000)**: `fatimah.azzahra@gmail.com` tercatat otomatis sebagai `ultimate`, verifikasi login sukses.
+  - **Uji 4 - Pembelian VIP (Rp 149.000)**: `aisyah.humaira@gmail.com` tercatat otomatis sebagai `vip`, verifikasi login sukses.
+  - **Uji 5 - Skenario Upgrade Paket**: `siti.nurhaliza@gmail.com` (awalnya Starter) melakukan checkout VIP (Rp 149.000). Webhook mendeteksi email yang sama, menaikkan tier ke VIP secara instan, dan verifikasi login pembeli langsung berganti status ke `vip`.
+  - **Uji 6 - Keamanan Whitelist**: Percobaan akses email tidak terdaftar (`pembeli.palsu@gmail.com`) ditolak dengan aman (HTTP 404).
+* **Verifikasi Standar Mutu**:
+  - `npx tsc --noEmit`: 0 Error.
+  - `npm run lint`: 0 Error.
+  - `npm run build`: 100% Berhasil (19/19 rute Next.js Turbopack valid).
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
