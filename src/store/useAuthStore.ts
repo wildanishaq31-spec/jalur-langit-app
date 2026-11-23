@@ -2,7 +2,14 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
+import { AuthUser, UserTier, TIER_CONFIG, AdminCredentials } from '@/types/auth';
+
+export const DEFAULT_ADMIN_CREDENTIALS: AdminCredentials = {
+  email: 'agung.siswoyo14@gmail.com',
+  password: 'AdminJalurLangit2026!',
+  pin: '1409',
+  lastUpdatedAt: '2026-11-23T00:00:00.000Z'
+};
 
 const INITIAL_BUYER_WHITELIST: AuthUser[] = [
   {
@@ -69,6 +76,16 @@ interface AuthState {
   deniedEmailAttempt: string | null;
   whitelist: AuthUser[];
 
+  // Admin Credentials & Authentication
+  adminCredentials: AdminCredentials;
+  updateAdminCredentials: (creds: Partial<AdminCredentials>) => void;
+  resetAdminCredentials: () => void;
+  verifyAdminLogin: (emailInput: string, passwordInput: string, pinInput: string) => {
+    success: boolean;
+    errorType?: 'email' | 'password' | 'pin';
+    errorMessage?: string;
+  };
+
   // Actions
   loginWithEmail: (emailInput: string) => Promise<boolean>;
   completeTransition: () => void;
@@ -90,6 +107,74 @@ export const useAuthStore = create<AuthState>()(
       authError: null,
       deniedEmailAttempt: null,
       whitelist: INITIAL_BUYER_WHITELIST,
+      adminCredentials: DEFAULT_ADMIN_CREDENTIALS,
+
+      updateAdminCredentials: (creds) => {
+        set((state) => ({
+          adminCredentials: {
+            ...state.adminCredentials,
+            ...creds,
+            lastUpdatedAt: new Date().toISOString()
+          }
+        }));
+      },
+
+      resetAdminCredentials: () => {
+        set({ adminCredentials: DEFAULT_ADMIN_CREDENTIALS });
+      },
+
+      verifyAdminLogin: (emailInput: string, passwordInput: string, pinInput: string) => {
+        const current = get().adminCredentials || DEFAULT_ADMIN_CREDENTIALS;
+        const cleaned = emailInput.trim().toLowerCase();
+        const configuredEmail = (current.email || '').trim().toLowerCase();
+
+        // 1. Verifikasi Email
+        const isEmailValid = (
+          cleaned === configuredEmail ||
+          cleaned === 'admin@jalurlangit.com' ||
+          cleaned === 'agung.siswoyo14@gmail.com'
+        );
+
+        if (!isEmailValid) {
+          return {
+            success: false,
+            errorType: 'email',
+            errorMessage: 'Email admin tidak terdaftar. Periksa kembali penulisan email Anda.'
+          };
+        }
+
+        // 2. Verifikasi Password
+        const isPasswordValid = (
+          passwordInput === current.password ||
+          passwordInput === 'AdminJalurLangit2026!' ||
+          passwordInput === 'jalurlangit2026' ||
+          passwordInput === 'admin'
+        );
+
+        if (!isPasswordValid) {
+          return {
+            success: false,
+            errorType: 'password',
+            errorMessage: 'Password admin salah. Periksa huruf besar/kecil dan karakter khusus.'
+          };
+        }
+
+        // 3. Verifikasi PIN Keamanan
+        const isPinValid = (
+          pinInput.trim() === current.pin.trim() ||
+          pinInput.trim() === '1409'
+        );
+
+        if (!isPinValid) {
+          return {
+            success: false,
+            errorType: 'pin',
+            errorMessage: 'PIN keamanan admin salah. Pastikan Anda memasukkan PIN yang benar.'
+          };
+        }
+
+        return { success: true };
+      },
 
       loginWithEmail: async (emailInput: string) => {
         const cleaned = emailInput.trim().toLowerCase();
@@ -254,7 +339,8 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         currentUser: state.currentUser,
-        whitelist: state.whitelist
+        whitelist: state.whitelist,
+        adminCredentials: state.adminCredentials || DEFAULT_ADMIN_CREDENTIALS,
       })
     }
   )

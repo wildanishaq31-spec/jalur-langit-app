@@ -11,6 +11,13 @@ export interface AuthUser {
   lastActiveAt?: string; // ISO timestamp waktu terakhir aktif di aplikasi
 }
 
+export interface AdminCredentials {
+  email: string;
+  password: string;
+  pin: string;
+  lastUpdatedAt?: string;
+}
+
 export const TIER_CONFIG: Record<UserTier, {
   name: string;
   price: string;
