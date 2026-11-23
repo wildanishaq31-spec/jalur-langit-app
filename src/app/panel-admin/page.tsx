@@ -56,6 +56,12 @@ import { decryptPassword } from '@/utils/cryptoUtils';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
 import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest, RoadmapMilestone } from '@/types';
 import { DEFAULT_ROADMAP_MILESTONES, calculateMilestoneProgress } from '@/data/roadmapData';
+import { 
+  getRandomAIInnovation, 
+  generateInnovationFromPrompt, 
+  generateSmartHighlights, 
+  GeneratedRoadmapIdea 
+} from '@/utils/aiRoadmapGenerator';
 import PackageSalesBarChart from '@/components/admin/PackageSalesBarChart';
 import ActiveUsersCard, { ActivityFilterType } from '@/components/admin/ActiveUsersCard';
 
@@ -184,6 +190,14 @@ export default function PanelAdminPage() {
   const [roadmapMilestones, setRoadmapMilestones] = useState<RoadmapMilestone[]>([]);
   const [highlightInput, setHighlightInput] = useState('');
   const [roadmapSuccessMessage, setRoadmapSuccessMessage] = useState<string | null>(null);
+
+  // AI Roadmap Generator States
+  const [isAIInspirationModalOpen, setIsAIInspirationModalOpen] = useState(false);
+  const [aiInspirationCategory, setAiInspirationCategory] = useState<string>('all');
+  const [aiSearchPrompt, setAiSearchPrompt] = useState('');
+  const [currentAIIdea, setCurrentAIIdea] = useState<GeneratedRoadmapIdea | null>(null);
+  const [isAIGenerating, setIsAIGenerating] = useState(false);
+  const [aiModalInlinePrompt, setAiModalInlinePrompt] = useState('');
 
   useEffect(() => {
     setNow(Date.now());
@@ -482,6 +496,98 @@ export default function PanelAdminPage() {
       setRoadmapSuccessMessage('Semua suara vote berhasil direset menjadi 0!');
       setTimeout(() => setRoadmapSuccessMessage(null), 4000);
     }
+  };
+
+  // ================= AI ROADMAP GENERATOR HANDLERS =================
+  const handleOpenAIInspirationModal = (cat?: string) => {
+    const selectedCat = cat || aiInspirationCategory;
+    const idea = getRandomAIInnovation(selectedCat);
+    setCurrentAIIdea(idea);
+    setAiSearchPrompt('');
+    setIsAIInspirationModalOpen(true);
+  };
+
+  const handleRandomizeAIIdea = (cat?: string) => {
+    setIsAIGenerating(true);
+    setTimeout(() => {
+      const selectedCat = cat || aiInspirationCategory;
+      const idea = getRandomAIInnovation(selectedCat);
+      setCurrentAIIdea(idea);
+      setIsAIGenerating(false);
+    }, 250);
+  };
+
+  const handleSearchAIIdea = () => {
+    if (!aiSearchPrompt.trim()) return;
+    setIsAIGenerating(true);
+    setTimeout(() => {
+      const idea = generateInnovationFromPrompt(aiSearchPrompt);
+      setCurrentAIIdea(idea);
+      setIsAIGenerating(false);
+    }, 300);
+  };
+
+  const handleApplyAIIdeaToForm = (ideaToApply?: GeneratedRoadmapIdea) => {
+    const idea = ideaToApply || currentAIIdea;
+    if (!idea) return;
+
+    setEditingRoadmapId(null);
+    setRoadmapTitle(idea.title);
+    setRoadmapCategory(idea.category);
+    setRoadmapStatus(idea.status);
+    setRoadmapStatusLabel(idea.statusLabel);
+    setRoadmapProgress(idea.progressPercent);
+    setRoadmapTarget(idea.targetRelease);
+    setRoadmapIcon(idea.iconName);
+    setRoadmapDescription(idea.description);
+    setRoadmapHighlights([...idea.highlights]);
+    setRoadmapMilestones(idea.milestones.map(m => ({ ...m })));
+    setHighlightInput('');
+    setAiModalInlinePrompt('');
+    setIsAIInspirationModalOpen(false);
+    setIsRoadmapModalOpen(true);
+  };
+
+  const handleInlineAIRandomize = () => {
+    setIsAIGenerating(true);
+    setTimeout(() => {
+      const idea = getRandomAIInnovation(roadmapCategory);
+      setRoadmapTitle(idea.title);
+      setRoadmapCategory(idea.category);
+      setRoadmapStatus(idea.status);
+      setRoadmapStatusLabel(idea.statusLabel);
+      setRoadmapProgress(idea.progressPercent);
+      setRoadmapTarget(idea.targetRelease);
+      setRoadmapIcon(idea.iconName);
+      setRoadmapDescription(idea.description);
+      setRoadmapHighlights([...idea.highlights]);
+      setRoadmapMilestones(idea.milestones.map(m => ({ ...m })));
+      setIsAIGenerating(false);
+    }, 250);
+  };
+
+  const handleInlineAIGenerateFromPrompt = () => {
+    if (!aiModalInlinePrompt.trim()) return;
+    setIsAIGenerating(true);
+    setTimeout(() => {
+      const idea = generateInnovationFromPrompt(aiModalInlinePrompt);
+      setRoadmapTitle(idea.title);
+      setRoadmapCategory(idea.category);
+      setRoadmapStatus(idea.status);
+      setRoadmapStatusLabel(idea.statusLabel);
+      setRoadmapProgress(idea.progressPercent);
+      setRoadmapTarget(idea.targetRelease);
+      setRoadmapIcon(idea.iconName);
+      setRoadmapDescription(idea.description);
+      setRoadmapHighlights([...idea.highlights]);
+      setRoadmapMilestones(idea.milestones.map(m => ({ ...m })));
+      setIsAIGenerating(false);
+    }, 300);
+  };
+
+  const handleAIGenerateHighlightsOnly = () => {
+    const generated = generateSmartHighlights(roadmapTitle || 'Inovasi Fitur Baru', roadmapCategory);
+    setRoadmapHighlights(generated);
   };
 
   const handleConvertUserRequest = (req: FeatureUserRequest) => {
@@ -1749,7 +1855,18 @@ export default function PanelAdminPage() {
                           className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-800 to-teal-700 hover:from-emerald-700 hover:to-teal-600 active:scale-95 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <Plus className="w-4 h-4" />
-                          <span>+ Tambah Inovasi Baru</span>
+                          <span>+ Tambah Inovasi</span>
+                        </button>
+
+                        {/* Tombol Inspirasi Inovasi AI */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenAIInspirationModal()}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-700 hover:from-amber-400 hover:to-emerald-600 active:scale-95 text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Dapatkan inspirasi ide fitur baru dengan bantuan AI"
+                        >
+                          <Sparkles className="w-4 h-4 text-amber-200" />
+                          <span>Inspirasi Inovasi AI</span>
                         </button>
 
                         <button
@@ -2435,6 +2552,208 @@ export default function PanelAdminPage() {
         </div>
       )}
 
+      {/* MODAL INSPIRASI INOVASI AI (DEDICATED EXPLORER) */}
+      {isAIInspirationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#071610] border border-stone-200 dark:border-emerald-800 shadow-2xl p-5 sm:p-6 space-y-4">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-emerald-900/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-700 text-white flex items-center justify-center shadow-md">
+                  <Sparkles className="w-5 h-5 text-amber-200" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100 font-serif">
+                    AI Asisten Inovasi &amp; Roadmap Cerdas
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    Eksplorasi ide fitur baru dan buat poin keunggulan otomatis dengan 1-klik
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAIInspirationModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-emerald-900/50 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Filter Kategori Cepat */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">
+                Pilih Kategori Inspirasi:
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { id: 'all', label: 'Semua Kategori' },
+                  { id: 'ibadah', label: 'Ibadah' },
+                  { id: 'audio', label: 'Audio & Dzikir' },
+                  { id: 'finansial', label: 'Finansial Syariah' },
+                  { id: 'produktivitas', label: 'Produktivitas' },
+                  { id: 'doa', label: 'Doa & Hajat' }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setAiInspirationCategory(cat.id);
+                      handleRandomizeAIIdea(cat.id);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      aiInspirationCategory === cat.id
+                        ? 'bg-emerald-800 text-white shadow-xs'
+                        : 'bg-stone-100 hover:bg-stone-200 dark:bg-emerald-950/70 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-emerald-800'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Input Pencarian / Kata Kunci AI */}
+            <div className="flex gap-2 pt-1">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  value={aiSearchPrompt}
+                  onChange={(e) => setAiSearchPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearchAIIdea();
+                    }
+                  }}
+                  placeholder="Ketik topik spesifik (misal: puasa daud, tabungan umroh, waris)..."
+                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-stone-50 dark:bg-emerald-950/50 border border-stone-300 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleSearchAIIdea}
+                disabled={isAIGenerating || !aiSearchPrompt.trim()}
+                className="px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
+              >
+                <span>Cari</span>
+              </button>
+            </div>
+
+            {/* Card Preview Ide Hasil AI */}
+            {currentAIIdea && (
+              <div className={`p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-500/5 via-emerald-500/5 to-teal-500/10 border border-amber-300/60 dark:border-emerald-700/60 space-y-3.5 transition-all ${isAIGenerating ? 'opacity-50 animate-pulse' : 'opacity-100'}`}>
+                
+                {/* Header Card Ide: Kategori, Status, Target */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-emerald-900 border border-stone-200 dark:border-emerald-700 flex items-center justify-center shadow-xs">
+                      {renderAdminFeatureIcon(currentAIIdea.iconName)}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">
+                        Kategori: {currentAIIdea.category}
+                      </span>
+                      <h4 className="font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100 font-serif">
+                        {currentAIIdea.title}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${currentAIIdea.badgeColor}`}>
+                      {currentAIIdea.statusLabel}
+                    </span>
+                    <span className="text-[10px] text-stone-500 dark:text-stone-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-stone-400" />
+                      {currentAIIdea.targetRelease}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Deskripsi */}
+                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed bg-white/70 dark:bg-emerald-950/50 p-3 rounded-xl border border-stone-200/60 dark:border-emerald-800/60">
+                  {currentAIIdea.description}
+                </p>
+
+                {/* 4 Poin Keunggulan */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-extrabold text-stone-700 dark:text-stone-300 uppercase tracking-wider block">
+                    ✨ Poin Keunggulan Utama Fitur:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {currentAIIdea.highlights.map((hl, i) => (
+                      <div
+                        key={i}
+                        className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200 flex items-start gap-1.5 shadow-2xs"
+                      >
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">✓</span>
+                        <span className="leading-snug">{hl}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 5 Milestones SDLC */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[11px] font-extrabold text-stone-700 dark:text-stone-300 uppercase tracking-wider block">
+                    📋 Tahapan Pengerjaan (5 Milestone):
+                  </span>
+                  <div className="space-y-1">
+                    {currentAIIdea.milestones.map((m, idx) => (
+                      <div
+                        key={m.id || idx}
+                        className="flex items-center justify-between px-2.5 py-1 rounded-lg bg-stone-50 dark:bg-emerald-900/30 border border-stone-200/70 dark:border-emerald-800/60 text-[10px] text-stone-700 dark:text-stone-300"
+                      >
+                        <span className="truncate">{m.title}</span>
+                        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 shrink-0">+{m.percentageWeight}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* Bottom Modal Actions */}
+            <div className="pt-3 border-t border-stone-100 dark:border-emerald-900/50 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleRandomizeAIIdea()}
+                disabled={isAIGenerating}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-900 text-stone-700 dark:text-stone-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isAIGenerating ? 'animate-spin' : ''}`} />
+                <span>Acak Ide Lain (🎲)</span>
+              </button>
+
+              <div className="w-full sm:w-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAIInspirationModalOpen(false)}
+                  className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-stone-200 dark:border-emerald-800 text-stone-600 dark:text-stone-300 text-xs font-bold hover:bg-stone-50 dark:hover:bg-emerald-900/40 cursor-pointer"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleApplyAIIdeaToForm()}
+                  disabled={!currentAIIdea}
+                  className="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-800 to-teal-700 hover:from-emerald-700 hover:to-teal-600 text-white text-xs font-bold shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Pakai Ide Ini ke Form Editor</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* MODAL TAMBAH & EDIT ROADMAP INOVASI */}
       {isRoadmapModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
@@ -2463,6 +2782,51 @@ export default function PanelAdminPage() {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* AI Assistant Quick Draft Box */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-amber-300/60 dark:border-emerald-700/60 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Bantuan AI: Auto-Generate Inovasi</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleInlineAIRandomize}
+                  disabled={isAIGenerating}
+                  className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Acak ide baru secara instan"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isAIGenerating ? 'animate-spin' : ''}`} />
+                  <span>Acak Ide AI</span>
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiModalInlinePrompt}
+                  onChange={(e) => setAiModalInlinePrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleInlineAIGenerateFromPrompt();
+                    }
+                  }}
+                  placeholder="Ketik topik ide (misal: puasa daud, tabungan umroh, ruqyah)..."
+                  className="flex-1 px-3 py-1.5 rounded-xl bg-white dark:bg-emerald-950/80 border border-stone-300 dark:border-emerald-700 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleInlineAIGenerateFromPrompt}
+                  disabled={isAIGenerating}
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                  <span>{isAIGenerating ? 'Menyusun...' : 'Rancang Fitur'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Modal Form */}
@@ -2628,9 +2992,20 @@ export default function PanelAdminPage() {
 
               {/* Highlights / Keunggulan */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
-                  Poin Keunggulan Fitur
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                    Poin Keunggulan Fitur
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAIGenerateHighlightsOnly}
+                    className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 flex items-center gap-1 cursor-pointer hover:underline"
+                    title="Buatkan 4 poin keunggulan otomatis berdasarkan judul & kategori fitur ini"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>✨ AI Buatkan Keunggulan</span>
+                  </button>
+                </div>
                 <div className="flex gap-2">
                   <input
                     type="text"
