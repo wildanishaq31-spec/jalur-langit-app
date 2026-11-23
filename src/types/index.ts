@@ -182,6 +182,7 @@ export interface RoadmapFeatureItem {
   votes?: number;
   createdAt?: string;
   milestones?: RoadmapMilestone[];
+  isDraft?: boolean; // True jika dalam mode draf (disembunyikan dari dashboard & publik)
 }
 
 export interface FeatureUserRequest {

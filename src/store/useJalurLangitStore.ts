@@ -177,6 +177,7 @@ interface JalurLangitState {
   deleteRoadmapFeature: (id: string) => void;
   resetRoadmapFeatures: () => void;
   toggleRoadmapMilestone: (featureId: string, milestoneId: string) => void;
+  toggleRoadmapFeatureDraft: (id: string) => void;
 
   // Active Tab & Cross-menu Navigation
   activeTab: ActiveTab;
@@ -401,6 +402,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         const newFeature: RoadmapFeatureItem = {
           ...feature,
           id: newId,
+          isDraft: !!feature.isDraft,
           milestones: finalMilestones,
           progressPercent: feature.progressPercent !== undefined ? feature.progressPercent : milestoneCalc.progressPercent,
           status: feature.status || milestoneCalc.status,
@@ -464,6 +466,15 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             status: calc.status,
             statusLabel: calc.statusLabel,
             badgeColor: calc.badgeColor
+          };
+        })
+      })),
+      toggleRoadmapFeatureDraft: (id) => set((state) => ({
+        roadmapFeatures: state.roadmapFeatures.map((f) => {
+          if (f.id !== id) return f;
+          return {
+            ...f,
+            isDraft: !f.isDraft
           };
         })
       })),
@@ -1331,8 +1342,12 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           if (!state.roadmapFeatures || state.roadmapFeatures.length === 0) {
             state.roadmapFeatures = ROADMAP_FEATURES;
           } else {
-            // Pastikan setiap fitur memiliki array milestones
+            // Pastikan setiap fitur memiliki array milestones dan flag isDraft
             state.roadmapFeatures = state.roadmapFeatures.map((f) => {
+              const withDraft = {
+                ...f,
+                isDraft: f.isDraft ?? false
+              };
               if (!f.milestones || f.milestones.length === 0) {
                 const defaultList = DEFAULT_ROADMAP_MILESTONES.map((m, idx) => {
                   const threshold = (idx + 1) * 20;
@@ -1342,11 +1357,11 @@ export const useJalurLangitStore = create<JalurLangitState>()(
                   };
                 });
                 return {
-                  ...f,
+                  ...withDraft,
                   milestones: defaultList
                 };
               }
-              return f;
+              return withDraft;
             });
           }
 

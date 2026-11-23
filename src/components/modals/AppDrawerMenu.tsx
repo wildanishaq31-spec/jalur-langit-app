@@ -73,6 +73,7 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
     dailyTasbihMap,
     tasbihTotalLifetime,
     glowUpMap,
+    roadmapFeatures,
     exportBackupData,
     restoreBackupData
   } = useJalurLangitStore();
@@ -376,7 +377,9 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
 
                 {/* List Roadmap Features */}
                 <div className="space-y-3.5">
-                  {ROADMAP_FEATURES.map((feature) => {
+                  {(roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : ROADMAP_FEATURES)
+                    .filter((feature) => !feature.isDraft)
+                    .map((feature) => {
                     const votes = featureVotes[feature.id] || 0;
                     const hasVoted = userVotedFeatures.includes(feature.id);
 

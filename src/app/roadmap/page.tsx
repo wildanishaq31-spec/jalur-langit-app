@@ -33,7 +33,8 @@ export default function RoadmapPage() {
     toggleTheme 
   } = useJalurLangitStore();
 
-  const activeFeatures = roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : ROADMAP_FEATURES;
+  const rawFeatures = roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : ROADMAP_FEATURES;
+  const activeFeatures = rawFeatures.filter((feature) => !feature.isDraft);
 
   const [newIdeaText, setNewIdeaText] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);

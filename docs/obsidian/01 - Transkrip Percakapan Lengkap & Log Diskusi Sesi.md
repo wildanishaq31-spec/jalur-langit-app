@@ -2374,4 +2374,41 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 
 ---
 
+### Sesi Turn 89 - Implementasi Fitur Draf Roadmap & Kontrol Visibilitas Dashboard
+* **Permintaan Pengguna**:
+  - *"untuk roadmap di panel admin kita tambah fitur draf jadi kita bisa setting roadmap yang akan di tampilkan di dashboard misal ada 4 fitur baru tapi saya pilih hanya 1 fitur yang muncul dan sisanya di mode draf jadi tidak muncul"*
+* **Analisis Kebutuhan**:
+  1. Memberikan fleksibilitas penuh kepada admin untuk mengatur visibilitas setiap inovasi fitur: apakah ingin langsung ditayangkan ke Dashboard aplikasi atau disimpan terlebih dahulu sebagai Draf tersembunyi.
+  2. Contoh kasus: Jika ada 4 atau 5 inovasi di panel admin, admin dapat memilih hanya 1 inovasi yang tayang di dashboard beranda, sementara 3 atau 4 inovasi lainnya tetap tersimpan rapi dalam status Draf.
+  3. Fitur berstatus Draf harus disembunyikan dari:
+     - Teaser Roadmap di Dashboard Beranda (`HomeTab.tsx`).
+     - Halaman publik voting Roadmap (`/roadmap`).
+     - Menu samping / App Drawer (`AppDrawerMenu.tsx`).
+  4. Panel Admin CMS (`panel-admin`) harus menampilkan seluruh inovasi (baik Tayang maupun Draf) dengan:
+     - Indikator status visual yang jelas: `🟢 TAMPIL DI DASHBOARD & PUBLIK` vs `📁 MODE DRAF (Tersembunyi)`.
+     - Tombol cepat 1-klik pada setiap kartu untuk mengubah status tayang / draf secara instan (`[ 👁️ Tampilkan di Dashboard ]` vs `[ 📁 Sembunyikan (Draf) ]`).
+     - Metrik ringkasan di header: Total Inovasi, Tampil di Dashboard, Mode Draf, dan Aspirasi Pengguna.
+     - Tab filter cepat di atas daftar kartu: `[ Semua ]`, `[ 🟢 Tampil di Dashboard ]`, dan `[ 📁 Mode Draf ]`.
+     - Opsi pengaturan status publikasi di dalam Modal Tambah & Edit Inovasi.
+* **Solusi Rekayasa & Implementasi**:
+  1. **Tipe Data & Model Kontrak ([src/types/index.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/types/index.ts))**:
+     - Menambahkan properti opsional `isDraft?: boolean` pada interface `RoadmapFeatureItem`.
+  2. **State Store & Aksi Dinamis ([src/store/useJalurLangitStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/store/useJalurLangitStore.ts))**:
+     - Menambahkan aksi `toggleRoadmapFeatureDraft(id: string)` pada `JalurLangitState`.
+     - Mengakomodasi flag `isDraft: !!feature.isDraft` pada pembuatan fitur baru `addRoadmapFeature` dan `updateRoadmapFeature`.
+     - Menambahkan migrasi rehidrasi otomatis agar fitur yang sudah ada di localStorage pengguna secara default berstatus `isDraft: false`.
+  3. **Filter Teaser Beranda Dashboard ([src/components/tabs/HomeTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/HomeTab.tsx))**:
+     - Memperbarui `activeTeaserList` sehingga memfilter `roadmapFeatures.filter(f => !f.isDraft)`. Hanya inovasi yang bukan draf yang akan muncul di teaser kartu Beranda.
+  4. **Filter Halaman Publik & Drawer ([src/app/roadmap/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/roadmap/page.tsx) & [src/components/modals/AppDrawerMenu.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AppDrawerMenu.tsx))**:
+     - Halaman `/roadmap` dan drawer hanya menampilkan fitur publik (`!feature.isDraft`), sehingga pengguna biasa tidak dapat melihat atau melakukan voting pada inovasi yang masih dirahasiakan / berstatus draf.
+  5. **Panel Admin CMS & Kontrol Cepat ([src/app/panel-admin/page.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/panel-admin/page.tsx))**:
+     - **Metrik Mini Header**: Menampilkan jumlah Total Inovasi, Tampil di Dashboard (`!f.isDraft`), dan Mode Draf (`f.isDraft`).
+     - **Tab Filter Tampilan**: Tab `Semua`, `🟢 Tampil di Dashboard`, dan `📁 Mode Draf` memudahkan admin memilah dan meninjau inovasi.
+     - **Banner Status & Tombol 1-Klik di Setiap Kartu**: Admin dapat mengubah status tayang / draf hanya dengan 1 sentuhan tanpa harus masuk ke modal edit.
+     - **Pilihan Publikasi di Modal Tambah/Edit**: Menyediakan kartu pilihan interaktif `[ 🟢 Tampil di Dashboard ]` vs `[ 📁 Simpan Sebagai Draf ]` dengan deskripsi fungsi yang jelas.
+* **Hasil Pengujian & Verifikasi**:
+  - `npm run build`: **100% PASS (Exit Code 0)** di seluruh 19/19 rute Next.js Turbopack.
+
+---
+
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.

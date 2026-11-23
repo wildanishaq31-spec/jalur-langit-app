@@ -72,7 +72,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     }
   };
 
-  const activeTeaserList = (roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : []).slice(0, 4);
+  const activeTeaserList = (roadmapFeatures && roadmapFeatures.length > 0 
+    ? roadmapFeatures.filter((f) => !f.isDraft) 
+    : []
+  ).slice(0, 4);
 
   const totalAmalan = DEFAULT_AMALAN_LIST.length;
   const currentCompletion = getDateCompletionPercentage(selectedDate, totalAmalan);
