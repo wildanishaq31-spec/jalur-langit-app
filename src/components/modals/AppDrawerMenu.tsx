@@ -40,7 +40,8 @@ import {
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
-import { RoadmapFeatureItem, JalurLangitBackupData } from '@/types';
+import { RoadmapFeatureItem } from '@/types';
+import { downloadBackupJson, parseBackupFile, ParsedBackupPreview } from '@/utils/backupUtils';
 
 interface AppDrawerMenuProps {
   onOpenLogoutModal?: () => void;
@@ -88,18 +89,7 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
 
   // Backup & Restore State
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [pendingBackup, setPendingBackup] = useState<{
-    data: Partial<JalurLangitBackupData>;
-    fileName: string;
-    fileSizeKb: number;
-    stats: {
-      amalanDays: number;
-      hajatCount: number;
-      sedekahCount: number;
-      tasbihDays: number;
-      glowUpDays: number;
-    };
-  } | null>(null);
+  const [pendingBackup, setPendingBackup] = useState<ParsedBackupPreview | null>(null);
   const [restoreFeedback, setRestoreFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
@@ -149,98 +139,31 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
 
   const handleExportBackup = () => {
     try {
-      const backupData = exportBackupData();
-      const jsonString = JSON.stringify(backupData, null, 2);
-      
-      // Copy to clipboard
-      try {
-        navigator.clipboard.writeText(jsonString);
-      } catch {}
-
+      downloadBackupJson(exportBackupData());
       setCopiedBackup(true);
       setTimeout(() => setCopiedBackup(false), 3500);
-
-      // Download file
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      const datePart = new Date().toISOString().slice(0, 10);
-      link.download = `jalur-langit-cadangan-${datePart}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Gagal mengekspor data cadangan:', err);
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setRestoreFeedback(null);
 
-    // Validasi ekstensi
-    if (!file.name.toLowerCase().endsWith('.json')) {
+    try {
+      const preview = await parseBackupFile(file);
+      setPendingBackup(preview);
+    } catch (err) {
       setRestoreFeedback({
         type: 'error',
-        message: 'File harus berformat .json cadangan resmi Jalur Langit.',
+        message: err instanceof Error ? err.message : 'Gagal memproses file cadangan.',
       });
+    } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = event.target?.result as string;
-        const parsed = JSON.parse(content) as Partial<JalurLangitBackupData>;
-
-        if (!parsed || typeof parsed !== 'object') {
-          throw new Error('Format JSON tidak valid');
-        }
-
-        // Hitung data yang terdeteksi
-        const amalanDays = Object.keys(parsed.completedAmalan || {}).length;
-        const hajatCount = Array.isArray(parsed.hajatList) ? parsed.hajatList.length : 0;
-        const sedekahCount = Array.isArray(parsed.sedekahLogs) ? parsed.sedekahLogs.length : 0;
-        const tasbihDays = Object.keys(parsed.dailyTasbihMap || {}).length;
-        const glowUpDays = Object.keys(parsed.glowUpMap || {}).length;
-
-        if (amalanDays === 0 && hajatCount === 0 && sedekahCount === 0 && tasbihDays === 0 && glowUpDays === 0 && !parsed.app) {
-          setRestoreFeedback({
-            type: 'error',
-            message: 'File ini kosong atau tidak memiliki struktur data Jalur Langit.',
-          });
-          return;
-        }
-
-        setPendingBackup({
-          data: parsed,
-          fileName: file.name,
-          fileSizeKb: Math.max(1, Math.round(file.size / 1024)),
-          stats: {
-            amalanDays,
-            hajatCount,
-            sedekahCount,
-            tasbihDays,
-            glowUpDays
-          }
-        });
-      } catch (err) {
-        console.error('Error membaca file cadangan:', err);
-        setRestoreFeedback({
-          type: 'error',
-          message: 'Gagal memproses file. Pastikan file JSON tidak korup atau rusak.',
-        });
-      } finally {
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      }
-    };
-
-    reader.readAsText(file);
   };
 
   const handleExecuteRestore = (mode: 'merge' | 'replace') => {

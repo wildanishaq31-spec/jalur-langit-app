@@ -15,13 +15,14 @@ import {
   Droplets,
   Image as ImageIcon,
   Compass,
-  LogOut
+  User
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { TIER_CONFIG, UserTier } from '@/types/auth';
 import { AppDrawerMenu } from '@/components/modals/AppDrawerMenu';
 import { LogoutConfirmModal } from '@/components/modals/LogoutConfirmModal';
+import { UserProfileModal } from '@/components/modals/UserProfileModal';
 import { AlarmNotificationModal } from '@/components/modals/AlarmNotificationModal';
 
 export type ActiveTab = 'home' | 'amalan' | 'tasbih' | 'glowup' | 'vision' | 'hajat' | 'quran';
@@ -37,6 +38,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
   const { resetAllData, appTheme, toggleTheme, toggleDrawer, isAlarmModalOpen, setIsAlarmModalOpen } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [pendingTab, setPendingTab] = useState<ActiveTab | null>(null);
   const [hoveredTab, setHoveredTab] = useState<ActiveTab | null>(null);
 
@@ -164,14 +166,15 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
               <RotateCcw className="w-4 h-4 shrink-0" />
             </button>
 
-            {/* Logout Button (Opens Confirmation Modal) */}
+            {/* User Profile Button (Nama, Email, Edit, Backup Data & Keluar) */}
             <button
-              onClick={() => setIsLogoutModalOpen(true)}
-              title="Keluar / Logout Akun"
-              aria-label="Keluar / Logout Akun"
-              className="p-2 rounded-xl text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-900/50 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all active:scale-95 flex items-center justify-center shadow-2xs"
+              onClick={() => setIsProfileModalOpen(true)}
+              title="Profil Saya, Backup & Keluar"
+              aria-label="Profil Saya"
+              className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100 bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
             >
-              <LogOut className="w-4 h-4 shrink-0" />
+              <User className="w-4 h-4 shrink-0" />
+              <span className="hidden md:inline text-xs font-bold">Profil</span>
             </button>
           </div>
         </div>
@@ -184,6 +187,16 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
       <AlarmNotificationModal
         isOpen={isAlarmModalOpen}
         onClose={() => setIsAlarmModalOpen(false)}
+      />
+
+      {/* User Profile Modal (Nama, Email, Edit, Backup Data, Keluar) */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onRequestLogout={() => {
+          setIsProfileModalOpen(false);
+          setIsLogoutModalOpen(true);
+        }}
       />
 
       {/* Cool Centered Mobile Logout Confirmation Popup */}

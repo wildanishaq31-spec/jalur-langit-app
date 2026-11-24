@@ -180,6 +180,81 @@ export async function removeBuyer(email: string): Promise<boolean> {
 }
 
 /**
+ * Update buyer's display name and/or migrate email safely while preserving tier & orderId.
+ */
+export async function updateBuyerProfile(
+  currentEmail: string,
+  updates: { name?: string; newEmail?: string }
+): Promise<{ success: boolean; user?: AuthUser; error?: string; message?: string }> {
+  const normalizedCurrent = currentEmail.trim().toLowerCase();
+  const existing = await findBuyerByEmail(normalizedCurrent);
+
+  if (!existing) {
+    return {
+      success: false,
+      error: 'not_found',
+      message: 'Akun tidak ditemukan di server.'
+    };
+  }
+
+  const cleanedName = updates.name !== undefined ? updates.name.trim() : existing.name;
+  const normalizedNew = updates.newEmail ? updates.newEmail.trim().toLowerCase() : normalizedCurrent;
+
+  if (updates.newEmail && (!normalizedNew || !normalizedNew.includes('@'))) {
+    return {
+      success: false,
+      error: 'invalid_email',
+      message: 'Format email baru tidak valid.'
+    };
+  }
+
+  // Lindungi email Owner utama agar tidak berpindah
+  if (normalizedCurrent === 'agung.siswoyo14@gmail.com' && normalizedNew !== normalizedCurrent) {
+    return {
+      success: false,
+      error: 'owner_protected',
+      message: 'Email akun Owner utama tidak dapat diubah.'
+    };
+  }
+
+  // Jika user ingin mengganti email, pastikan email baru belum dipakai akun lain
+  if (normalizedNew !== normalizedCurrent) {
+    const conflict = await findBuyerByEmail(normalizedNew);
+    if (conflict) {
+      return {
+        success: false,
+        error: 'email_exists',
+        message: `Email ${normalizedNew} sudah terdaftar di sistem.`
+      };
+    }
+
+    const migratedUser = await addOrUpdateBuyer({
+      ...existing,
+      email: normalizedNew,
+      name: cleanedName || existing.name,
+    });
+    await removeBuyer(normalizedCurrent);
+
+    return {
+      success: true,
+      user: migratedUser,
+      message: 'Nama dan email profil berhasil diperbarui.'
+    };
+  }
+
+  const updatedUser = await addOrUpdateBuyer({
+    ...existing,
+    name: cleanedName || existing.name,
+  });
+
+  return {
+    success: true,
+    user: updatedUser,
+    message: 'Profil berhasil diperbarui.'
+  };
+}
+
+/**
  * Determine tier automatically from Lynk.id package price or name.
  */
 export function determineTierFromLynkData(productName = '', amount = 0): UserTier {

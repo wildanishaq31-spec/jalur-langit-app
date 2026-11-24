@@ -68,6 +68,10 @@ interface AuthState {
   removeBuyerFromWhitelist: (email: string) => void;
   resetWhitelistToOwnerOnly: () => void;
   updateBuyerTier: (email: string, tier: UserTier) => void;
+  updateUserProfile: (updates: { name?: string; email?: string }) => Promise<{
+    success: boolean;
+    message: string;
+  }>;
   touchUserActivity: () => void;
   loginAsAdmin: () => void;
   syncWithServerBuyers: (serverBuyers: AuthUser[]) => void;
@@ -409,6 +413,113 @@ export const useAuthStore = create<AuthState>()(
             return b;
           })
         }));
+      },
+
+      updateUserProfile: async (updates) => {
+        const current = get().currentUser;
+        if (!current?.email) {
+          return { success: false, message: 'Tidak ada sesi pengguna aktif.' };
+        }
+
+        const currentEmail = current.email.trim().toLowerCase();
+        const trimmedName = updates.name !== undefined ? updates.name.trim() : current.name;
+        const targetEmail = updates.email !== undefined ? updates.email.trim().toLowerCase() : currentEmail;
+
+        if (!trimmedName) {
+          return { success: false, message: 'Nama tidak boleh kosong.' };
+        }
+        if (!targetEmail || !targetEmail.includes('@')) {
+          return { success: false, message: 'Format email tidak valid.' };
+        }
+
+        const isEmailChanged = targetEmail !== currentEmail;
+
+        try {
+          const res = await fetch('/api/auth/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              currentEmail,
+              name: trimmedName,
+              newEmail: isEmailChanged ? targetEmail : undefined,
+            }),
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.success && data.user) {
+            const updatedUser: AuthUser = {
+              ...current,
+              ...data.user,
+              lastActiveAt: new Date().toISOString(),
+            };
+
+            if (isEmailChanged) {
+              try {
+                const jlStore = useJalurLangitStore.getState();
+                const backup = jlStore.exportBackupData();
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(`jalur_langit_user_data_${updatedUser.email}`, JSON.stringify(backup));
+                }
+                useJalurLangitStore.setState({ currentUserEmail: updatedUser.email });
+              } catch (e) {
+                console.warn('Gagal memindahkan scope data lokal ke email baru:', e);
+              }
+            }
+
+            set((state) => ({
+              currentUser: updatedUser,
+              whitelist: [
+                updatedUser,
+                ...state.whitelist.filter(
+                  (b) =>
+                    b.email.toLowerCase() !== currentEmail &&
+                    b.email.toLowerCase() !== updatedUser.email.toLowerCase()
+                ),
+              ],
+            }));
+
+            return { success: true, message: data.message || 'Profil berhasil diperbarui.' };
+          }
+
+          // Jika konflik email atau aturan owner, tampilkan pesan server
+          if (res.status === 409 || res.status === 403 || res.status === 400) {
+            return { success: false, message: data.message || 'Gagal memperbarui profil.' };
+          }
+        } catch (err) {
+          console.warn('Gagal sinkronisasi profil ke server, menyimpan secara lokal:', err);
+        }
+
+        // Fallback lokal jika offline atau server cold-start (hanya izinkan update lokal jika nama atau email valid)
+        const fallbackUser: AuthUser = {
+          ...current,
+          name: trimmedName,
+          email: targetEmail,
+          lastActiveAt: new Date().toISOString(),
+        };
+
+        if (isEmailChanged) {
+          try {
+            const jlStore = useJalurLangitStore.getState();
+            const backup = jlStore.exportBackupData();
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(`jalur_langit_user_data_${targetEmail}`, JSON.stringify(backup));
+            }
+            useJalurLangitStore.setState({ currentUserEmail: targetEmail });
+          } catch {}
+        }
+
+        set((state) => ({
+          currentUser: fallbackUser,
+          whitelist: [
+            fallbackUser,
+            ...state.whitelist.filter(
+              (b) => b.email.toLowerCase() !== currentEmail && b.email.toLowerCase() !== targetEmail
+            ),
+          ],
+        }));
+
+        return { success: true, message: 'Profil berhasil diperbarui.' };
       },
 
       touchUserActivity: () => {

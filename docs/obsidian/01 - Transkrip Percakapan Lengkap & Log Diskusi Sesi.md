@@ -3115,3 +3115,31 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+
+## 📌 Sesi 25 November 2026 (06:03 WIB) - Transformasi Tombol Keluar Menjadi Menu Profil Lengkap (Nama, Email, Edit, Backup Data, Keluar)
+
+### 1. Permintaan Pengguna
+- Mengubah tombol keluar merah di pojok kanan atas header menjadi **tombol Profil User**.
+- Saat diklik muncul jendela profil berisi: **Nama**, **Email**, tombol **Edit Profil**, fitur **Backup & Pulihkan Data**, serta tombol **Keluar Akun**.
+
+---
+
+### 2. Implementasi Solusi
+1. **Tombol Profil Header (`src/components/Navigation.tsx`)**:
+   - Mengganti ikon keluar di kanan atas menjadi tombol **Profil** (`<User />` dengan badge/warna emerald rapi).
+   - Menghubungkannya ke modal baru `UserProfileModal`.
+2. **Modal Profil Akun (`src/components/modals/UserProfileModal.tsx`)**:
+   - Menampilkan avatar inisial, badge paket lisensi aktif (*Starter / Full Bundling / VIP*), **Nama Lengkap**, dan **Email Terdaftar**.
+   - **Mode Edit Profil**: Pengguna dapat mengedit **Nama** maupun **Email** dengan sinkronisasi otomatis ke server ([src/app/api/auth/profile/route.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/api/auth/profile/route.ts) & `updateBuyerProfile` di [src/lib/serverBuyerStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/lib/serverBuyerStore.ts)) dan pemindahan aman *localStorage scope* agar progres ibadah tidak hilang saat mengganti email.
+   - **Backup & Restore Data**: Dilengkapi tombol instan **Cadangkan Data (.json)** dan **Pulihkan Data dari File (.json)** (dengan pilihan *Gabungkan* atau *Ganti Total* serta pratinjau jumlah amalan, hajat, sedekah, dan dzikir), memanfaatkan helper bersama di [src/utils/backupUtils.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/utils/backupUtils.ts).
+   - **Tombol Keluar dari Akun**: Ditempatkan di bagian bawah modal dan memanggil popup konfirmasi keluar yang aman.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Production Build**: `npm run build` sukses 100% (22/22 halaman & API terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---
