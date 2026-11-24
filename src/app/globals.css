@@ -56,7 +56,7 @@ body {
 
 @keyframes fadeIn {
   from {
-    opacity: 1;
+    opacity: 0;
   }
   to {
     opacity: 1;
@@ -64,5 +64,50 @@ body {
 }
 
 .animate-fade-in {
-  opacity: 1;
+  animation: fadeIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnterRight {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pageEnterLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pageEnterUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-page-enter-right {
+  animation: pageEnterRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-page-enter-left {
+  animation: pageEnterLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-page-enter-up {
+  animation: pageEnterUp 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

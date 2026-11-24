@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
-import { Navigation } from '@/components/Navigation';
 import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
-import { PwaNotificationManager } from '@/components/pwa/PwaNotificationManager';
 import { TierGateView } from '@/components/layout/TierGateView';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -16,12 +14,37 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-// Variabel memori level-modul untuk menandai bahwa aplikasi sudah terhidrasi di sesi browser
+const ROUTE_ORDER = [
+  '/dashboard',
+  '/amalan',
+  '/glowup',
+  '/tasbih',
+  '/vision',
+  '/hajat',
+  '/quran',
+];
+
+// Variabel memori level-modul untuk menandai bahwa aplikasi sudah terhidrasi & melacak arah transisi antar menu
 let isAppHydrated = false;
+let lastRouteIndex: number | null = null;
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const currentRouteIndex = ROUTE_ORDER.indexOf(pathname);
+
+  const pageTransitionClass = useMemo(() => {
+    if (lastRouteIndex === null || currentRouteIndex === -1 || lastRouteIndex === currentRouteIndex) {
+      return 'animate-page-enter-up';
+    }
+    return currentRouteIndex > lastRouteIndex ? 'animate-page-enter-right' : 'animate-page-enter-left';
+  }, [currentRouteIndex]);
+
+  useEffect(() => {
+    if (currentRouteIndex !== -1) {
+      lastRouteIndex = currentRouteIndex;
+    }
+  }, [currentRouteIndex]);
   const { appTheme, syncToTodayIfOutdated, syncRoadmapFromServer } = useJalurLangitStore();
   const { 
     isAuthenticated, 
@@ -231,10 +254,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3]">
-      <PwaNotificationManager />
-      <Navigation />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-24">
+    <div className="flex-1 transition-colors duration-300 bg-[#fbf9f5] dark:bg-[#0a1410] text-[#1c2e26] dark:text-[#f0f7f3] overflow-x-hidden">
+      <main key={pathname} className={`max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-28 ${pageTransitionClass}`}>
         {upgradeToast && (
           <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-stone-900 shadow-lg flex items-center justify-between gap-3 animate-fade-in border border-amber-600/30">
             <div className="flex items-center gap-2.5">

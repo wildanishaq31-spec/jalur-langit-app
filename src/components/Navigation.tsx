@@ -210,8 +210,8 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
             className="absolute inset-0 overflow-hidden rounded-3xl drop-shadow-[0_6px_20px_rgba(6,78,59,0.12)] dark:drop-shadow-[0_8px_24px_rgba(0,0,0,0.45)] pointer-events-none"
           >
             <div
-              className="w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.32,1.25,0.4,1)]"
-              style={{ transform: `translateX(${((notchIndex + 0.5) / 7) * 100}%)` }}
+              className="w-full h-full will-change-transform transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1.08,0.36,1)]"
+              style={{ transform: `translate3d(${((notchIndex + 0.5) / 7) * 100}%, 0, 0)` }}
             >
               <div className="absolute top-0 bottom-0 left-0 -translate-x-1/2 flex items-stretch w-[1400px]">
                 {/* Sayap Kiri */}
@@ -279,7 +279,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
                 >
                   {/* Lingkaran Ikon Mengapung (Pop-up ke dalam Curved Notch saat aktif/focus) */}
                   <div
-                    className={`absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full transition-all duration-300 ease-[cubic-bezier(0.32,1.25,0.4,1)] ${
+                    className={`absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full will-change-transform transition-all duration-[340ms] ease-[cubic-bezier(0.22,1.08,0.36,1)] ${
                       isNotchFocused
                         ? isTasbih
                           ? `-top-[18px] w-11 h-11 text-white border-[2.5px] border-[#fbf9f5] dark:border-[#0a1410] ${

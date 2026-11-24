@@ -3084,3 +3084,34 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+
+## 📌 Sesi 25 November 2026 (04:44 WIB) - Persistent Navigation Bridge & Transisi Halaman Terarah (Smooth Menu Switching)
+
+### 1. Akar Masalah yang Ditemukan
+1. **Unmounting Komponen Navigasi Antar-Rute**:
+   - Sebelumnya komponen `<Navigation />` berada di dalam `<AppShell />` pada masing-masing halaman (`/dashboard`, `/amalan`, `/glowup`, `/tasbih`, `/vision`, `/hajat`, `/quran`).
+   - Akibatnya, saat pengguna berpindah menu, `<Navigation />` ikut hancur (*unmount*) dan dibuat ulang (*remount*), sehingga animasi *Curved Notch* meluncur tidak sempat berputar dari posisi menu sebelumnya dan terasa melompat/kaku.
+2. **Animasi Konten Halaman Tidak Berjalan**:
+   - Aturan `.animate-fade-in` di [globals.css](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/globals.css) sebelumnya hanya berisi `opacity: 1` ke `opacity: 1` tanpa perpindahan halus saat berganti halaman.
+
+---
+
+### 2. Implementasi Solusi
+1. **Navigasi Persisten Global (`src/components/layout/PersistentNavigationBridge.tsx` & `src/app/layout.tsx`)**:
+   - Memindahkan `<Navigation />` dan `<PwaNotificationManager />` ke jembatan persisten di level `RootLayout` untuk ke-7 rute utama aplikasi.
+   - `<Navigation />` kini **tetap menempel di DOM tanpa pernah unmount** saat pindah antar menu, sehingga **Curved Notch dan lingkaran FAB benar-benar meluncur mulus** (`translate3d` GPU-accelerated 420ms `cubic-bezier(0.22, 1.08, 0.36, 1)`) dari ikon lama menuju ikon baru, serta header atas bebas kedipan.
+2. **Transisi Halaman Terarah (*Directional Page Slide*) (`src/app/globals.css` & `src/components/layout/AppShell.tsx`)**:
+   - Menambahkan `@keyframes pageEnterRight`, `pageEnterLeft`, dan `pageEnterUp`, serta menghidupkan `.animate-fade-in`.
+   - `AppShell` kini melacak urutan indeks rute (`lastRouteIndex` → `currentRouteIndex`):
+     - Berpindah ke tab sebelah kanan → konten masuk meluncur halus dari kanan (`animate-page-enter-right`).
+     - Berpindah ke tab sebelah kiri → konten masuk meluncur halus dari kiri (`animate-page-enter-left`).
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Production Build**: `npm run build` sukses 100% (21/21 halaman terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---
