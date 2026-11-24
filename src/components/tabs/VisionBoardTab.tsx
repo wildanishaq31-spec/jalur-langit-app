@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import confetti from 'canvas-confetti';
 import { 
   Sparkles, 
@@ -47,12 +48,17 @@ export const VisionBoardTab: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingVisionItem, setEditingVisionItem] = useState<VisionBoardItem | null>(null);
   const [isLetterModalOpen, setIsLetterModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const affirmationRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Form states for future letter
   const [letterTitle, setLetterTitle] = useState('');
   const [letterContent, setLetterContent] = useState('');
   const [letterOpenDate, setLetterOpenDate] = useState('Hari ke-30');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (affirmationRef.current) {
@@ -315,9 +321,9 @@ export const VisionBoardTab: React.FC = () => {
       />
 
       {/* MODAL: ADD FUTURE LETTER */}
-      {isLetterModalOpen && (
-        <div className="fixed inset-0 z-35 overflow-y-auto bg-black/75 backdrop-blur-sm p-4 pb-24 flex items-center justify-center animate-fade-in">
-          <div className="relative w-full max-w-md my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[85vh] flex flex-col overflow-hidden">
+      {mounted && isLetterModalOpen && createPortal(
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-4 flex items-center justify-center animate-fade-in">
+          <div className="relative w-full max-w-md my-auto bg-white dark:bg-emerald-950 rounded-3xl shadow-2xl border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden">
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 p-5 pb-4 border-b border-stone-100 dark:border-emerald-900/60 flex items-center justify-between flex-shrink-0 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md">
               <div className="flex items-center gap-3">
@@ -397,7 +403,8 @@ export const VisionBoardTab: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

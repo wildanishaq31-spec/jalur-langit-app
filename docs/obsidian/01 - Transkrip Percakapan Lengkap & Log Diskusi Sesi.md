@@ -2957,3 +2957,34 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke remote repository (`origin master` & `origin master:main`).
 
 ---
+
+
+## 📌 Sesi 24 November 2026 (19:38 WIB) - Elevasi Z-Index Popup Modal Menjadi Paling Depan (Anti-Terpotong Header & Bottom Navigation)
+
+### 1. Masalah & Evaluasi
+1. **Popup Modal Terpotong & Tertutup Header/Navbar**:
+   - Pada modal "Tambah Impian ke Vision Board" ([AddVisionModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddVisionModal.tsx)), modal sebelumnya menggunakan kelas CSS `z-35` dengan padding bawah `pb-24`.
+   - Sementara itu, Header navigasi atas ([Navigation.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/Navigation.tsx)) dan Bottom Navigation Bar bawah menggunakan `z-40`.
+   - Karena nilai `z-35 < z-40`, header atas tetap mengapung di depan modal (menutupi judul modal) dan bottom nav bar bawah tetap mengapung di depan tombol simpan modal (menghalangi tombol aksi).
+   - Masalah serupa juga terdapat pada [AddHajatModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddHajatModal.tsx), [AddSedekahModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddSedekahModal.tsx), dan modal surat masa depan di [VisionBoardTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/VisionBoardTab.tsx).
+
+---
+
+### 2. Implementasi Solusi
+1. **Elevasi Z-Index Modal Menjadi `z-[100]`**:
+   - Di [AddVisionModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddVisionModal.tsx#L162-L170): Mengubah `z-35` menjadi `z-[100]`.
+   - Mengubah padding dari `p-4 pb-24` menjadi `p-3 sm:p-4`, dan container modal menggunakan `max-h-[92vh] sm:max-h-[88vh] my-auto`.
+   - **Hasil**: Backdrop gelap dan popup modal kini berada **tepat di lapisan paling depan (di atas header dan di atas bottom navigation bar)**. Header modal dan tombol simpan di bagian bawah terlihat utuh 100% tanpa terpotong atau tertutup elemen lain.
+2. **Standardisasi Modal Terkait**:
+   - Memperbarui [AddHajatModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddHajatModal.tsx) ke `z-[100]`.
+   - Memperbarui [AddSedekahModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/AddSedekahModal.tsx) ke `z-[100]`.
+   - Memperbarui modal surat masa depan di [VisionBoardTab.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/tabs/VisionBoardTab.tsx) dengan `createPortal(..., document.body)` dan `z-[100]`.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% tanpa error.
+- **Production Build**: `npm run build` sukses 100% (20/20 rute static/dynamic).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---
