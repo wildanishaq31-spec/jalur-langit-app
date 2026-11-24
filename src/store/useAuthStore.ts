@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AuthUser, UserTier, TIER_CONFIG, AdminCredentials } from '@/types/auth';
 import { encryptPassword, decryptPassword } from '@/utils/cryptoUtils';
+import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 
 export const DEFAULT_ADMIN_CREDENTIALS: AdminCredentials = {
   email: 'agung.siswoyo14@gmail.com',
@@ -62,6 +63,7 @@ interface AuthState {
   updateBuyerTier: (email: string, tier: UserTier) => void;
   touchUserActivity: () => void;
   loginAsAdmin: () => void;
+  syncWithServerBuyers: (serverBuyers: AuthUser[]) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -182,6 +184,14 @@ export const useAuthStore = create<AuthState>()(
                 ...data.user,
                 lastActiveAt: new Date().toISOString()
               };
+
+              // PENTING: Isolasi data akun per user di perangkat ini
+              try {
+                useJalurLangitStore.getState().switchUserScope(activeUser.email);
+              } catch (e) {
+                console.warn('Gagal isolasi scope user:', e);
+              }
+
               set((state) => ({
                 currentUser: activeUser,
                 authError: null,
@@ -210,6 +220,14 @@ export const useAuthStore = create<AuthState>()(
             ...match,
             lastActiveAt: new Date().toISOString()
           };
+
+          // PENTING: Isolasi data akun per user di perangkat ini
+          try {
+            useJalurLangitStore.getState().switchUserScope(activeMatch.email);
+          } catch (e) {
+            console.warn('Gagal isolasi scope user:', e);
+          }
+
           set((state) => ({
             currentUser: activeMatch,
             authError: null,
@@ -237,6 +255,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        try {
+          useJalurLangitStore.getState().switchUserScope('');
+        } catch (e) {
+          console.warn('Gagal reset scope user saat logout:', e);
+        }
         set({
           isAuthenticated: false,
           isTransitioning: false,
@@ -315,6 +338,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       loginAsAdmin: () => {
+        try {
+          useJalurLangitStore.getState().switchUserScope('agung.siswoyo14@gmail.com');
+        } catch (e) {
+          console.warn('Gagal switch scope user ke admin:', e);
+        }
         const adminUser: AuthUser = {
           email: 'agung.siswoyo14@gmail.com',
           name: 'Agung Siswoyo (Owner)',
@@ -330,6 +358,24 @@ export const useAuthStore = create<AuthState>()(
           isTransitioning: false,
           authError: null,
           deniedEmailAttempt: null
+        });
+      },
+
+      syncWithServerBuyers: (serverBuyers: AuthUser[]) => {
+        if (!Array.isArray(serverBuyers) || serverBuyers.length === 0) return;
+        set((state) => {
+          const map = new Map<string, AuthUser>();
+          state.whitelist.forEach((b) => map.set(b.email.toLowerCase(), b));
+          serverBuyers.forEach((b) => {
+            const prev = map.get(b.email.toLowerCase());
+            map.set(b.email.toLowerCase(), {
+              ...prev,
+              ...b
+            });
+          });
+          return {
+            whitelist: Array.from(map.values())
+          };
         });
       }
     }),

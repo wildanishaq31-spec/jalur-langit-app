@@ -290,6 +290,15 @@ interface JalurLangitState {
   setNotificationTime: (category: TimeCategory, time: string) => void;
   resetAllData: () => void;
 
+  // Multi-Account Data Isolation & Fresh Start
+  currentUserEmail: string | null;
+  switchUserScope: (newUserEmail: string) => void;
+  resetToFreshUser: () => void;
+
+  // Cloud Roadmap Synchronization
+  syncRoadmapFromServer: () => Promise<void>;
+  broadcastRoadmapToServer: (customFeatures?: RoadmapFeatureItem[]) => Promise<void>;
+
   // Backup & Restore System (Offline-first data security)
   exportBackupData: () => JalurLangitBackupData;
   restoreBackupData: (
@@ -410,74 +419,93 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           badgeColor: feature.badgeColor || milestoneCalc.badgeColor,
           createdAt: new Date().toISOString()
         };
-        return {
+        const res = {
           roadmapFeatures: [newFeature, ...state.roadmapFeatures],
           featureVotes: {
             ...state.featureVotes,
             [newId]: state.featureVotes[newId] || 0
           }
         };
+        setTimeout(() => get().broadcastRoadmapToServer(res.roadmapFeatures), 100);
+        return res;
       }),
-      updateRoadmapFeature: (id, updates) => set((state) => ({
-        roadmapFeatures: state.roadmapFeatures.map((f) => {
-          if (f.id !== id) return f;
-          const merged = { ...f, ...updates };
-          if (updates.milestones) {
-            const calc = calculateMilestoneProgress(updates.milestones);
-            merged.progressPercent = calc.progressPercent;
-            merged.status = calc.status;
-            merged.statusLabel = calc.statusLabel;
-            merged.badgeColor = calc.badgeColor;
-          }
-          return merged;
-        })
-      })),
-      deleteRoadmapFeature: (id) => set((state) => ({
-        roadmapFeatures: state.roadmapFeatures.filter((f) => f.id !== id)
-      })),
-      resetRoadmapFeatures: () => set({
-        roadmapFeatures: ROADMAP_FEATURES
-      }),
-      toggleRoadmapMilestone: (featureId, milestoneId) => set((state) => ({
-        roadmapFeatures: state.roadmapFeatures.map((f) => {
-          if (f.id !== featureId) return f;
-          const currentMilestones = f.milestones && f.milestones.length > 0
-            ? f.milestones
-            : DEFAULT_ROADMAP_MILESTONES.map(m => ({ ...m }));
-          
-          const updatedMilestones = currentMilestones.map((m) => {
-            if (m.id === milestoneId) {
-              const nextStatus = !m.isCompleted;
-              return {
-                ...m,
-                isCompleted: nextStatus,
-                completedAt: nextStatus ? new Date().toISOString() : undefined
-              };
+      updateRoadmapFeature: (id, updates) => {
+        set((state) => {
+          const updated = state.roadmapFeatures.map((f) => {
+            if (f.id !== id) return f;
+            const merged = { ...f, ...updates };
+            if (updates.milestones) {
+              const calc = calculateMilestoneProgress(updates.milestones);
+              merged.progressPercent = calc.progressPercent;
+              merged.status = calc.status;
+              merged.statusLabel = calc.statusLabel;
+              merged.badgeColor = calc.badgeColor;
             }
-            return m;
+            return merged;
           });
+          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
+          return { roadmapFeatures: updated };
+        });
+      },
+      deleteRoadmapFeature: (id) => {
+        set((state) => {
+          const updated = state.roadmapFeatures.filter((f) => f.id !== id);
+          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
+          return { roadmapFeatures: updated };
+        });
+      },
+      resetRoadmapFeatures: () => {
+        set({ roadmapFeatures: ROADMAP_FEATURES });
+        setTimeout(() => get().broadcastRoadmapToServer(ROADMAP_FEATURES), 100);
+      },
+      toggleRoadmapMilestone: (featureId, milestoneId) => {
+        set((state) => {
+          const updated = state.roadmapFeatures.map((f) => {
+            if (f.id !== featureId) return f;
+            const currentMilestones = f.milestones && f.milestones.length > 0
+              ? f.milestones
+              : DEFAULT_ROADMAP_MILESTONES.map(m => ({ ...m }));
+            
+            const updatedMilestones = currentMilestones.map((m) => {
+              if (m.id === milestoneId) {
+                const nextStatus = !m.isCompleted;
+                return {
+                  ...m,
+                  isCompleted: nextStatus,
+                  completedAt: nextStatus ? new Date().toISOString() : undefined
+                };
+              }
+              return m;
+            });
 
-          const calc = calculateMilestoneProgress(updatedMilestones);
+            const calc = calculateMilestoneProgress(updatedMilestones);
 
-          return {
-            ...f,
-            milestones: updatedMilestones,
-            progressPercent: calc.progressPercent,
-            status: calc.status,
-            statusLabel: calc.statusLabel,
-            badgeColor: calc.badgeColor
-          };
-        })
-      })),
-      toggleRoadmapFeatureDraft: (id) => set((state) => ({
-        roadmapFeatures: state.roadmapFeatures.map((f) => {
-          if (f.id !== id) return f;
-          return {
-            ...f,
-            isDraft: !f.isDraft
-          };
-        })
-      })),
+            return {
+              ...f,
+              milestones: updatedMilestones,
+              progressPercent: calc.progressPercent,
+              status: calc.status,
+              statusLabel: calc.statusLabel,
+              badgeColor: calc.badgeColor
+            };
+          });
+          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
+          return { roadmapFeatures: updated };
+        });
+      },
+      toggleRoadmapFeatureDraft: (id) => {
+        set((state) => {
+          const updated = state.roadmapFeatures.map((f) => {
+            if (f.id !== id) return f;
+            return {
+              ...f,
+              isDraft: !f.isDraft
+            };
+          });
+          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
+          return { roadmapFeatures: updated };
+        });
+      },
 
       // Navigation & Cross-menu integration
       activeTab: 'home',
@@ -1040,6 +1068,104 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           selectedDate: getTodayDateString(),
           completedAmalan: {},
         });
+      },
+
+      // Multi-Account Data Isolation & Fresh Start
+      currentUserEmail: null,
+      switchUserScope: (newUserEmail: string) => {
+        const state = get();
+        const currentEmail = (state.currentUserEmail || '').trim().toLowerCase();
+        const targetEmail = (newUserEmail || '').trim().toLowerCase();
+
+        if (!targetEmail) {
+          set({ currentUserEmail: null });
+          return;
+        }
+
+        if (currentEmail === targetEmail) {
+          return;
+        }
+
+        // 1. Simpan snapshot data akun sebelumnya di localStorage browser perangkat ini
+        if (currentEmail && typeof window !== 'undefined') {
+          try {
+            const backup = state.exportBackupData();
+            localStorage.setItem(`jalur_langit_user_data_${currentEmail}`, JSON.stringify(backup));
+          } catch (e) {
+            console.warn('Gagal menyimpan cache akun lama:', e);
+          }
+        }
+
+        // 2. Cek apakah user target sudah pernah punya data tersimpan di browser ini
+        if (typeof window !== 'undefined') {
+          const existingDataStr = localStorage.getItem(`jalur_langit_user_data_${targetEmail}`);
+          if (existingDataStr) {
+            try {
+              const parsed = JSON.parse(existingDataStr);
+              get().restoreBackupData(parsed, 'replace');
+              set({ currentUserEmail: targetEmail });
+              return;
+            } catch (e) {
+              console.warn('Gagal memuat cache user target:', e);
+            }
+          }
+        }
+
+        // 3. Jika belum pernah tersimpan di browser ini -> Berikan tampilan KOSONGAN (0% amalan, fresh start)
+        get().resetToFreshUser();
+        set({ currentUserEmail: targetEmail });
+      },
+
+      resetToFreshUser: () => {
+        set({
+          selectedDate: getTodayDateString(),
+          completedAmalan: {},
+          hajatList: [],
+          todayAffirmation: 'Hari ini aku bersyukur dengan tenang, percaya diri, dan menerima hal baik yang Allah hadirkan untukku.',
+          sedekahLogs: [],
+          dailyTasbihMap: {},
+          tasbihCount: 0,
+          tasbihTotalLifetime: 0,
+          glowUpMap: {
+            [getTodayDateString()]: { ...DEFAULT_GLOW_UP },
+          },
+          visionBoardItems: [],
+          quranCompletedJuz: [],
+          dailyCicilSholatMap: {},
+          gratitudeMap: {},
+          futureLetters: [],
+          kajianNotes: [],
+        });
+      },
+
+      // Cloud Roadmap Synchronization
+      syncRoadmapFromServer: async () => {
+        try {
+          const res = await fetch('/api/roadmap', { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.features) && data.features.length > 0) {
+              set({ roadmapFeatures: data.features });
+            }
+          }
+        } catch (err) {
+          console.warn('Gagal mengambil roadmap dari server:', err);
+        }
+      },
+
+      broadcastRoadmapToServer: async (customFeatures?: RoadmapFeatureItem[]) => {
+        try {
+          const features = customFeatures || get().roadmapFeatures;
+          if (Array.isArray(features) && features.length > 0) {
+            await fetch('/api/roadmap', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ features })
+            });
+          }
+        } catch (err) {
+          console.warn('Gagal broadcast roadmap ke server:', err);
+        }
       },
 
       // Backup & Restore Implementation

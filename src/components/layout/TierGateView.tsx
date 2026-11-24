@@ -106,7 +106,7 @@ export const TierGateView: React.FC<TierGateViewProps> = ({
       {/* Action Buttons */}
       <div className="space-y-2.5 pt-1">
         <a
-          href="https://lynk.id"
+          href="https://lynk.id/jalurlangitapp"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full py-3 sm:py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"

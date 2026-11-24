@@ -31,6 +31,17 @@ export const LoginPage: React.FC = () => {
   const [isUsingOtherAccount, setIsUsingOtherAccount] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
+  // Auto-detect email from URL query params (misal dari link email Lynk.id / checkout)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const emailParam = params.get('email');
+      if (emailParam && emailParam.includes('@')) {
+        setInputEmail(emailParam.trim());
+      }
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputEmail.trim() || isVerifying) return;
@@ -200,7 +211,7 @@ export const LoginPage: React.FC = () => {
           </p>
 
           <a
-            href="https://lynk.id"
+            href="https://lynk.id/jalurlangitapp"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-[10px] sm:text-xs shadow-xs transition-all active:scale-95"
@@ -390,7 +401,7 @@ export const LoginPage: React.FC = () => {
               </button>
 
               <a
-                href="https://lynk.id"
+                href="https://lynk.id/jalurlangitapp"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-amber-400 hover:bg-amber-300 text-stone-900 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"

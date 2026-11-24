@@ -2615,3 +2615,37 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 ---
 
 > Berkas ini didokumentasikan otomatis untuk memastikan kontinuitas proyek yang sempurna.
+
+
+---
+
+## 📌 Sesi 24 November 2026 (14:15 WIB) - Solusi Alur Akses Lynk.id, Sinkronisasi Panel Admin, Roadmap Cloud, & Isolasi Akun Pengguna
+
+### 1. Masalah & Temuan Pengujian Pengguna
+1. **Link Akses Produk di Lynk.id**:
+   - Pemilihan antara `https://jalur-langit-app.vercel.app/login` vs `https://jalur-langit-app.vercel.app/login?tier=starter`.
+   - Direkomendasikan link universal `https://jalur-langit-app.vercel.app/login` karena tier lisensi dibaca otomatis secara akurat dari backend server sesuai email checkout pembeli.
+2. **Alur Upgrade Paket (Paywall TierGateView)**:
+   - Tombol *"Upgrade ke Paket Full Bundling (Best Seller) (Rp 89.000)"* dihubungkan langsung ke `https://lynk.id/jalurlangitapp`.
+   - Pembeli memasukkan email yang sama saat checkout upgrade, lalu klik *"Sudah Bayar? Cek Status Lisensi"* untuk membuka fitur seketika tanpa kehilangan riwayat atau catatan ibadah.
+3. **Data Tidak Kosongan Saat Ganti Akun Tester (`agung.siswoyo77@gmail.com`)**:
+   - Terjadi karena browser HP menyimpan data di satu key global `localStorage`. Ketika akun admin logout dan digantikan akun pembeli tester di HP yang sama, browser masih memuat centang amalan dan hajat lama.
+   - Solusi: Dibuat sistem **Multi-Account Data Isolation** (`switchUserScope` & `resetToFreshUser`). Setiap email baru yang belum memiliki data di perangkat tersebut akan langsung dibuka dalam kondisi **KOSONGAN (0% amalan, fresh start)**. Disediakan pula tombol manual *"Mulai dari Nol (Reset Akun Bersih)"* di Drawer Menu.
+4. **Roadmap Inovasi Tidak Sinkron Antara PC Admin dan HP Pengguna**:
+   - Sebelumnya pengaturan roadmap di Panel Admin hanya tersimpan di `localStorage` PC admin.
+   - Solusi: Dibuat endpoint API `/api/roadmap` (GET & POST). Perubahan roadmap di Panel Admin otomatis dibroadcast ke server cloud, dan HP pengguna otomatis memanggil `syncRoadmapFromServer` saat membuka halaman `/roadmap`.
+5. **Akun Tester `agung.siswoyo77@gmail.com` Bisa Login PWA tapi Tidak Terbaca di Panel Admin PC**:
+   - Server Vercel sebenarnya sudah mencatat akun tersebut, namun browser PC Admin Panel belum pernah melakukan `fetch` ke `/api/admin/buyers`.
+   - Solusi: Ditambahkan auto-fetch `syncBuyersFromServer` saat admin login/unlocked, dan tombol interaktif **`[ 🔄 Sinkronkan Data Server / Lynk.id ]`** di header tabel pembeli.
+
+### 2. File yang Dibuat & Dimodifikasi
+- `src/app/api/roadmap/route.ts` (API Cloud Server untuk Roadmap)
+- `src/app/panel-admin/page.tsx` (Auto-sync pembeli & roadmap, tombol sinkronisasi server, 2-way sync)
+- `src/app/roadmap/page.tsx` (Auto-pull roadmap server pada mount)
+- `src/components/auth/LoginPage.tsx` (Update link toko Lynk.id resmi & auto-detect URL params)
+- `src/components/layout/TierGateView.tsx` (Update target URL upgrade ke toko Lynk.id)
+- `src/components/modals/AppDrawerMenu.tsx` (Tombol Reset Akun Bersih dari Nol)
+- `src/store/useAuthStore.ts` (Integrasi `switchUserScope` & `syncWithServerBuyers`)
+- `src/store/useJalurLangitStore.ts` (Multi-account isolation & Roadmap server broadcast)
+
+---

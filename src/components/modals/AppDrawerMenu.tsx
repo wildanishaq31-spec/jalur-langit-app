@@ -34,7 +34,8 @@ import {
   BellRing,
   FileJson,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -66,6 +67,7 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
     userLocation,
     setIsAlarmModalOpen,
     resetAllData,
+    resetToFreshUser,
     completedAmalan,
     hajatList,
     sedekahLogs,
@@ -820,18 +822,32 @@ export const AppDrawerMenu: React.FC<AppDrawerMenuProps> = ({ onOpenLogoutModal 
                     )}
 
                     {/* Reset Button */}
-                    <div className="pt-2 border-t border-stone-200/60 dark:border-emerald-900/40">
+                    <div className="pt-2 border-t border-stone-200/60 dark:border-emerald-900/40 space-y-1.5">
                       <button
                         onClick={() => {
-                          if (confirm('Apakah kamu yakin ingin mengosongkan progres checklist kalender amalan? Seluruh catatan amalan akan di-reset.')) {
+                          if (confirm('Apakah kamu yakin ingin mengosongkan progres checklist kalender amalan? Seluruh centang amalan akan di-reset.')) {
                             resetAllData();
                             setIsDrawerOpen(false);
                           }
                         }}
-                        className="w-full py-2 px-3 rounded-2xl bg-stone-100 dark:bg-emerald-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full py-2 px-3 rounded-2xl bg-stone-100 dark:bg-emerald-900/40 hover:bg-stone-200 dark:hover:bg-emerald-900 text-stone-700 dark:text-stone-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Mulai Ulang Progres Kalender</span>
+                        <span>Reset Centang Kalender Amalan</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (confirm('Mulai perjalanan dari nol? Semua checklist, hajat, air minum, dan catatan di perangkat ini akan dikosongkan agar akun bersih.')) {
+                            resetToFreshUser();
+                            setIsDrawerOpen(false);
+                            alert('Alhamdulillah, seluruh data akun telah dibersihkan ke kosongan awal.');
+                          }
+                        }}
+                        className="w-full py-2 px-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/70 text-rose-600 dark:text-rose-400 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-rose-200 dark:border-rose-900/50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Mulai dari Nol (Reset Akun Bersih)</span>
                       </button>
                     </div>
                   </div>

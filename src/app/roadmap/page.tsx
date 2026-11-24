@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowLeft, 
@@ -24,6 +24,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 export default function RoadmapPage() {
   const { 
     roadmapFeatures,
+    syncRoadmapFromServer,
     featureVotes, 
     userVotedFeatures, 
     voteFeature, 
@@ -31,6 +32,10 @@ export default function RoadmapPage() {
     appTheme,
     toggleTheme 
   } = useJalurLangitStore();
+
+  useEffect(() => {
+    syncRoadmapFromServer();
+  }, [syncRoadmapFromServer]);
 
   const rawFeatures = roadmapFeatures && roadmapFeatures.length > 0 ? roadmapFeatures : ROADMAP_FEATURES;
   const activeFeatures = rawFeatures.filter((feature) => !feature.isDraft);

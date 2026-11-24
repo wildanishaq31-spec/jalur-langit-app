@@ -111,7 +111,8 @@ export default function PanelAdminPage() {
     adminCredentials,
     updateAdminCredentials,
     resetAdminCredentials,
-    verifyAdminLogin
+    verifyAdminLogin,
+    syncWithServerBuyers
   } = useAuthStore();
 
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
@@ -170,6 +171,8 @@ export default function PanelAdminPage() {
     resetRoadmapFeatures,
     toggleRoadmapMilestone,
     toggleRoadmapFeatureDraft,
+    syncRoadmapFromServer,
+    broadcastRoadmapToServer,
     featureVotes,
     resetFeatureVotes,
     userFeatureRequests,
@@ -201,6 +204,40 @@ export default function PanelAdminPage() {
   const [currentAIIdea, setCurrentAIIdea] = useState<GeneratedRoadmapIdea | null>(null);
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [aiModalInlinePrompt, setAiModalInlinePrompt] = useState('');
+
+  // Server Data Synchronization States
+  const [isSyncingServer, setIsSyncingServer] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+
+  const syncBuyersFromServer = async () => {
+    setIsSyncingServer(true);
+    try {
+      // 1. Sinkronkan Daftar Pembeli Terdaftar dari Server (otomatis dari Lynk.id webhook)
+      const res = await fetch('/api/admin/buyers', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.buyers) && data.buyers.length > 0) {
+          syncWithServerBuyers(data.buyers);
+        }
+      }
+
+      // 2. Sinkronkan Roadmap Fitur dari Server
+      await syncRoadmapFromServer();
+
+      const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      setLastSyncTime(timeStr);
+    } catch (err) {
+      console.error('Gagal sinkronisasi data dari server:', err);
+    } finally {
+      setIsSyncingServer(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdminUnlocked) {
+      syncBuyersFromServer();
+    }
+  }, [isAdminUnlocked]);
 
   useEffect(() => {
     setNow(Date.now());
@@ -725,7 +762,7 @@ export default function PanelAdminPage() {
     }
   };
 
-  const handleAddBuyer = (e: React.FormEvent) => {
+  const handleAddBuyer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail.trim() || !newName.trim()) return;
 
@@ -740,9 +777,47 @@ export default function PanelAdminPage() {
     };
 
     addBuyerToWhitelist(newBuyer);
+
+    // Kirim juga ke server cloud agar sinkron dengan HP pembeli
+    try {
+      await fetch('/api/admin/buyers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBuyer)
+      });
+    } catch (err) {
+      console.warn('Gagal simpan pembeli manual ke server:', err);
+    }
+
     setNewEmail('');
     setNewName('');
-    alert(`Alhamdulillah, akses untuk ${newBuyer.email} (${TIER_CONFIG[newTier].name}) berhasil ditambahkan!`);
+    alert(`Alhamdulillah, akses untuk ${newBuyer.email} (${TIER_CONFIG[newTier].name}) berhasil ditambahkan dan disinkronkan ke server!`);
+  };
+
+  const handleUpdateBuyerTier = async (email: string, tier: UserTier) => {
+    updateBuyerTier(email, tier);
+    try {
+      await fetch('/api/admin/buyers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, tier })
+      });
+    } catch (err) {
+      console.warn('Gagal update tier pembeli ke server:', err);
+    }
+  };
+
+  const handleDeleteBuyer = async (email: string) => {
+    if (confirm(`Hapus akses untuk ${email}? Lisensi pembeli ini akan dicabut baik di cache lokal maupun di server cloud.`)) {
+      removeBuyerFromWhitelist(email);
+      try {
+        await fetch(`/api/admin/buyers?email=${encodeURIComponent(email)}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        console.warn('Gagal hapus pembeli di server:', err);
+      }
+    }
   };
 
   const handleExportData = () => {
@@ -1481,6 +1556,19 @@ export default function PanelAdminPage() {
                           <span>Reset Hanya Owner</span>
                         </button>
 
+                        {/* Tombol Sinkronkan Data Server / Lynk.id */}
+                        <button
+                          type="button"
+                          onClick={syncBuyersFromServer}
+                          disabled={isSyncingServer}
+                          className="px-2.5 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                          title="Tarik data pembeli terbaru dari webhook Lynk.id & server cloud"
+                        >
+                          <RefreshCw className={`w-3 h-3 text-emerald-600 dark:text-emerald-400 ${isSyncingServer ? 'animate-spin' : ''}`} />
+                          <span>{isSyncingServer ? 'Menyinkronkan...' : 'Sinkronkan Data Server'}</span>
+                          {lastSyncTime && <span className="text-[10px] font-normal opacity-75">({lastSyncTime})</span>}
+                        </button>
+
                         {selectedTierFilter !== 'all' && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-800">
                             <span>Filter: {TIER_CONFIG[selectedTierFilter].name}</span>
@@ -1574,7 +1662,7 @@ export default function PanelAdminPage() {
                                   <td className="py-3 px-3">
                                     <select
                                       value={buyer.tier}
-                                      onChange={(e) => updateBuyerTier(buyer.email, e.target.value as UserTier)}
+                                      onChange={(e) => handleUpdateBuyerTier(buyer.email, e.target.value as UserTier)}
                                       className="px-2 py-1 rounded-lg border text-xs font-bold bg-stone-50 dark:bg-emerald-950 border-stone-300 dark:border-emerald-700 text-stone-900 dark:text-stone-100 shadow-xs focus:ring-1 focus:ring-emerald-500"
                                     >
                                       <option value="starter">Starter (Rp 49k)</option>
@@ -1588,11 +1676,7 @@ export default function PanelAdminPage() {
                                   <td className="py-3 px-3 text-right">
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        if (confirm(`Hapus akses untuk ${buyer.email}?`)) {
-                                          removeBuyerFromWhitelist(buyer.email);
-                                        }
-                                      }}
+                                      onClick={() => handleDeleteBuyer(buyer.email)}
                                       className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
                                       title="Cabut Akses"
                                     >
