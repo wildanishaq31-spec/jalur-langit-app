@@ -41,7 +41,7 @@ export const GlowUpTab: React.FC = () => {
   } = useJalurLangitStore();
 
   const currentGlowUp = glowUpMap[selectedDate] || {
-    waterGlasses: 4,
+    waterGlasses: 0,
     morningSkincare: false,
     nightSkincare: false,
     workout30Min: false,

@@ -38,7 +38,7 @@ import {
 export const getTodayKey = getTodayDateString;
 
 const DEFAULT_GLOW_UP: GlowUpHabits = {
-  waterGlasses: 4,
+  waterGlasses: 0,
   morningSkincare: false,
   nightSkincare: false,
   workout30Min: false,
@@ -834,7 +834,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       },
 
       // Quran & Kajian
-      quranCompletedJuz: [1],
+      quranCompletedJuz: [],
       toggleJuz: (juz) => {
         set((state) => {
           const exists = state.quranCompletedJuz.includes(juz);
@@ -934,13 +934,7 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       },
 
       // Gratitude
-      gratitudeMap: {
-        [getTodayDateString()]: [
-          'Masih diberikan nafas dan kesempatan sholat Subuh hari ini',
-          'Kesehatan badan dan pikiran yang tenang',
-          'Keluarga yang saling mendoakan dalam kebaikan'
-        ]
-      },
+      gratitudeMap: {},
       setGratitudeList: (dateStr, list) => {
         set((state) => ({
           gratitudeMap: {
@@ -1503,6 +1497,43 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             };
             state.userVotedFeatures = [];
             state.isFeatureVotesResetV1 = true;
+          }
+
+          // Pembersihan otomatis data dummy bawaan lama di browser pengguna
+          if (!(state as any).isMockDataResetV2) {
+            // 1. Reset completed juz jika hanya berisi [1] dari default lama
+            if (Array.isArray(state.quranCompletedJuz) && state.quranCompletedJuz.length === 1 && state.quranCompletedJuz[0] === 1) {
+              state.quranCompletedJuz = [];
+            }
+            
+            // 2. Reset waterGlasses jika terisi 4 (default lama)
+            if (state.glowUpMap) {
+              for (const key of Object.keys(state.glowUpMap)) {
+                if (state.glowUpMap[key]?.waterGlasses === 4) {
+                  state.glowUpMap[key].waterGlasses = 0;
+                }
+              }
+            }
+
+            // 3. Reset gratitudeMap jika berisi kalimat dummy lama
+            if (state.gratitudeMap) {
+              const defaultQuotes = [
+                'Masih diberikan nafas dan kesempatan sholat Subuh hari ini',
+                'Kesehatan badan dan pikiran yang tenang',
+                'Keluarga yang saling mendoakan dalam kebaikan',
+                'Masih diberikan nikmat nafas dan kesempatan sholat Subuh hari ini',
+                'Kesehatan badan, kejernihan pikiran, dan ketenangan hati',
+                'Keluarga dan sahabat yang senantiasa saling mendoakan dalam kebaikan'
+              ];
+              for (const dateKey of Object.keys(state.gratitudeMap)) {
+                const list = state.gratitudeMap[dateKey];
+                if (Array.isArray(list) && list.every(txt => defaultQuotes.some(dq => txt.includes(dq) || dq.includes(txt)))) {
+                  delete state.gratitudeMap[dateKey];
+                }
+              }
+            }
+
+            (state as any).isMockDataResetV2 = true;
           }
         }
       },

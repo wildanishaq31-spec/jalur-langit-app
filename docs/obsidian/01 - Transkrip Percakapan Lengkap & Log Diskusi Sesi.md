@@ -2804,3 +2804,45 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
    - Menambahkan mekanisme *disk persistence* ke file temporer sistem agar perubahan lisensi di Panel Admin tersimpan kuat antar-invoce serverless.
 
 ---
+
+
+## 📌 Sesi 24 November 2026 (18:35 WIB) - Reset Bersih Data Bawaan (Hidrasi, Tilawah, Gratitude) & Input Syukur Auto-Expand Vertikal
+
+### 1. Masalah & Evaluasi
+1. **Adab & Self-Care (Hidrasi Air)**:
+   - Nilai default hidrasi sebelumnya masih terisi `4` gelas, seharusnya bersih/reset ke `0` gelas untuk pengguna baru.
+2. **Khatam Tilawah 30 Juz**:
+   - Di tab Al-Qur'an (sub-tab Tilawah), Juz 1 sebelumnya tercentang secara default (`[1]` / 1 dari 30 juz), seharusnya bersih ke `0/30` juz (semua juz belum dicentang).
+3. **Gratitude Journal (Buku Rasa Syukur)**:
+   - Sebelumnya terisi 3 butir kalimat dummy contoh secara otomatis ('Masih diberikan nafas...', 'Kesehatan badan...', 'Keluarga...'), seharusnya direset bersih menjadi form kosong dengan placeholder agar pengguna bebas menulis poin syukurnya sendiri.
+4. **Teks Terpotong pada Kotak Rasa Syukur (Input Multiline Auto-Expand)**:
+   - Input catatan syukur sebelumnya menggunakan elemen `<input type="text">` satu baris, sehingga kalimat panjang terpotong ke kanan secara horizontal dan tidak terbaca utuh.
+   - Diperlukan kotak yang melebar ke bawah secara dinamis (*auto-expand textarea*) menyesuaikan panjang kalimat yang ditulis pengguna.
+
+---
+
+### 2. Implementasi Perbaikan
+1. **Reset Store State & Migrasi Cache Browser (`src/store/useJalurLangitStore.ts`)**:
+   - `DEFAULT_GLOW_UP`: `waterGlasses` diubah menjadi `0` (sebelumnya `4`).
+   - `quranCompletedJuz`: diinisialisasi ke `[]` (sebelumnya `[1]`).
+   - `gratitudeMap`: diinisialisasi ke `{}` (sebelumnya berisi 3 item mock).
+   - Menambahkan migrasi otomatis `isMockDataResetV2` pada `onRehydrateStorage`:
+     - Jika browser pengguna masih menyimpan cache lama dengan `quranCompletedJuz: [1]`, otomatis direset ke `[]`.
+     - Jika `waterGlasses === 4` (nilai default lama), otomatis direset ke `0`.
+     - Jika `gratitudeMap` hanya berisi kalimat dummy contoh, otomatis dibersihkan tanpa mengganggu catatan asli yang ditulis pengguna.
+2. **Sinkronisasi Tab GlowUp (`src/components/tabs/GlowUpTab.tsx`)**:
+   - Memastikan fallback nilai `waterGlasses` bernilai `0` saat entri tanggal belum dibuat.
+3. **Input Auto-Expand Vertikal & Format Bersih (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Mengubah `getLatestGratitudeList()` mengembalikan array kosong `['', '', '']` (placeholder siap ketik).
+   - Mengganti tag `<input type="text">` menjadi `<textarea rows={1}>`.
+   - Mengintegrasikan handler `onChange` dan `ref` yang membaca `scrollHeight` untuk menyesuaikan tinggi elemen secara otomatis (`min-h-[42px]`) tanpa scrollbar yang mengganggu (`resize-none overflow-hidden`).
+   - Merapikan posisi ikon hapus (*trash button*) dengan alignment `items-start` dan `mt-0.5` agar tetap simetris di sisi kanan atas kalimat panjang yang terdiri dari beberapa baris.
+
+---
+
+### 3. Verifikasi & Pengujian
+- **Next.js Turbopack Build**: `npm run build` berhasil 100% (20/20 rute statis & dinamis lulus tanpa error).
+- **TypeScript**: Tidak ada kesalahan tipe data.
+- **Git & Deployment**: Kode di-commit dan di-push ganda ke remote repository (`origin master` & `origin master:main`) untuk auto-deploy Vercel.
+
+---

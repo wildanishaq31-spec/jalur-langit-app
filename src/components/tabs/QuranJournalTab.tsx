@@ -99,12 +99,8 @@ export const QuranJournalTab: React.FC = () => {
         return items;
       }
     }
-    // Default awal jika aplikasi baru pertama kali dibuka
-    return [
-      'Masih diberikan nikmat nafas dan kesempatan sholat Subuh hari ini',
-      'Kesehatan badan, kejernihan pikiran, dan ketenangan hati',
-      'Keluarga dan sahabat yang senantiasa saling mendoakan dalam kebaikan'
-    ];
+    // Default awal jika aplikasi baru pertama kali dibuka (bersih/kosong)
+    return ['', '', ''];
   };
 
   // Gratitude for selectedDate (Persistent Gratitude Vault)
@@ -1189,17 +1185,27 @@ export const QuranJournalTab: React.FC = () => {
                 : `Hal lain yang kamu syukuri ke-${index + 1}...`;
 
               return (
-                <div key={index} className="flex items-center gap-2 group">
+                <div key={index} className="flex items-start gap-2 group">
                   <div className="relative flex-1">
-                    <span className="absolute left-3.5 top-3 text-xs font-bold text-amber-600 dark:text-amber-400">
+                    <span className="absolute left-3.5 top-3 text-xs font-bold text-amber-600 dark:text-amber-400 select-none pointer-events-none">
                       {index + 1}.
                     </span>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={1}
                       placeholder={placeholderText}
                       value={item}
-                      onChange={(e) => handleUpdateGratitude(index, e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                      onChange={(e) => {
+                        handleUpdateGratitude(index, e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = 'auto';
+                          el.style.height = `${Math.max(42, el.scrollHeight)}px`;
+                        }
+                      }}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 text-xs text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-none leading-relaxed overflow-hidden block min-h-[42px]"
                     />
                   </div>
 
@@ -1207,7 +1213,7 @@ export const QuranJournalTab: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveGratitude(index)}
-                      className="p-2.5 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex-shrink-0"
+                      className="p-2.5 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex-shrink-0 mt-0.5"
                       title={`Hapus nomor ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
