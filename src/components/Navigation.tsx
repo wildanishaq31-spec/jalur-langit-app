@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -37,6 +37,12 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
   const { resetAllData, appTheme, toggleTheme, toggleDrawer, isAlarmModalOpen, setIsAlarmModalOpen } = useJalurLangitStore();
   const { logout, currentUser } = useAuthStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [pendingTab, setPendingTab] = useState<ActiveTab | null>(null);
+  const [hoveredTab, setHoveredTab] = useState<ActiveTab | null>(null);
+
+  useEffect(() => {
+    setPendingTab(null);
+  }, [pathname]);
 
   // Deteksi tab aktif berdasarkan URL pathname atau fallback ke activeTab prop
   const currentTab: ActiveTab = 
@@ -58,6 +64,26 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
   const isVisionLocked = !accessibleTabs.includes('vision');
   const isHajatLocked = !accessibleTabs.includes('hajat');
   const isQuranLocked = !accessibleTabs.includes('quran');
+
+  const navItems: Array<{
+    id: ActiveTab;
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+    badge: 'crown' | 'lock' | null;
+  }> = [
+    { id: 'home', href: '/dashboard', label: 'Beranda', icon: Home, badge: null },
+    { id: 'amalan', href: '/amalan', label: 'Amalan', icon: CheckCircle2, badge: null },
+    { id: 'glowup', href: '/glowup', label: 'Self-Care', icon: Droplets, badge: isGlowUpLocked ? 'crown' : null },
+    { id: 'tasbih', href: '/tasbih', label: 'Tasbih', icon: Sparkles, badge: null },
+    { id: 'vision', href: '/vision', label: 'Vision', icon: ImageIcon, badge: isVisionLocked ? 'lock' : null },
+    { id: 'hajat', href: '/hajat', label: 'Hajat', icon: HeartHandshake, badge: isHajatLocked ? 'lock' : null },
+    { id: 'quran', href: '/quran', label: 'Quran', icon: BookOpen, badge: isQuranLocked ? 'lock' : null },
+  ];
+
+  const effectiveTab: ActiveTab = pendingTab || currentTab;
+  const notchTab: ActiveTab = hoveredTab || effectiveTab;
+  const notchIndex = Math.max(0, navItems.findIndex((item) => item.id === notchTab));
 
   const handleNavigate = (tab: ActiveTab) => {
     if (onTabChange) onTabChange(tab);
@@ -172,119 +198,137 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
         userEmail={currentUser?.email}
       />
 
-      {/* Bottom Floating Navigation Bar (Center FAB Action Focused, Bold & Creative) */}
+      {/* Bottom Floating Navigation Bar (Dynamic Sliding Curved Notch across all 7 menus) */}
       <nav className="fixed bottom-2 left-2 right-2 sm:bottom-3 z-40 pointer-events-none">
-        <div className="pointer-events-auto max-w-xl mx-auto relative">
-          {/* Background Dock dengan Lekukan Cekung Tengah (Curved Notch) */}
+        <div
+          onMouseLeave={() => setHoveredTab(null)}
+          className="pointer-events-auto max-w-xl mx-auto relative h-16"
+        >
+          {/* Background Dock dengan Sliding Curved Notch yang mengikuti menu aktif / hover */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 flex items-stretch drop-shadow-[0_8px_24px_rgba(6,78,59,0.12)] dark:drop-shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+            className="absolute inset-0 overflow-hidden rounded-3xl drop-shadow-[0_6px_20px_rgba(6,78,59,0.12)] dark:drop-shadow-[0_8px_24px_rgba(0,0,0,0.45)] pointer-events-none"
           >
-            <div className="flex-1 h-16 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg rounded-l-3xl border-y border-l border-stone-200/80 dark:border-emerald-800/60" />
-            <svg
-              viewBox="0 0 88 64"
-              preserveAspectRatio="none"
-              className="w-[88px] h-16 shrink-0 -mx-[0.5px]"
+            <div
+              className="w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.32,1.25,0.4,1)]"
+              style={{ transform: `translateX(${((notchIndex + 0.5) / 7) * 100}%)` }}
             >
-              <path
-                d="M 0 0 C 16 0, 20 28, 44 28 C 68 28, 72 0, 88 0 L 88 64 L 0 64 Z"
-                className="fill-white/95 dark:fill-emerald-950/95"
-              />
-              <path
-                d="M 0 0.5 C 16 0.5, 20 28, 44 28 C 68 28, 72 0.5, 88 0.5"
-                fill="none"
-                strokeWidth="1"
-                className="stroke-stone-200/80 dark:stroke-emerald-800/60"
-              />
-              <line
-                x1="0"
-                y1="63.5"
-                x2="88"
-                y2="63.5"
-                strokeWidth="1"
-                className="stroke-stone-200/80 dark:stroke-emerald-800/60"
-              />
-            </svg>
-            <div className="flex-1 h-16 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg rounded-r-3xl border-y border-r border-stone-200/80 dark:border-emerald-800/60" />
+              <div className="absolute top-0 bottom-0 left-0 -translate-x-1/2 flex items-stretch w-[1400px]">
+                {/* Sayap Kiri */}
+                <div className="flex-1 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg border-y border-stone-200/80 dark:border-emerald-800/60" />
+
+                {/* Lekukan Cekung Tengah (Curved Notch SVG) */}
+                <svg
+                  viewBox="0 0 72 64"
+                  preserveAspectRatio="none"
+                  className="w-[72px] h-16 shrink-0 -mx-[0.5px]"
+                >
+                  <path
+                    d="M 0 0 C 14 0, 14 32, 36 32 C 58 32, 58 0, 72 0 L 72 64 L 0 64 Z"
+                    className="fill-white/95 dark:fill-emerald-950/95"
+                  />
+                  <path
+                    d="M 0 0.5 C 14 0.5, 14 32, 36 32 C 58 32, 58 0.5, 72 0.5"
+                    fill="none"
+                    strokeWidth="1"
+                    className="stroke-stone-200/80 dark:stroke-emerald-800/60"
+                  />
+                  <line
+                    x1="0"
+                    y1="63.5"
+                    x2="72"
+                    y2="63.5"
+                    strokeWidth="1"
+                    className="stroke-stone-200/80 dark:stroke-emerald-800/60"
+                  />
+                </svg>
+
+                {/* Sayap Kanan */}
+                <div className="flex-1 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-lg border-y border-stone-200/80 dark:border-emerald-800/60" />
+              </div>
+            </div>
+
+            {/* Subtle rounded side borders */}
+            <div className="absolute inset-0 rounded-3xl border-x border-stone-200/80 dark:border-emerald-800/60 pointer-events-none" />
           </div>
 
-          {/* 7 Kolom Seimbang (Tasbih Tepat di Tengah Kolom ke-4) */}
-          <div className="relative z-10 grid grid-cols-7 items-end h-16 px-1">
-            {[
-              { id: 'home' as ActiveTab, href: '/dashboard', label: 'Beranda', icon: Home, badge: null },
-              { id: 'amalan' as ActiveTab, href: '/amalan', label: 'Amalan', icon: CheckCircle2, badge: null },
-              { id: 'glowup' as ActiveTab, href: '/glowup', label: 'Self-Care', icon: Droplets, badge: isGlowUpLocked ? 'crown' : null },
-              { id: 'tasbih' as ActiveTab, href: '/tasbih', label: 'Tasbih', icon: Sparkles, badge: null },
-              { id: 'vision' as ActiveTab, href: '/vision', label: 'Vision', icon: ImageIcon, badge: isVisionLocked ? 'lock' : null },
-              { id: 'hajat' as ActiveTab, href: '/hajat', label: 'Hajat', icon: HeartHandshake, badge: isHajatLocked ? 'lock' : null },
-              { id: 'quran' as ActiveTab, href: '/quran', label: 'Quran', icon: BookOpen, badge: isQuranLocked ? 'lock' : null },
-            ].map((item) => {
+          {/* 7 Kolom Seimbang Tanpa Padding Samping (0.00px Alignment dengan Curved Notch) */}
+          <div className="relative z-10 grid grid-cols-7 h-16">
+            {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentTab === item.id;
-
-              if (item.id === 'tasbih') {
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    prefetch={true}
-                    onClick={() => onTabChange && onTabChange('tasbih')}
-                    className="group touch-manipulation select-none flex flex-col items-center justify-end pb-1.5 h-full relative"
-                  >
-                    <div
-                      className={`w-12 h-12 -mt-7 rounded-full flex items-center justify-center text-white border-[3px] border-[#fbf9f5] dark:border-[#0a1410] transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-110 group-active:scale-95 ${
-                        isActive
-                          ? 'bg-gradient-to-tr from-amber-500 via-amber-500 to-yellow-400 scale-110 -translate-y-1 shadow-xl shadow-amber-500/40 ring-4 ring-amber-400/25'
-                          : 'bg-gradient-to-tr from-emerald-800 via-emerald-700 to-teal-600 shadow-lg shadow-emerald-900/35 group-hover:shadow-xl group-hover:shadow-emerald-700/40'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 transition-transform duration-300 group-hover:rotate-12" strokeWidth={2.3} />
-                    </div>
-                    <span
-                      className={`text-[10px] mt-1 leading-tight tracking-tight transition-colors duration-200 ${
-                        isActive
-                          ? 'text-amber-600 dark:text-amber-400 font-black'
-                          : 'text-emerald-800 dark:text-emerald-300 font-bold group-hover:text-emerald-600 dark:group-hover:text-emerald-200'
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  </Link>
-                );
-              }
+              const isActive = effectiveTab === item.id;
+              const isNotchFocused = notchTab === item.id;
+              const isTasbih = item.id === 'tasbih';
 
               return (
                 <Link
                   key={item.id}
                   href={item.href}
                   prefetch={true}
-                  onClick={() => onTabChange && onTabChange(item.id)}
-                  className="group touch-manipulation select-none flex flex-col items-center justify-end pb-1.5 h-full relative"
+                  onPointerEnter={(e) => {
+                    if (e.pointerType === 'mouse') {
+                      setHoveredTab(item.id);
+                    }
+                  }}
+                  onClick={() => {
+                    setPendingTab(item.id);
+                    setHoveredTab(null);
+                    if (onTabChange) onTabChange(item.id);
+                  }}
+                  className="group touch-manipulation select-none relative h-full block"
                 >
+                  {/* Lingkaran Ikon Mengapung (Pop-up ke dalam Curved Notch saat aktif/focus) */}
                   <div
-                    className={`relative flex items-center justify-center w-9 h-8 rounded-2xl transition-all duration-300 ease-out ${
-                      isActive
-                        ? 'bg-emerald-700 dark:bg-emerald-500 text-white -translate-y-1.5 scale-110 shadow-md shadow-emerald-700/30 ring-2 ring-emerald-100 dark:ring-emerald-900/70'
-                        : 'text-stone-400 dark:text-stone-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/60 group-hover:-translate-y-1 group-hover:scale-110 group-active:scale-95'
+                    className={`absolute left-1/2 -translate-x-1/2 flex items-center justify-center rounded-full transition-all duration-300 ease-[cubic-bezier(0.32,1.25,0.4,1)] ${
+                      isNotchFocused
+                        ? isTasbih
+                          ? `-top-[18px] w-11 h-11 text-white border-[2.5px] border-[#fbf9f5] dark:border-[#0a1410] ${
+                              isActive
+                                ? 'bg-gradient-to-tr from-amber-500 via-amber-500 to-yellow-400 shadow-lg shadow-amber-500/40 ring-2 ring-amber-300/60 scale-105'
+                                : 'bg-gradient-to-tr from-emerald-800 via-emerald-700 to-teal-600 shadow-lg shadow-emerald-900/35 ring-2 ring-emerald-200/60 dark:ring-emerald-700/50 scale-105'
+                            }`
+                          : '-top-[18px] w-11 h-11 text-white border-[2.5px] border-[#fbf9f5] dark:border-[#0a1410] bg-gradient-to-tr from-emerald-800 via-emerald-700 to-teal-600 shadow-lg shadow-emerald-900/35 ring-2 ring-emerald-200/60 dark:ring-emerald-700/50 scale-105'
+                        : isTasbih
+                          ? 'top-[9px] w-8 h-8 bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-700/60 group-hover:scale-110 group-hover:-translate-y-0.5'
+                          : 'top-[9px] w-8 h-8 text-stone-400 dark:text-stone-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 group-hover:bg-emerald-50/90 dark:group-hover:bg-emerald-900/50 group-hover:scale-110 group-hover:-translate-y-0.5'
                     }`}
                   >
-                    <Icon className="w-[18px] h-[18px] transition-transform duration-300" strokeWidth={isActive ? 2.4 : 1.9} />
+                    <Icon
+                      className={`transition-transform duration-300 ${
+                        isNotchFocused
+                          ? `w-5 h-5 ${isTasbih ? 'group-hover:rotate-12' : ''}`
+                          : 'w-[18px] h-[18px]'
+                      }`}
+                      strokeWidth={isNotchFocused ? 2.35 : 1.9}
+                    />
                     {item.badge === 'crown' && (
-                      <span className="absolute -top-1.5 -right-1.5 text-[9px] leading-none select-none" title="Eksklusif Paket VIP">
+                      <span
+                        className="absolute -top-1 -right-1 text-[9px] leading-none select-none"
+                        title="Eksklusif Paket VIP"
+                      >
                         👑
                       </span>
                     )}
                     {item.badge === 'lock' && (
-                      <span className="absolute -top-1.5 -right-1.5 text-[9px] leading-none select-none" title="Terkunci (Perlu Upgrade)">
+                      <span
+                        className="absolute -top-1 -right-1 text-[9px] leading-none select-none"
+                        title="Terkunci (Perlu Upgrade)"
+                      >
                         🔒
                       </span>
                     )}
                   </div>
+
+                  {/* Label Menu */}
                   <span
-                    className={`text-[10px] mt-0.5 leading-tight tracking-tight transition-all duration-200 ${
-                      isActive
-                        ? 'text-emerald-800 dark:text-emerald-300 font-extrabold'
-                        : 'text-stone-500 dark:text-stone-400 font-medium group-hover:text-emerald-700 dark:group-hover:text-emerald-300 group-hover:font-semibold'
+                    className={`absolute bottom-1.5 left-0 right-0 text-center text-[10px] leading-tight tracking-tight transition-colors duration-200 ${
+                      isNotchFocused
+                        ? isTasbih && isActive
+                          ? 'text-amber-600 dark:text-amber-400 font-black'
+                          : 'text-emerald-800 dark:text-emerald-300 font-extrabold'
+                        : isTasbih
+                          ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                          : 'text-stone-500 dark:text-stone-400 font-medium group-hover:text-emerald-700 dark:group-hover:text-emerald-300'
                     }`}
                   >
                     {item.label}

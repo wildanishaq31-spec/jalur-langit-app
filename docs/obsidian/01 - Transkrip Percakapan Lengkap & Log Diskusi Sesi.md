@@ -3058,3 +3058,29 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+
+## 📌 Sesi 25 November 2026 (04:37 WIB) - Dynamic Sliding Curved Notch di Seluruh 7 Menu Navigasi Bawah
+
+### 1. Permintaan Pengguna
+- Mengubah lekukan *Curved Notch* dan tombol lingkaran mengapung agar tidak terkunci (*lock*) di menu Tasbih saja, melainkan **dinamis bergerak/mengikuti menu mana pun yang sedang aktif dipilih atau di-hover**, persis seperti alur transisi pada gambar referensi.
+
+---
+
+### 2. Implementasi Solusi (`src/components/Navigation.tsx`)
+1. **Sliding Curved Notch Track (`translateX`)**:
+   - Membangun *background track* dengan *Curved Notch SVG* (`72x64px`) yang diapit dua sayap penuh, lalu digeser secara presisi dengan GPU-accelerated `translateX(${((notchIndex + 0.5) / 7) * 100}%)` dan kurva animasi pegas (`duration-500 ease-[cubic-bezier(0.32,1.25,0.4,1)]`).
+   - Menghapus padding horizontal pada `grid-cols-7` sehingga titik tengah lekukan cekung sejajar mutlak (**0.00px selisih**) dengan pusat ikon di setiap kolom ke-1 hingga ke-7.
+2. **Pop-up Floating Circle untuk Semua Tab Aktif**:
+   - Tab apa pun yang dipilih (`Beranda`, `Amalan`, `Self-Care`, `Tasbih`, `Vision`, `Hajat`, atau `Quran`), ikonnya langsung terangkat ke posisi `-top-[18px]` dalam lingkaran `w-11 h-11` dan bersemayam tepat di dalam lekukan cekung *Curved Notch* dengan jarak kelonggaran `6px`.
+   - Pada desktop/mouse (`pointerType === 'mouse'`), mengarahkan kursor ke menu lain (*hover*) turut menggeser lekukan *Curved Notch* secara langsung (*live preview*), lalu kembali ke tab aktif saat kursor keluar; sementara pada layar sentuh HP, perpindahan langsung mulus mengikuti tab yang disentuh (`pendingTab`) tanpa tertinggal *sticky hover*.
+   - Palet warna khas Jalur Langit tetap dipertahankan (gradien emerald untuk menu utama, amber emas saat Tasbih aktif).
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Production Build**: `npm run build` sukses 100% (21/21 halaman terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---
