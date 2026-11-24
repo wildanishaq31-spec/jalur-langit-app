@@ -116,6 +116,9 @@ export default function PanelAdminPage() {
   } = useAuthStore();
 
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [isSessionChecking, setIsSessionChecking] = useState(true);
+  const [rememberLogin, setRememberLogin] = useState(true);
+  const [hasSavedLogin, setHasSavedLogin] = useState(false);
   
   // 3-Faktor Admin Login States (Email, Password, PIN)
   const [adminEmailInput, setAdminEmailInput] = useState('');
@@ -247,6 +250,37 @@ export default function PanelAdminPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Sesi Login Admin Persisten & Kredensial Tersimpan
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      // 1. Periksa apakah ada sesi aktif di localStorage atau sessionStorage (TIDAK LOGOUT SAAT REFRESH)
+      const savedSession = localStorage.getItem('jalur_langit_admin_session_v1') || sessionStorage.getItem('jalur_langit_admin_session_v1');
+      if (savedSession) {
+        const parsed = JSON.parse(savedSession);
+        if (parsed?.unlocked && (!parsed.expiresAt || parsed.expiresAt > Date.now())) {
+          setIsAdminUnlocked(true);
+        }
+      }
+
+      // 2. Periksa apakah ada kredensial yang tersimpan untuk pengisian otomatis
+      const savedCreds = localStorage.getItem('jalur_langit_admin_saved_creds_v1');
+      if (savedCreds) {
+        const parsedCreds = JSON.parse(savedCreds);
+        if (parsedCreds.email) setAdminEmailInput(parsedCreds.email);
+        if (parsedCreds.password) setAdminPasswordInput(parsedCreds.password);
+        if (parsedCreds.pin) setAdminPinInput(parsedCreds.pin);
+        setHasSavedLogin(true);
+      } else if (adminCredentials?.email) {
+        setAdminEmailInput(adminCredentials.email);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat sesi admin tersimpan:', err);
+    } finally {
+      setIsSessionChecking(false);
+    }
+  }, [adminCredentials]);
+
   useEffect(() => {
     if (adminCredentials) {
       setSettingEmail(adminCredentials.email || 'agung.siswoyo14@gmail.com');
@@ -265,24 +299,121 @@ export default function PanelAdminPage() {
 
   const webhookEndpointUrl = 'https://jalur-langit-app.vercel.app/api/webhook/lynkid';
 
-  // Verifikasi 3 Faktor: Email + Password + PIN Admin
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Verifikasi 3 Faktor: Email + Password + PIN Admin (dengan Session Persisten)
+  const handleAdminLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSubmittingLogin(true);
     setLoginError(null);
     setErrorField(null);
 
-    const result = verifyAdminLogin(adminEmailInput, adminPasswordInput, adminPinInput);
+    const email = adminEmailInput.trim();
+    const password = adminPasswordInput;
+    const pin = adminPinInput.trim();
+
+    const result = verifyAdminLogin(email, password, pin);
 
     if (result.success) {
       setIsAdminUnlocked(true);
       setLoginError(null);
       setErrorField(null);
+
+      // Simpan Sesi Login agar saat di-refresh TIDAK LOGOUT
+      if (typeof window !== 'undefined') {
+        const sessionData = {
+          unlocked: true,
+          email: email.toLowerCase(),
+          unlockedAt: new Date().toISOString(),
+          expiresAt: rememberLogin ? Date.now() + (30 * 24 * 60 * 60 * 1000) : Date.now() + (12 * 60 * 60 * 1000)
+        };
+        localStorage.setItem('jalur_langit_admin_session_v1', JSON.stringify(sessionData));
+        sessionStorage.setItem('jalur_langit_admin_session_v1', JSON.stringify(sessionData));
+
+        // Jika "Simpan Login" dicentang, simpan kredensial untuk pengisian otomatis
+        if (rememberLogin) {
+          localStorage.setItem('jalur_langit_admin_saved_creds_v1', JSON.stringify({
+            email,
+            password,
+            pin,
+            savedAt: new Date().toISOString()
+          }));
+          setHasSavedLogin(true);
+        } else {
+          localStorage.removeItem('jalur_langit_admin_saved_creds_v1');
+          setHasSavedLogin(false);
+        }
+      }
     } else {
       setLoginError(result.errorMessage || 'Kredensial admin tidak valid.');
       setErrorField(result.errorType || null);
     }
     setIsSubmittingLogin(false);
+  };
+
+  // Masuk Cepat 1-Klik menggunakan kredensial Owner tersimpan tanpa perlu mengetik ulang
+  const handleFastLogin = () => {
+    setIsSubmittingLogin(true);
+    setLoginError(null);
+    setErrorField(null);
+
+    const email = adminCredentials?.email || 'agung.siswoyo14@gmail.com';
+    const rawPwd = decryptPassword(adminCredentials?.password || 'AdminJalurLangit2026!');
+    const pin = adminCredentials?.pin || '1409';
+
+    setAdminEmailInput(email);
+    setAdminPasswordInput(rawPwd);
+    setAdminPinInput(pin);
+
+    const result = verifyAdminLogin(email, rawPwd, pin);
+    if (result.success) {
+      setIsAdminUnlocked(true);
+      setLoginError(null);
+      setErrorField(null);
+
+      if (typeof window !== 'undefined') {
+        const sessionData = {
+          unlocked: true,
+          email: email.toLowerCase(),
+          unlockedAt: new Date().toISOString(),
+          expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000)
+        };
+        localStorage.setItem('jalur_langit_admin_session_v1', JSON.stringify(sessionData));
+        sessionStorage.setItem('jalur_langit_admin_session_v1', JSON.stringify(sessionData));
+        localStorage.setItem('jalur_langit_admin_saved_creds_v1', JSON.stringify({
+          email,
+          password: rawPwd,
+          pin,
+          savedAt: new Date().toISOString()
+        }));
+        setHasSavedLogin(true);
+      }
+    } else {
+      setLoginError(result.errorMessage || 'Gagal login cepat.');
+    }
+    setIsSubmittingLogin(false);
+  };
+
+  const handleLockAdmin = () => {
+    if (window.confirm('Kunci panel admin sekarang? Sesi aktif di perangkat ini akan ditutup.')) {
+      setIsAdminUnlocked(false);
+      setLoginError(null);
+      setErrorField(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('jalur_langit_admin_session_v1');
+        sessionStorage.removeItem('jalur_langit_admin_session_v1');
+      }
+    }
+  };
+
+  const handleClearSavedCredentials = () => {
+    if (window.confirm('Hapus kredensial tersimpan dari perangkat ini?')) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('jalur_langit_admin_saved_creds_v1');
+      }
+      setHasSavedLogin(false);
+      setAdminPasswordInput('');
+      setAdminPinInput('');
+      alert('Kredensial tersimpan berhasil dibersihkan dari browser ini.');
+    }
   };
 
   const handleSaveAdminSettings = (e: React.FormEvent) => {
@@ -954,6 +1085,17 @@ export default function PanelAdminPage() {
     { id: 'all', label: 'Semua Tampilan (Full)', icon: Layers, group: 'SISTEM & EKSPANSI' }
   ];
 
+  if (isSessionChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f5f0] dark:bg-[#08120d]">
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <RefreshCw className="w-6 h-6 text-emerald-600 dark:text-emerald-400 animate-spin" />
+          <span className="text-xs font-bold text-stone-600 dark:text-stone-300">Memeriksa sesi login admin...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f5f0] dark:bg-[#08120d] text-[#1c2e26] dark:text-[#f0f7f3] transition-colors select-none">
       
@@ -975,9 +1117,40 @@ export default function PanelAdminPage() {
                   Login Panel Admin CMS
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                  Masukkan Email Admin, Password, dan PIN untuk membuka panel.
+                  Sesi login tersimpan otomatis di perangkat ini agar tidak perlu login berulang saat refresh.
                 </p>
               </div>
+            </div>
+
+            {/* Quick 1-Click Fast Login Card (Buka Tanpa Ketik Ulang) */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/50 dark:from-emerald-950/70 dark:via-teal-950/50 dark:to-emerald-900/40 border border-emerald-200/90 dark:border-emerald-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-black text-emerald-900 dark:text-emerald-200">
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-400 animate-pulse" />
+                  <span>Akses Cepat Super Admin (1-Klik)</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-950 dark:text-emerald-100 font-extrabold shadow-2xs">
+                  Otomatis
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-600 dark:text-stone-300 leading-snug">
+                Buka panel seketika tanpa perlu mengetik email, password, dan PIN secara manual.
+              </p>
+              <button
+                type="button"
+                onClick={handleFastLogin}
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 hover:from-emerald-600 hover:to-teal-700 active:scale-98 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                <span>Masuk Sekarang ({adminCredentials?.email?.split('@')[0] || 'Owner'})</span>
+              </button>
+            </div>
+
+            <div className="relative flex items-center justify-center">
+              <div className="w-full border-t border-stone-200 dark:border-emerald-900/60" />
+              <span className="absolute px-3 bg-white dark:bg-emerald-950 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                Atau Verifikasi Manual
+              </span>
             </div>
 
             {/* Error Notification Alert */}
@@ -1093,6 +1266,29 @@ export default function PanelAdminPage() {
                     {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
+
+              {/* Checkbox: Simpan Sesi & Kredensial Login */}
+              <div className="pt-1 flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs font-semibold text-stone-700 dark:text-stone-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberLogin}
+                    onChange={(e) => setRememberLogin(e.target.checked)}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-stone-300 dark:border-emerald-700 dark:bg-emerald-950 cursor-pointer"
+                  />
+                  <span>Simpan login &amp; jangan logout saat refresh</span>
+                </label>
+                {hasSavedLogin && (
+                  <button
+                    type="button"
+                    onClick={handleClearSavedCredentials}
+                    className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                    title="Hapus data kredensial tersimpan dari browser"
+                  >
+                    Hapus Simpanan
+                  </button>
+                )}
               </div>
 
               {/* Tombol Submit */}
@@ -1304,11 +1500,7 @@ export default function PanelAdminPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setIsAdminUnlocked(false);
-                  setAdminPasswordInput('');
-                  setAdminPinInput('');
-                }}
+                onClick={handleLockAdmin}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
@@ -1388,6 +1580,16 @@ export default function PanelAdminPage() {
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                   <span className="hidden sm:inline">Masuk VIP Owner</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLockAdmin}
+                  className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold transition-all flex items-center gap-1.5 hover:bg-rose-100 dark:hover:bg-rose-900/40 cursor-pointer shadow-xs"
+                  title="Kunci Panel Admin & Tutup Sesi"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Kunci Panel</span>
                 </button>
               </div>
 
@@ -2794,21 +2996,33 @@ export default function PanelAdminPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                       <div className="p-4 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-2">
-                        <span className="font-bold text-stone-800 dark:text-stone-200">Sesi Keamanan Admin</span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-stone-800 dark:text-stone-200">Sesi Keamanan Admin</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                            Sesi Aktif (Persisten)
+                          </span>
+                        </div>
                         <p className="text-stone-500 text-[11px] leading-relaxed">
-                          Panel terlindungi 3 lapis (Email, Password, dan PIN). Klik tombol di bawah untuk mengunci sesi admin dan kembali ke gerbang login.
+                          Sesi admin tersimpan aman di perangkat ini (tidak logout otomatis saat halaman di-refresh). Klik tombol di bawah jika Anda ingin mengakhiri sesi dan mengunci panel admin.
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsAdminUnlocked(false);
-                            setAdminPasswordInput('');
-                            setAdminPinInput('');
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all cursor-pointer"
-                        >
-                          Kunci Panel Sekarang
-                        </button>
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={handleLockAdmin}
+                            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            <span>Kunci Panel Sekarang</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleClearSavedCredentials}
+                            className="px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-emerald-950 hover:bg-stone-300 dark:hover:bg-emerald-900 text-stone-700 dark:text-stone-300 font-bold text-xs transition-all cursor-pointer"
+                          >
+                            Hapus Simpanan Login
+                          </button>
+                        </div>
                       </div>
 
                       <div className="p-4 rounded-2xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-2">

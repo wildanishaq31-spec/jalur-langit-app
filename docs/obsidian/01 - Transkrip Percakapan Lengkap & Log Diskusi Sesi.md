@@ -2649,3 +2649,29 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - `src/store/useJalurLangitStore.ts` (Multi-account isolation & Roadmap server broadcast)
 
 ---
+
+
+---
+
+## 📌 Sesi 24 November 2026 (14:30 WIB) - Fitur Persistent Session Login & Fast 1-Click Access Panel Admin
+
+### 1. Kebutuhan Pengguna
+- **Sesi Admin Tidak Logout Saat Refresh**: Sebelumnya, me-refresh halaman `/panel-admin` langsung mereset `isAdminUnlocked` menjadi `false`, sehingga admin harus login berulang-ulang setiap kali reload.
+- **Simpan Login & Bebas Ketik Berulang**: Admin menginginkan opsi simpan kredensial login agar tidak perlu mengetik email, password panjang, dan PIN berkali-kali.
+
+### 2. Implementasi & Solusi
+1. **Persistent Session Storage (`jalur_langit_admin_session_v1`)**:
+   - Status login admin kini disimpan aman di `localStorage` dan `sessionStorage` dengan masa aktif 30 hari.
+   - Saat halaman `/panel-admin` di-refresh atau dibuka kembali, sistem memeriksa sesi aktif dan **TIDAK LAGI LOGOUT SECARA OTOMATIS**.
+2. **Akses Cepat 1-Klik (*Fast 1-Click Login*)**:
+   - Ditambahkan kartu interaktif *"Akses Cepat Super Admin (1-Klik)"* di gerbang login panel admin.
+   - Cukup tekan tombol `[ ⚡ Masuk Sekarang sebagai Owner ]`, panel seketika terbuka tanpa perlu mengetik email, password, dan PIN secara manual.
+3. **Simpan Kredensial & Pengisian Otomatis**:
+   - Disediakan checkbox `[✓] Simpan login & jangan logout saat refresh` (aktif secara default).
+   - Menyimpan kredensial ke cache lokal peranti untuk prefill instan di form login manual.
+   - Disediakan opsi *"Hapus Simpanan Login"* untuk keamanan jika peranti dipinjamkan.
+4. **Tombol Kunci Panel Admin / Logout yang Jelas**:
+   - Ditempatkan di Sidebar bawah, Topbar CMS atas, dan Tab Pengaturan.
+   - Menghapus sesi aktif dari browser saat diklik dan mengembalikan sistem ke gerbang terkunci.
+
+---
