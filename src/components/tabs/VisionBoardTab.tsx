@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   Sparkles, 
@@ -47,11 +47,19 @@ export const VisionBoardTab: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingVisionItem, setEditingVisionItem] = useState<VisionBoardItem | null>(null);
   const [isLetterModalOpen, setIsLetterModalOpen] = useState(false);
+  const affirmationRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Form states for future letter
   const [letterTitle, setLetterTitle] = useState('');
   const [letterContent, setLetterContent] = useState('');
   const [letterOpenDate, setLetterOpenDate] = useState('Hari ke-30');
+
+  useEffect(() => {
+    if (affirmationRef.current) {
+      affirmationRef.current.style.height = 'auto';
+      affirmationRef.current.style.height = `${affirmationRef.current.scrollHeight}px`;
+    }
+  }, [todayAffirmation]);
 
   const handleToggleAchieved = (id: string, currentlyAchieved: boolean) => {
     toggleVisionItemAchieved(id);
@@ -107,10 +115,15 @@ export const VisionBoardTab: React.FC = () => {
         </div>
 
         <textarea
-          rows={2}
+          ref={affirmationRef}
+          rows={1}
           value={todayAffirmation}
-          onChange={(e) => setTodayAffirmation(e.target.value)}
-          className="w-full bg-white/70 dark:bg-emerald-900/30 p-3.5 rounded-2xl border border-rose-200/60 dark:border-rose-900/40 text-sm font-serif italic text-stone-800 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-400 leading-relaxed"
+          onChange={(e) => {
+            setTodayAffirmation(e.target.value);
+            e.target.style.height = 'auto';
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          className="w-full bg-white/80 dark:bg-emerald-900/30 p-3.5 rounded-2xl border border-rose-200/60 dark:border-rose-900/40 text-sm font-serif italic text-stone-800 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-rose-400 leading-relaxed resize-none overflow-hidden block min-h-[50px] transition-all"
           placeholder="Tuliskan afirmasi positifmu hari ini..."
         />
         <div className="text-[11px] text-stone-500">
@@ -119,29 +132,27 @@ export const VisionBoardTab: React.FC = () => {
       </div>
 
       {/* 2. VISUAL VISION BOARD (Sheet 1 & 2) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-amber-500" />
-              <span>Vision Board & Papan Impian</span>
-            </h2>
-            <p className="text-xs text-stone-500">
-              Visualisasikan cita-cita besarmu. Apa yang sering kamu lihat akan tertanam kuat dalam doa.
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              setEditingVisionItem(null);
-              setIsAddModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl text-xs font-bold shadow-sm transition-all active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Impian</span>
-          </button>
+      <div className="space-y-3.5">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold font-serif text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-amber-500" />
+            <span>Vision Board & Papan Impian</span>
+          </h2>
+          <p className="text-xs text-stone-500">
+            Visualisasikan cita-cita besarmu. Apa yang sering kamu lihat akan tertanam kuat dalam doa.
+          </p>
         </div>
+
+        <button
+          onClick={() => {
+            setEditingVisionItem(null);
+            setIsAddModalOpen(true);
+          }}
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
+        >
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Tambah Impian Baru</span>
+        </button>
 
         {/* Vision Board Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -233,23 +244,21 @@ export const VisionBoardTab: React.FC = () => {
       </div>
 
       {/* 3. LETTER TO FUTURE SELF (Sheet 1) */}
-      <div className="p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-            <Mail className="w-5 h-5" />
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              Letter to Future Self (Surat untuk Diri di Masa Depan)
-            </h2>
-          </div>
-
-          <button
-            onClick={() => setIsLetterModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 rounded-2xl text-xs font-bold border border-indigo-200 dark:border-indigo-800 transition-all"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Tulis Surat</span>
-          </button>
+      <div className="p-5 sm:p-6 bg-white dark:bg-emerald-950/40 rounded-3xl border border-stone-200/80 dark:border-emerald-800/60 shadow-sm space-y-3.5">
+        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+          <Mail className="w-5 h-5 shrink-0" />
+          <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100">
+            Letter to Future Self (Surat untuk Diri di Masa Depan)
+          </h2>
         </div>
+
+        <button
+          onClick={() => setIsLetterModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-2xl text-xs sm:text-sm font-bold border border-indigo-200 dark:border-indigo-800 transition-all active:scale-98 cursor-pointer shadow-xs"
+        >
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>Tulis Surat untuk Masa Depan</span>
+        </button>
 
         <div className="space-y-3">
           {futureLetters.map((letter) => (

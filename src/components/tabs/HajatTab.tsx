@@ -125,28 +125,26 @@ export const HajatTab: React.FC = () => {
 
       {/* SUB-TAB 1: HAJAT & MANIFESTING */}
       {hajatActiveSubTab === 'hajat' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
-                Papan Hajat & Ikhtiar Doa
-              </h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
-                Tuliskan hajatmu secara rinci dan panjatkan di setiap waktu mustajab.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setEditingHajatItem(null);
-                setIsHajatModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Hajat</span>
-            </button>
+        <div className="space-y-3.5">
+          <div className="space-y-1">
+            <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
+              Papan Hajat & Ikhtiar Doa
+            </h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              Tuliskan hajatmu secara rinci dan panjatkan di setiap waktu mustajab.
+            </p>
           </div>
+
+          <button
+            onClick={() => {
+              setEditingHajatItem(null);
+              setIsHajatModalOpen(true);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Tambah Hajat Baru</span>
+          </button>
 
           <div className="space-y-3">
             {hajatList.length === 0 ? (
@@ -284,19 +282,24 @@ export const HajatTab: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
-              Histori Sedekah Subuh
-            </h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold font-serif text-stone-900 dark:text-stone-100">
+                Histori Sedekah Subuh
+              </h2>
+              <span className="text-xs text-stone-500 font-medium">
+                {sedekahLogs.length} Catatan
+              </span>
+            </div>
 
             <button
               onClick={() => {
                 setEditingSedekahItem(null);
                 setIsSedekahModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-semibold shadow-sm transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Catat Sedekah Hari Ini</span>
             </button>
           </div>
