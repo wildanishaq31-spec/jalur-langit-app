@@ -2739,3 +2739,33 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
    - Merapikan kartu petunjuk integrasi Lynk.id: Owner cukup menempelkan `https://jalur-langit-app.vercel.app/login` sebagai tautan akses untuk ketiga paket (Starter, Full Bundling, VIP) tanpa perlu membedakan URL lagi.
 
 ---
+
+
+---
+
+## 📌 Sesi 24 November 2026 (17:55 WIB) - Penyesuaian Teks Banner PWA & Penghapusan Login Google Clerk (Fokus 100% Email Lynk.id)
+
+### 1. Permintaan Pengguna
+- **Teks Banner PWA**:
+  - Ganti tulisan `"Pasang ke Layar Utama HP"` menjadi:
+    👉 **`Klik install sekarang jika pertama kali login.`**
+- **Penghapusan Login Google Clerk**:
+  - Hapus tombol *"Masuk dengan Google"*, badge *"Secured by Clerk Authentication"*, dan divider *"atau ketik email"*.
+  - Buat alur login sangat sederhana, bersih, dan fokus: **Hanya input email pembelian saat checkout di Lynk.id**.
+
+### 2. Implementasi Solusi
+1. **Pembaruan Teks Banner PWA (`src/components/auth/LoginPage.tsx`)**:
+   - Judul banner kini: `Klik install sekarang jika pertama kali login.`
+   - Subjudul: `Pasang ikon aplikasi di layar utama HP Anda`
+   - Tombol: `[ 📥 Instal Sekarang ]` (atau `Cara Pasang` pada browser yang memerlukan panduan manual).
+2. **Penyederhanaan Form Login**:
+   - Menghapus tombol Google Login & modal Google Account Chooser.
+   - Form kartu login kini langsung menampilkan:
+     - Header: *"Masuk dengan Email Pembelian"*
+     - Input: Placeholder `nama.kamu@gmail.com` dengan keterangan jelas *"Sesuai checkout Lynk.id"*.
+     - Tombol: `[ Verifikasi Akses Pembeli → ]`.
+3. **Kinerja & Kebersihan Kode**:
+   - Menghapus *unused states* dan *modal DOM nodes* yang tidak lagi dibutuhkan.
+   - Halaman login kini jauh lebih ringan, cepat, dan anti-bingung bagi seluruh pembeli.
+
+---
