@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { Navigation } from '@/components/Navigation';
 import { LoginTransitionLoader } from '@/components/auth/LoginTransitionLoader';
 import { PwaNotificationManager } from '@/components/pwa/PwaNotificationManager';
@@ -22,10 +23,30 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { appTheme, syncToTodayIfOutdated } = useJalurLangitStore();
-  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity, currentUser } = useAuthStore();
+  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity, currentUser, loginWithEmail } = useAuthStore();
   
   // Jika sudah terhidrasi di sesi klien, langsung mounted = true tanpa flash blank screen
   const [mounted, setMounted] = useState(() => isAppHydrated);
+  const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
+
+  // Deteksi otomatis saat pembeli kembali dari checkout upgrade Lynk.id (?upgrade=success / ?upgrade=vip)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const upgradeParam = params.get('upgrade');
+    if (upgradeParam) {
+      if (currentUser?.email) {
+        loginWithEmail(currentUser.email).then((ok) => {
+          if (ok) {
+            setUpgradeToast('Alhamdulillah! Pembayaran upgrade berhasil diverifikasi. Seluruh fitur eksklusif Anda telah terbuka.');
+          }
+        });
+      }
+      try {
+        window.history.replaceState({}, '', pathname);
+      } catch {}
+    }
+  }, [pathname, currentUser?.email, loginWithEmail]);
 
   useEffect(() => {
     isAppHydrated = true;
@@ -154,6 +175,27 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       <PwaNotificationManager />
       <Navigation />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-24">
+        {upgradeToast && (
+          <div className="mb-4 p-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-stone-900 shadow-lg flex items-center justify-between gap-3 animate-fade-in border border-amber-600/30">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-5 h-5 text-stone-900 shrink-0 animate-pulse" />
+              <div className="space-y-0.5">
+                <span className="font-black text-[10px] uppercase tracking-wider block text-stone-800">
+                  🎉 Upgrade Paket Berhasil!
+                </span>
+                <span className="text-xs sm:text-sm font-bold">{upgradeToast}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setUpgradeToast(null)}
+              className="p-1.5 rounded-lg bg-black/10 hover:bg-black/20 text-stone-900 font-black cursor-pointer text-xs"
+              title="Tutup Notifikasi"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {isTabLocked ? (
           <TierGateView
             requiredTier={gateInfo.requiredTier}

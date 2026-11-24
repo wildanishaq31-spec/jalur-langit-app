@@ -2675,3 +2675,31 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
    - Menghapus sesi aktif dari browser saat diklik dan mengembalikan sistem ke gerbang terkunci.
 
 ---
+
+
+---
+
+## 📌 Sesi 24 November 2026 (14:40 WIB) - Solusi Arsitektur Alur Pembelian: Pembeli Baru vs Pembeli Upgrade
+
+### 1. Masalah Alur yang Diidentifikasi Pengguna
+- **Pembelian Pertama kali**: Pembeli diarahkan ke `/download` untuk memasang PWA ke layar HP, lalu login dengan email.
+- **Masalah Upgrade**: Jika pembeli yang sudah memiliki PWA di HP-nya mengklik tombol upgrade, ke mana harus diarahkan? Jika diarahkan ke toko umum Lynk.id yang tautan aksesnya tetap `/download`, pembeli akan disuruh mendownload PWA lagi, bukan membuka paket fiturnya.
+
+### 2. Solusi Arsitektur Alur (Diterapkan 100%)
+1. **Pemisahan Tautan Akses di Dashboard Lynk.id**:
+   - **Produk Starter (Pembeli Baru)**: Tautan Akses Konten diatur ke:
+     `https://jalur-langit-app.vercel.app/download` (karena belum punya PWA di HP).
+   - **Produk Bundling / VIP (Upgrade)**: Tautan Akses Konten diatur ke:
+     `https://jalur-langit-app.vercel.app/dashboard?upgrade=success` (karena sudah punya PWA di HP, langsung kembali ke aplikasi!).
+2. **Auto-Upgrade & Toast Perayaan di `AppShell.tsx`**:
+   - Saat pengguna kembali dari Lynk.id dengan parameter `?upgrade=success`, aplikasi otomatis memicu verifikasi lisensi terbaru ke server.
+   - Menampilkan banner perayaan emas: *"Alhamdulillah! Akun Anda berhasil di-upgrade. Seluruh fitur eksklusif telah terbuka."*
+3. **Smart Fallback di Halaman `/download`**:
+   - Jika halaman `/download` tidak sengaja dibuka oleh pembeli yang sudah login, halaman otomatis menampilkan kartu: *"Akun Anda Sudah Aktif ([Email] - [Paket]). Aplikasi Sudah Terpasang!"* dengan tombol langsung ke dashboard.
+   - Jika ada parameter `?upgrade=success`, halaman `/download` otomatis me-redirect ke dashboard seketika.
+4. **Tombol Upgrade di `TierGateView.tsx`**:
+   - Langsung mengarah ke link produk upgrade Lynk.id dengan prefilled email pengguna aktif (`?email=...`).
+5. **Panduan Admin di `panel-admin`**:
+   - Disediakan kartu panduan interaktif di tab Webhook Lynk.id dengan URL siap salin untuk memudahkan konfigurasi di dashboard Lynk.id.
+
+---

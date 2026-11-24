@@ -48,7 +48,8 @@ import {
   Compass,
   FileText,
   Calculator,
-  Headphones
+  Headphones,
+  Smartphone
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
@@ -2095,6 +2096,53 @@ export default function PanelAdminPage() {
                         >
                           <span>🚀 Tes Upgrade ke VIP</span>
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Panduan Konfigurasi Tautan Akses Lynk.id (Pembeli Baru vs Upgrade) */}
+                    <div className="p-5 rounded-2xl bg-white dark:bg-emerald-950/60 border border-stone-200 dark:border-emerald-800 space-y-3 text-stone-900 dark:text-stone-100">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                          Panduan Alur Redirect Produk di Dashboard Lynk.id (Solusi Pembeli Baru vs Upgrade)
+                        </h4>
+                      </div>
+                      <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
+                        Agar alur pembelian tidak salah arah, atur <b>Tautan Akses Konten / Link Produk</b> pada masing-masing paket di Dashboard Lynk.id sebagai berikut:
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-800 dark:text-emerald-300">1. Paket Starter (Pembeli Baru)</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-900">Belum Punya PWA</span>
+                          </div>
+                          <p className="text-[11px] text-stone-500">
+                            Masukkan URL ini pada kolom <b>Tautan Akses Konten</b> paket Starter di Lynk.id:
+                          </p>
+                          <div className="p-2 rounded-lg bg-black/5 dark:bg-black/40 font-mono text-[11px] text-emerald-700 dark:text-emerald-300 break-all select-all font-bold">
+                            https://jalur-langit-app.vercel.app/download
+                          </div>
+                          <p className="text-[10px] text-stone-400 italic">
+                            *Pembeli baru akan diarahkan untuk memasang ikon aplikasi PWA ke layar utama HP.
+                          </p>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-amber-900 dark:text-amber-200">2. Paket Bundling / VIP (Upgrade)</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-900">Sudah Punya PWA</span>
+                          </div>
+                          <p className="text-[11px] text-stone-500">
+                            Masukkan URL ini pada kolom <b>Tautan Akses Konten</b> paket Bundling/VIP di Lynk.id:
+                          </p>
+                          <div className="p-2 rounded-lg bg-black/5 dark:bg-black/40 font-mono text-[11px] text-amber-700 dark:text-amber-300 break-all select-all font-bold">
+                            https://jalur-langit-app.vercel.app/dashboard?upgrade=success
+                          </div>
+                          <p className="text-[10px] text-stone-400 italic">
+                            *Pembeli upgrade langsung kembali ke aplikasi dan fiturnya seketika terbuka tanpa disuruh download lagi!
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

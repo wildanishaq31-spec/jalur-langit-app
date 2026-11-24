@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Moon, 
   Sparkles, 
@@ -16,6 +17,7 @@ import {
   Sun
 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,10 +25,23 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function DownloadPage() {
+  const router = useRouter();
   const { appTheme, toggleTheme } = useJalurLangitStore();
+  const { isAuthenticated, currentUser } = useAuthStore();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [activeOsTab, setActiveOsTab] = useState<'android' | 'ios'>('android');
+
+  useEffect(() => {
+    // Jika pembeli upgrade diarahkan ke /download, otomatis teruskan langsung ke dashboard
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const upgradeParam = params.get('upgrade');
+      if (upgradeParam) {
+        router.replace(`/dashboard?upgrade=${upgradeParam}`);
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     if (appTheme === 'dark') {
@@ -117,6 +132,30 @@ export default function DownloadPage() {
             </p>
           </div>
         </div>
+
+        {/* Banner Akun Sudah Terdaftar & Aplikasi Siap */}
+        {isAuthenticated && currentUser && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-100 to-teal-50 dark:from-emerald-950 dark:to-teal-950/60 border border-emerald-300 dark:border-emerald-700 shadow-md text-center space-y-2.5 animate-fade-in">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-black uppercase">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" />
+              <span>Akun Anda Sudah Aktif: {currentUser.tierLabel}</span>
+            </div>
+            <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+              Aplikasi Sudah Siap Digunakan!
+            </h3>
+            <p className="text-xs text-stone-600 dark:text-stone-300 max-w-md mx-auto">
+              Anda terdaftar sebagai <b>{currentUser.email}</b>. Anda tidak perlu mengulang proses download jika ikon Jalur Langit sudah terpasang di layar HP Anda.
+            </p>
+            <div className="pt-1">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-2xl bg-emerald-800 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all active:scale-95"
+              >
+                <span>Buka Dashboard Aplikasi Langsung →</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* 1-Click Install CTA Box */}
         <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white shadow-xl border border-amber-300/40 space-y-4 text-center">
