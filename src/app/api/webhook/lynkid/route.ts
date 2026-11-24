@@ -23,18 +23,47 @@ export async function GET() {
   });
 }
 
+// Helper fungsi rekursif untuk mencari nilai berdasarkan kemungkinan key nama
+function findDeepValue(obj: unknown, targetKeys: string[]): string | undefined {
+  if (!obj || typeof obj !== 'object') return undefined;
+  const record = obj as Record<string, unknown>;
+
+  for (const k of Object.keys(record)) {
+    const val = record[k];
+    if (targetKeys.includes(k.toLowerCase()) && typeof val === 'string' && val.trim()) {
+      return val.trim();
+    }
+    if (val && typeof val === 'object') {
+      const found = findDeepValue(val, targetKeys);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+// Helper untuk menemukan email apapun di dalam payload JSON secara menyeluruh
+function findAnyEmail(obj: unknown): string | undefined {
+  const jsonStr = JSON.stringify(obj || {});
+  const emailMatch = jsonStr.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  return emailMatch ? emailMatch[0].trim().toLowerCase() : undefined;
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json().catch(() => ({}));
+    console.log('[Lynk.id Webhook Incoming Payload]:', JSON.stringify(payload));
 
-    // Ekstraksi email pembeli dari berbagai variasi payload Lynk.id
+    // 1. Ekstraksi Email Pembeli (Mendukung format standar Lynk.id data.message_data, dll)
     const rawEmail = 
+      payload.data?.message_data?.customer?.email ||
+      payload.data?.customer?.email ||
+      payload.customer?.email ||
       payload.email ||
       payload.buyer_email ||
       payload.customer_email ||
-      payload.customer?.email ||
       payload.data?.email ||
-      payload.data?.customer?.email ||
+      findDeepValue(payload, ['email', 'buyer_email', 'customer_email']) ||
+      findAnyEmail(payload) ||
       '';
 
     const email = String(rawEmail).trim().toLowerCase();
@@ -44,31 +73,39 @@ export async function POST(request: Request) {
         { 
           success: false, 
           error: 'invalid_email',
-          message: 'Payload tidak memiliki email pembeli yang valid.' 
+          message: 'Payload tidak memiliki email pembeli yang valid.',
+          receivedPayload: payload
         },
         { status: 400 }
       );
     }
 
-    // Ekstraksi nama pembeli
+    // 2. Ekstraksi Nama Pembeli
     const name = 
+      payload.data?.message_data?.customer?.name ||
+      payload.data?.customer?.name ||
+      payload.customer?.name ||
       payload.name ||
       payload.buyer_name ||
       payload.customer_name ||
-      payload.customer?.name ||
-      payload.data?.name ||
-      payload.data?.customer?.name ||
+      findDeepValue(payload, ['name', 'buyer_name', 'customer_name', 'fullname']) ||
       email.split('@')[0];
 
-    // Ekstraksi nama produk & harga untuk menentukan tier
+    // 3. Ekstraksi Nama Produk & Harga untuk Menentukan Tier
     const productName = 
+      payload.data?.message_data?.items?.[0]?.title ||
+      payload.data?.message_data?.items?.[0]?.name ||
+      payload.items?.[0]?.title ||
+      payload.items?.[0]?.name ||
       payload.product_name ||
       payload.item_name ||
-      payload.items?.[0]?.name ||
-      payload.data?.product_name ||
+      findDeepValue(payload, ['title', 'product_name', 'item_name', 'product']) ||
       '';
 
     const rawAmount = 
+      payload.data?.message_data?.totals?.grandTotal ||
+      payload.data?.message_data?.totals?.totalPrice ||
+      payload.data?.message_data?.items?.[0]?.price ||
       payload.amount ||
       payload.price ||
       payload.total ||
@@ -77,10 +114,12 @@ export async function POST(request: Request) {
 
     const amount = Number(rawAmount) || 0;
 
-    // Tentukan Tier secara otomatis: Starter (49rb) / Ultimate (89rb) / VIP (149rb)
+    // Tentukan Tier secara otomatis: Starter / Ultimate / VIP
     const tier = determineTierFromLynkData(productName, amount);
 
     const orderId = 
+      payload.data?.message_data?.refId ||
+      payload.data?.message_id ||
       payload.order_id || 
       payload.invoice_number || 
       payload.id || 

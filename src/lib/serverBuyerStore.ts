@@ -1,6 +1,6 @@
 import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
 
-// Initial default buyers (Hanya Owner sebagai Superuser)
+// Initial default buyers (Owner Superuser + Akun Pembeli Terverifikasi)
 const DEFAULT_BUYERS: AuthUser[] = [
   {
     email: 'agung.siswoyo14@gmail.com',
@@ -9,6 +9,15 @@ const DEFAULT_BUYERS: AuthUser[] = [
     tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-18T00:00:00.000Z',
     orderId: 'LYNK-OWNER-VIP',
+    lastActiveAt: new Date().toISOString()
+  },
+  {
+    email: 'agung.siswoyo77@gmail.com',
+    name: 'Agung Siswoyo (Tester Lynk.id)',
+    tier: 'starter',
+    tierLabel: TIER_CONFIG.starter.name,
+    purchasedAt: '2026-11-24T06:05:00.000Z',
+    orderId: 'LYNK-TEST-STARTER-101',
     lastActiveAt: new Date().toISOString()
   }
 ];
