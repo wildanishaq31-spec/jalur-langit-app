@@ -28,16 +28,15 @@ export async function POST(request: Request) {
       ? (body.tier as UserTier)
       : 'ultimate';
 
-    const newBuyer: AuthUser = {
+    const newBuyerData: Partial<AuthUser> & { email: string; tier: UserTier } = {
       email,
-      name: body.name || email.split('@')[0],
       tier,
       tierLabel: TIER_CONFIG[tier]?.name || 'Paket Jalur Langit',
-      purchasedAt: new Date().toISOString(),
-      orderId: body.orderId || `LYNK-SIM-${Date.now().toString().slice(-5)}`
     };
+    if (body.name) newBuyerData.name = body.name;
+    if (body.orderId) newBuyerData.orderId = body.orderId;
 
-    const saved = await addOrUpdateBuyer(newBuyer);
+    const saved = await addOrUpdateBuyer(newBuyerData as AuthUser);
     return NextResponse.json({
       success: true,
       buyer: saved

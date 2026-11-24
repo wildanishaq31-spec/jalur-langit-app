@@ -23,13 +23,33 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { appTheme, syncToTodayIfOutdated } = useJalurLangitStore();
-  const { isAuthenticated, isTransitioning, completeTransition, touchUserActivity, currentUser, loginWithEmail } = useAuthStore();
+  const { 
+    isAuthenticated, 
+    isTransitioning, 
+    completeTransition, 
+    touchUserActivity, 
+    currentUser, 
+    syncLicenseWithServer 
+  } = useAuthStore();
   
   // Jika sudah terhidrasi di sesi klien, langsung mounted = true tanpa flash blank screen
   const [mounted, setMounted] = useState(() => isAppHydrated);
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
 
-  // Deteksi otomatis saat pembeli kembali dari checkout upgrade / pembayaran Lynk.id (?upgrade=success / ?status=paid / ?payment=success / ?refId=...)
+  // 1. Sinkronisasi lisensi otomatis saat AppShell pertama kali dibuka / dimuat
+  useEffect(() => {
+    if (isAuthenticated && currentUser?.email) {
+      syncLicenseWithServer().then((res) => {
+        if (res.upgraded && res.newTier) {
+          setUpgradeToast(
+            `Alhamdulillah! Akun Anda berhasil di-upgrade ke ${TIER_CONFIG[res.newTier].name}. Seluruh fitur eksklusif telah terbuka.`
+          );
+        }
+      });
+    }
+  }, [isAuthenticated, currentUser?.email, syncLicenseWithServer]);
+
+  // 2. Deteksi otomatis saat pembeli kembali dari checkout upgrade / pembayaran Lynk.id (?upgrade=success / ?status=paid / ?payment=success / ?refId=...)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
@@ -42,17 +62,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
     if (isPaymentReturn) {
       if (currentUser?.email) {
-        loginWithEmail(currentUser.email).then((ok) => {
-          if (ok) {
-            setUpgradeToast('Alhamdulillah! Pembayaran berhasil diverifikasi. Seluruh fitur paket terbaru Anda telah terbuka.');
-          }
+        syncLicenseWithServer().then((res) => {
+          const tierName = res.newTier ? TIER_CONFIG[res.newTier].name : 'Paket Baru';
+          setUpgradeToast(`Alhamdulillah! Pembayaran berhasil diverifikasi. Akun Anda aktif pada ${tierName}. Seluruh fitur eksklusif telah terbuka.`);
         });
       }
       try {
         window.history.replaceState({}, '', pathname);
       } catch {}
     }
-  }, [pathname, currentUser?.email, loginWithEmail]);
+  }, [pathname, currentUser?.email, syncLicenseWithServer]);
 
   useEffect(() => {
     isAppHydrated = true;
@@ -77,6 +96,15 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         syncToTodayIfOutdated();
       } else if (document.visibilityState === 'visible') {
         syncToTodayIfOutdated();
+        if (isAuthenticated && currentUser?.email) {
+          syncLicenseWithServer().then((res) => {
+            if (res.upgraded && res.newTier) {
+              setUpgradeToast(
+                `Alhamdulillah! Akun Anda berhasil di-upgrade ke ${TIER_CONFIG[res.newTier].name}. Seluruh fitur eksklusif telah terbuka.`
+              );
+            }
+          });
+        }
       }
     };
 

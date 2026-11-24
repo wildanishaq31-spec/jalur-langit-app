@@ -9,7 +9,7 @@ import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 
 export default function LoginRoute() {
   const router = useRouter();
-  const { isAuthenticated, isTransitioning, completeTransition } = useAuthStore();
+  const { isAuthenticated, isTransitioning, completeTransition, syncLicenseWithServer } = useAuthStore();
   const { appTheme } = useJalurLangitStore();
   const [mounted, setMounted] = useState(false);
 
@@ -28,9 +28,20 @@ export default function LoginRoute() {
   useEffect(() => {
     if (mounted && isAuthenticated && !isTransitioning) {
       const search = typeof window !== 'undefined' ? window.location.search : '';
-      router.replace(`/dashboard${search}`);
+      // Sinkronkan lisensi terbaru dengan server sebelum redirect!
+      syncLicenseWithServer()
+        .then((res) => {
+          if (res.upgraded) {
+            router.replace('/dashboard?upgrade=success');
+          } else {
+            router.replace(`/dashboard${search}`);
+          }
+        })
+        .catch(() => {
+          router.replace(`/dashboard${search}`);
+        });
     }
-  }, [mounted, isAuthenticated, isTransitioning, router]);
+  }, [mounted, isAuthenticated, isTransitioning, router, syncLicenseWithServer]);
 
   if (!mounted) {
     return <div className="min-h-screen bg-[#fbf9f5] dark:bg-[#0a1410]" />;

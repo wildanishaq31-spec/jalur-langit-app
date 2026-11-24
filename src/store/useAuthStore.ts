@@ -26,10 +26,10 @@ const INITIAL_BUYER_WHITELIST: AuthUser[] = [
   {
     email: 'agung.siswoyo77@gmail.com',
     name: 'Agung Siswoyo (Tester Lynk.id)',
-    tier: 'starter',
-    tierLabel: TIER_CONFIG.starter.name,
+    tier: 'vip',
+    tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-24T06:05:00.000Z',
-    orderId: 'LYNK-TEST-STARTER-101',
+    orderId: '37b624a7f67eca8fdba0867396519f43',
     lastActiveAt: new Date().toISOString()
   }
 ];
@@ -54,6 +54,13 @@ interface AuthState {
 
   // Actions
   loginWithEmail: (emailInput: string) => Promise<boolean>;
+  syncLicenseWithServer: () => Promise<{
+    success: boolean;
+    upgraded: boolean;
+    oldTier?: UserTier;
+    newTier?: UserTier;
+    user?: AuthUser;
+  }>;
   completeTransition: () => void;
   logout: () => void;
   clearAuthError: () => void;
@@ -245,6 +252,86 @@ export const useAuthStore = create<AuthState>()(
           });
           return false;
         }
+      },
+
+      syncLicenseWithServer: async () => {
+        const current = get().currentUser;
+        if (!current?.email) {
+          return { success: false, upgraded: false };
+        }
+
+        const email = current.email.trim().toLowerCase();
+        const tierOrder: Record<UserTier, number> = { starter: 1, ultimate: 2, vip: 3 };
+
+        try {
+          const res = await fetch('/api/auth/verify-buyer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.user) {
+              const serverUser: AuthUser = data.user;
+              const oldTier: UserTier = current.tier || 'starter';
+              const newTier: UserTier = serverUser.tier || 'starter';
+              const isUpgraded = (tierOrder[newTier] || 1) > (tierOrder[oldTier] || 1);
+
+              const updatedUser: AuthUser = {
+                ...current,
+                ...serverUser,
+                tier: newTier,
+                tierLabel: TIER_CONFIG[newTier]?.name || serverUser.tierLabel || current.tierLabel,
+                lastActiveAt: new Date().toISOString()
+              };
+
+              try {
+                useJalurLangitStore.getState().switchUserScope(updatedUser.email);
+              } catch (e) {
+                console.warn('Gagal isolasi scope user saat sync:', e);
+              }
+
+              set((state) => ({
+                currentUser: updatedUser,
+                whitelist: [
+                  updatedUser,
+                  ...state.whitelist.filter((b) => b.email.toLowerCase() !== email)
+                ]
+              }));
+
+              return {
+                success: true,
+                upgraded: isUpgraded,
+                oldTier,
+                newTier,
+                user: updatedUser
+              };
+            }
+          }
+        } catch (err) {
+          console.warn('Gagal sync lisensi dengan server:', err);
+        }
+
+        // Fallback jika server offline atau unreachable: periksa whitelist lokal
+        const localMatch = get().whitelist.find((b) => b.email.toLowerCase() === email);
+        if (localMatch && localMatch.tier !== current.tier) {
+          const oldTier = current.tier || 'starter';
+          const newTier = localMatch.tier || 'starter';
+          const isUpgraded = (tierOrder[newTier] || 1) > (tierOrder[oldTier] || 1);
+
+          const updatedUser: AuthUser = {
+            ...current,
+            ...localMatch,
+            tier: newTier,
+            tierLabel: TIER_CONFIG[newTier]?.name || current.tierLabel
+          };
+
+          set({ currentUser: updatedUser });
+          return { success: true, upgraded: isUpgraded, oldTier, newTier, user: updatedUser };
+        }
+
+        return { success: false, upgraded: false, oldTier: current.tier, newTier: current.tier, user: current };
       },
 
       completeTransition: () => {

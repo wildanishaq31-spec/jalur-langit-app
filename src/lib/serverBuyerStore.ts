@@ -1,4 +1,33 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
+
+// File temporary lokal untuk menyimpan data pembeli antar serverless invocations
+const TEMP_BUYERS_FILE = path.join(os.tmpdir(), 'jalur_langit_server_buyers_v1.json');
+
+function loadBuyersFromDisk(): AuthUser[] | null {
+  try {
+    if (fs.existsSync(TEMP_BUYERS_FILE)) {
+      const raw = fs.readFileSync(TEMP_BUYERS_FILE, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Gagal membaca temporary buyers file:', err);
+  }
+  return null;
+}
+
+function saveBuyersToDisk(buyers: AuthUser[]) {
+  try {
+    fs.writeFileSync(TEMP_BUYERS_FILE, JSON.stringify(buyers, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Gagal menyimpan temporary buyers file:', err);
+  }
+}
 
 // Initial default buyers (Owner Superuser + Akun Pembeli Terverifikasi)
 const DEFAULT_BUYERS: AuthUser[] = [
@@ -14,10 +43,10 @@ const DEFAULT_BUYERS: AuthUser[] = [
   {
     email: 'agung.siswoyo77@gmail.com',
     name: 'Agung Siswoyo (Tester Lynk.id)',
-    tier: 'starter',
-    tierLabel: TIER_CONFIG.starter.name,
+    tier: 'vip',
+    tierLabel: TIER_CONFIG.vip.name,
     purchasedAt: '2026-11-24T06:05:00.000Z',
-    orderId: 'LYNK-TEST-STARTER-101',
+    orderId: '37b624a7f67eca8fdba0867396519f43',
     lastActiveAt: new Date().toISOString()
   }
 ];
@@ -28,7 +57,8 @@ declare global {
 }
 
 if (!globalThis.__globalBuyersList) {
-  globalThis.__globalBuyersList = [...DEFAULT_BUYERS];
+  const diskData = loadBuyersFromDisk();
+  globalThis.__globalBuyersList = diskData || [...DEFAULT_BUYERS];
 }
 
 /**
@@ -77,10 +107,15 @@ export async function findBuyerByEmail(email: string): Promise<AuthUser | null> 
  */
 export async function addOrUpdateBuyer(buyer: AuthUser): Promise<AuthUser> {
   const normalizedEmail = buyer.email.trim().toLowerCase();
+  const currentList = globalThis.__globalBuyersList || loadBuyersFromDisk() || [...DEFAULT_BUYERS];
+  const existing = currentList.find((b) => b.email.toLowerCase() === normalizedEmail);
+
   const updatedBuyer: AuthUser = {
+    ...(existing || {}),
     ...buyer,
     email: normalizedEmail,
-    tierLabel: TIER_CONFIG[buyer.tier]?.name || 'Paket Jalur Langit'
+    tierLabel: TIER_CONFIG[buyer.tier]?.name || 'Paket Jalur Langit',
+    lastActiveAt: new Date().toISOString()
   };
 
   // If Supabase is configured:
@@ -104,10 +139,11 @@ export async function addOrUpdateBuyer(buyer: AuthUser): Promise<AuthUser> {
     }
   }
 
-  // Also update in-memory global cache
-  const currentList = globalThis.__globalBuyersList || [...DEFAULT_BUYERS];
+  // Also update in-memory global cache and disk cache
   const filtered = currentList.filter((b) => b.email.toLowerCase() !== normalizedEmail);
-  globalThis.__globalBuyersList = [updatedBuyer, ...filtered];
+  const finalList = [updatedBuyer, ...filtered];
+  globalThis.__globalBuyersList = finalList;
+  saveBuyersToDisk(finalList);
 
   return updatedBuyer;
 }
@@ -135,11 +171,10 @@ export async function removeBuyer(email: string): Promise<boolean> {
     }
   }
 
-  if (globalThis.__globalBuyersList) {
-    globalThis.__globalBuyersList = globalThis.__globalBuyersList.filter(
-      (b) => b.email.toLowerCase() !== normalizedEmail
-    );
-  }
+  const currentList = globalThis.__globalBuyersList || loadBuyersFromDisk() || [...DEFAULT_BUYERS];
+  const filtered = currentList.filter((b) => b.email.toLowerCase() !== normalizedEmail);
+  globalThis.__globalBuyersList = filtered;
+  saveBuyersToDisk(filtered);
 
   return true;
 }

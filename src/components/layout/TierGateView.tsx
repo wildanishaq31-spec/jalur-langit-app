@@ -26,7 +26,7 @@ export const TierGateView: React.FC<TierGateViewProps> = ({
   featureTitle,
   featureDescription
 }) => {
-  const { currentUser, loginWithEmail } = useAuthStore();
+  const { currentUser, syncLicenseWithServer } = useAuthStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
 
@@ -39,12 +39,15 @@ export const TierGateView: React.FC<TierGateViewProps> = ({
     setRefreshMessage(null);
 
     try {
-      const success = await loginWithEmail(currentUser.email);
-      if (success) {
-        setRefreshMessage('Akses berhasil diperbarui! Memuat ulang fitur...');
+      const res = await syncLicenseWithServer();
+      const updatedTier = res.newTier || currentUser?.tier || 'starter';
+      const isUnlocked = updatedTier === 'vip' || updatedTier === requiredTier;
+
+      if (isUnlocked || res.upgraded) {
+        setRefreshMessage(`Alhamdulillah! Akses berhasil diperbarui ke ${TIER_CONFIG[updatedTier].name}. Membuka fitur...`);
         setTimeout(() => {
           window.location.reload();
-        }, 800);
+        }, 500);
       } else {
         setRefreshMessage('Pembayaran belum terdeteksi. Silakan selesaikan pembayaran di Lynk.id terlebih dahulu.');
       }

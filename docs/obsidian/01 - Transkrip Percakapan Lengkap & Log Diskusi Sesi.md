@@ -2769,3 +2769,38 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
    - Halaman login kini jauh lebih ringan, cepat, dan anti-bingung bagi seluruh pembeli.
 
 ---
+
+
+---
+
+## 📌 Sesi 24 November 2026 (18:15 WIB) - Perbaikan Menyeluruh Sinkronisasi Lisensi VIP Real-Time (Server-to-Client Auto Sync)
+
+### 1. Akar Masalah yang Ditemukan
+1. **Redirect Cepat Tanpa Sync di `/login`**:
+   - Saat pengguna di HP membuka link `/login`, karena sesi lokal browser sebelumnya sudah login sebagai `starter` (`isAuthenticated === true`), halaman `/login` langsung melakukan `router.replace('/dashboard')` tanpa menyinkronkan status terbaru dengan server.
+2. **Ketiadaan Background License Sync di `AppShell.tsx`**:
+   - `AppShell` sebelumnya hanya memeriksa query parameter `?upgrade=success` atau `?status=paid`. Jika link dibuka tanpa parameter khusus, aplikasi tidak pernah menanyakan lisensi terbaru ke server.
+   - Akibatnya, `currentUser.tier` di `localStorage` peranti tetap `starter` meskipun di Panel Admin status sudah `VIP`.
+3. **Penyelarasan Data Default Server (`serverBuyerStore.ts`)**:
+   - Akun `agung.siswoyo77@gmail.com` pada `DEFAULT_BUYERS` dan `INITIAL_BUYER_WHITELIST` masih tertulis `starter` sehingga pada *serverless cold start*, server mengembalikan tier lama. Ditambah belum ada penulisan persisten ke cache disk `/tmp`.
+
+### 2. Solusi Rekayasa yang Diterapkan
+1. **Fungsi Sinkronisasi Cerdas `syncLicenseWithServer()` di `useAuthStore`**:
+   - Mengambil status lisensi real-time dari `/api/auth/verify-buyer`.
+   - Jika mendeteksi kenaikan paket (*upgrade* dari starter ➔ ultimate/vip):
+     - Memperbarui `currentUser` dan `whitelist` secara instan di peranti.
+     - Mengembalikan `{ success: true, upgraded: true, newTier }`.
+2. **Sinkronisasi Otomatis di `/login` (`src/app/login/page.tsx`)**:
+   - Sebelum melakukan *forward* ke `/dashboard`, sistem terlebih dahulu memanggil `syncLicenseWithServer()`.
+   - Jika terdeteksi upgrade, otomatis diarahkan ke `/dashboard?upgrade=success`.
+3. **Background Sync di `AppShell.tsx`**:
+   - Otomatis mengecek lisensi ke server saat aplikasi dimuat pertama kali (*mount*).
+   - Otomatis mengecek lisensi saat pengguna kembali ke tab aplikasi (`visibilitychange` / `window.focus`).
+   - Memunculkan *Celebration Toast Banner* emas: *"Alhamdulillah! Akun Anda berhasil di-upgrade ke [Paket Baru]. Seluruh fitur eksklusif telah terbuka."*
+4. **Tombol Verifikasi Instan di `TierGateView.tsx`**:
+   - Tombol `[ 🔄 Sudah Bayar? Cek Status Lisensi ]` kini langsung memicu `syncLicenseWithServer()` dan membuka gembok fitur tanpa jeda.
+5. **Penyimpanan Persisten Server (`serverBuyerStore.ts`)**:
+   - Mengubah `DEFAULT_BUYERS` dan `INITIAL_BUYER_WHITELIST` untuk `agung.siswoyo77@gmail.com` menjadi `vip` dengan Order ID `37b624a7f67eca8fdba0867396519f43`.
+   - Menambahkan mekanisme *disk persistence* ke file temporer sistem agar perubahan lisensi di Panel Admin tersimpan kuat antar-invoce serverless.
+
+---
