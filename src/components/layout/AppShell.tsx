@@ -29,16 +29,22 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [mounted, setMounted] = useState(() => isAppHydrated);
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
 
-  // Deteksi otomatis saat pembeli kembali dari checkout upgrade Lynk.id (?upgrade=success / ?upgrade=vip)
+  // Deteksi otomatis saat pembeli kembali dari checkout upgrade / pembayaran Lynk.id (?upgrade=success / ?status=paid / ?payment=success / ?refId=...)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const upgradeParam = params.get('upgrade');
-    if (upgradeParam) {
+    const statusParam = params.get('status');
+    const paymentParam = params.get('payment');
+    const refIdParam = params.get('refId');
+
+    const isPaymentReturn = Boolean(upgradeParam || statusParam === 'paid' || paymentParam === 'success' || refIdParam);
+
+    if (isPaymentReturn) {
       if (currentUser?.email) {
         loginWithEmail(currentUser.email).then((ok) => {
           if (ok) {
-            setUpgradeToast('Alhamdulillah! Pembayaran upgrade berhasil diverifikasi. Seluruh fitur eksklusif Anda telah terbuka.');
+            setUpgradeToast('Alhamdulillah! Pembayaran berhasil diverifikasi. Seluruh fitur paket terbaru Anda telah terbuka.');
           }
         });
       }

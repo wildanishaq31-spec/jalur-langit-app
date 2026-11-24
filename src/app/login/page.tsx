@@ -27,7 +27,8 @@ export default function LoginRoute() {
 
   useEffect(() => {
     if (mounted && isAuthenticated && !isTransitioning) {
-      router.replace('/dashboard');
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      router.replace(`/dashboard${search}`);
     }
   }, [mounted, isAuthenticated, isTransitioning, router]);
 

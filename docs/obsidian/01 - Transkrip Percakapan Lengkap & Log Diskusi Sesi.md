@@ -2703,3 +2703,39 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
    - Disediakan kartu panduan interaktif di tab Webhook Lynk.id dengan URL siap salin untuk memudahkan konfigurasi di dashboard Lynk.id.
 
 ---
+
+
+---
+
+## 📌 Sesi 24 November 2026 (17:30 WIB) - Penggabungan Panduan Download PWA ke Halaman Login & Solusi 1 Tautan Universal Cerdas
+
+### 1. Masalah & Wawasan Pengguna (Insight User)
+- **Pertanyaan Pengguna**:
+  *"tapi kan bisa saja orang langsung beli full bundling atau VIP jadi kan tetap harus download dulu, jadi gimana solusinya? jadi user pertama kali membeli paketannya dari 3 paket dan kalau pertama kali harus di arahkan ke download dan kalau upgrade juga di arahkan untuk upgrade paket. apa download ini di gabung di halaman login ?"*
+- **Akar Masalah**:
+  - Jika URL `/download` dan `/login` dipisah, pembeli baru yang langsung membeli paket Full Bundling atau VIP pertama kali di Lynk.id bisa bingung jika langsung diarahkan ke `/dashboard` (karena belum login dan belum pasang PWA di layar HP).
+  - Ide pengguna untuk **menggabungkan panduan pasang/download PWA langsung ke dalam Halaman Login (`/login`)** adalah standar industri aplikasi PWA modern terbaik:
+    1. Cukup gunakan **1 Tautan Universal** untuk SEMUA produk di Lynk.id: `https://jalur-langit-app.vercel.app/login`.
+    2. Sistem di `/login` secara otomatis mendeteksi status pengguna (apakah pembeli baru, pengguna yang sudah pasang PWA, atau pengguna yang sedang upgrade).
+
+### 2. Implementasi Solusi Arsitektur
+1. **Smart PWA Install Banner & Modal Guide di `src/components/auth/LoginPage.tsx`**:
+   - **Deteksi Standalone PWA**: Jika aplikasi dibuka dari ikon layar utama HP (`display-mode: standalone`), banner instalasi **otomatis tersembunyi** (antarmuka 100% bersih tanpa menyuruh download lagi).
+   - **Banner Pasang PWA**: Jika dibuka lewat browser HP biasa (Chrome/Safari), muncul banner elegan di atas form login: *"📲 Pasang ke Layar Utama HP (Akses 1-klik cepat & hemat kuota)"*.
+   - **Instal Otomatis (Android Chrome)**: Menangkap event `beforeinstallprompt` sehingga cukup 1 ketukan tombol *"Instal Sekarang"*.
+   - **Panduan Visual (iPhone Safari)**: Modal interaktif dengan tab Android & iPhone Safari yang memandu langkah *"Bagikan (Share) ➔ Add to Home Screen"*.
+   - Pembeli baru (Starter, Bundling, atau VIP) bebas memilih: mau pasang ikon aplikasi dulu baru login, atau langsung ketik email / Google Login.
+
+2. **Auto-Forward Pengguna Upgrade di `src/app/login/page.tsx`**:
+   - Jika pengguna sudah terautentikasi (pengguna lama yang meng-upgrade paketnya di Lynk.id lalu kembali membuka aplikasi):
+   - Halaman `/login` mendeteksi `isAuthenticated === true` dan **seketika langsung meneruskannya ke `/dashboard`** (dengan membawa parameter query pembayaran). Pengguna upgrade TIDAK AKAN melihat form login atau panduan download lagi.
+
+3. **Penyempurnaan Deteksi Pembayaran di `src/components/layout/AppShell.tsx`**:
+   - Menangkap parameter kembalian pembayaran Lynk.id (`upgrade`, `status=paid`, `payment=success`, `refId`).
+   - Otomatis memicu `loginWithEmail(currentUser.email)` untuk menyinkronkan tier lisensi baru dari server webhook.
+   - Menampilkan banner perayaan emas: *"🎉 Alhamdulillah! Pembayaran berhasil diverifikasi. Seluruh fitur paket terbaru Anda telah terbuka."*
+
+4. **Pembaruan Panduan di `src/app/panel-admin/page.tsx`**:
+   - Merapikan kartu petunjuk integrasi Lynk.id: Owner cukup menempelkan `https://jalur-langit-app.vercel.app/login` sebagai tautan akses untuk ketiga paket (Starter, Full Bundling, VIP) tanpa perlu membedakan URL lagi.
+
+---

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Moon, 
   Sparkles, 
@@ -9,12 +9,20 @@ import {
   ArrowRight, 
   Sun, 
   HelpCircle, 
-  Mail,
-  ShoppingBag,
-  User
+  Mail, 
+  ShoppingBag, 
+  User, 
+  Smartphone, 
+  Download, 
+  X 
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 export const LoginPage: React.FC = () => {
   const { 
@@ -31,16 +39,66 @@ export const LoginPage: React.FC = () => {
   const [isUsingOtherAccount, setIsUsingOtherAccount] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Auto-detect email from URL query params (misal dari link email Lynk.id / checkout)
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const emailParam = params.get('email');
-      if (emailParam && emailParam.includes('@')) {
-        setInputEmail(emailParam.trim());
-      }
+  // State PWA Install Helper
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [installOsTab, setInstallOsTab] = useState<'android' | 'ios'>('android');
+
+  // Auto-detect email from URL query params (misal dari link email Lynk.id / checkout) & PWA standalone mode
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. Ambil email jika ada di query param
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get('email');
+    if (emailParam && emailParam.includes('@')) {
+      setInputEmail(emailParam.trim());
     }
+
+    // 2. Deteksi apakah aplikasi sudah diinstall / berjalan di mode Standalone
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+
+    if (isStandalone) {
+      setIsPwaInstalled(true);
+    }
+
+    // 3. Deteksi OS perangkat (Android vs iOS)
+    const ua = navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod/.test(ua)) {
+      setInstallOsTab('ios');
+    } else {
+      setInstallOsTab('android');
+    }
+
+    // 4. Tangkap event install prompt native Chrome Android
+    const handlePrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
   }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setIsPwaInstalled(true);
+        }
+        setDeferredPrompt(null);
+      } catch {
+        setIsInstallModalOpen(true);
+      }
+    } else {
+      setIsInstallModalOpen(true);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +170,35 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* PWA Smart Install Banner - Hanya Tampil jika Belum di-Install ke Home Screen */}
+        {!isPwaInstalled && (
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-emerald-900/90 via-teal-900/90 to-emerald-950/90 border border-amber-300/40 shadow-sm text-white flex items-center justify-between gap-2 animate-fade-in backdrop-blur-xs">
+            <div className="flex items-center gap-2 truncate">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-400 text-stone-900 flex items-center justify-center shrink-0 shadow-xs">
+                <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-950" />
+              </div>
+              <div className="text-left truncate">
+                <div className="text-[10px] sm:text-[11px] font-bold text-amber-200 flex items-center gap-1">
+                  <span>Pasang ke Layar Utama HP</span>
+                  <span className="text-[8px] sm:text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 font-semibold">PWA</span>
+                </div>
+                <div className="text-[8px] sm:text-[9px] text-stone-300 truncate">
+                  Buka 1-klik cepat &amp; hemat kuota tanpa browser
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="px-2.5 py-1 sm:py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-900 font-extrabold text-[9px] sm:text-[10px] shrink-0 transition-transform active:scale-95 shadow-xs flex items-center gap-1 cursor-pointer"
+            >
+              <Download className="w-3 h-3" />
+              <span>{deferredPrompt ? 'Instal Sekarang' : 'Cara Pasang'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Card Form */}
         <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white/95 dark:bg-emerald-950/50 border border-stone-200/90 dark:border-emerald-800/70 shadow-lg backdrop-blur-md space-y-2.5 sm:space-y-3.5">
@@ -359,6 +446,126 @@ export const LoginPage: React.FC = () => {
 
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL: PANDUAN INSTAL PWA KE LAYAR UTAMA HP */}
+      {isInstallModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl bg-white dark:bg-[#0c1813] border border-stone-200 dark:border-emerald-800 text-stone-900 dark:text-stone-100 shadow-2xl overflow-hidden animate-fade-in">
+            
+            {/* Modal Header */}
+            <div className="px-4 py-3 border-b border-stone-200 dark:border-emerald-900/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs sm:text-sm font-bold">Pasang ke Layar Utama HP</span>
+              </div>
+              <button 
+                onClick={() => setIsInstallModalOpen(false)}
+                className="text-stone-400 hover:text-stone-700 dark:hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 space-y-3.5">
+              
+              {/* Tab Selector Android vs iOS */}
+              <div className="flex rounded-xl bg-stone-100 dark:bg-emerald-950/80 p-1 border border-stone-200 dark:border-emerald-800/80">
+                <button
+                  type="button"
+                  onClick={() => setInstallOsTab('android')}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    installOsTab === 'android'
+                      ? 'bg-white dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+                  }`}
+                >
+                  🤖 HP Android (Chrome)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInstallOsTab('ios')}
+                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    installOsTab === 'ios'
+                      ? 'bg-white dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-800 dark:hover:text-stone-200'
+                  }`}
+                >
+                  🍎 iPhone (Safari)
+                </button>
+              </div>
+
+              {/* Instructions per OS */}
+              {installOsTab === 'android' ? (
+                <div className="space-y-2 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="p-3 rounded-xl bg-stone-50 dark:bg-emerald-950/40 border border-stone-200 dark:border-emerald-800 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+                      <p>Buka halaman ini menggunakan browser <b>Google Chrome</b> di HP Anda.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+                      <p>Ketuk ikon <b>titik tiga (⋮)</b> di pojok kanan atas browser Chrome.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+                      <p>Pilih menu <b>&quot;Tambahkan ke Layar Utama&quot;</b> atau <b>&quot;Instal Aplikasi&quot;</b>.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">4</span>
+                      <p>Selesai! Ikon <b>Jalur Langit</b> akan langsung muncul di layar depan HP Anda.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-xs text-stone-600 dark:text-stone-300">
+                  <div className="p-3 rounded-xl bg-stone-50 dark:bg-emerald-950/40 border border-stone-200 dark:border-emerald-800 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+                      <p>Pastikan membuka link ini menggunakan browser <b>Safari</b> di iPhone Anda.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+                      <p>Ketuk tombol <b>Bagikan (Share)</b> berupa ikon kotak dengan panah ke atas (⬆️) di bilah bawah.</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+                      <p>Gulir ke bawah lalu pilih <b>&quot;Add to Home Screen&quot;</b> (Tambahkan ke Layar Utama).</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">4</span>
+                      <p>Ketuk <b>Add / Tambah</b> di kanan atas. Ikon aplikasi langsung siap digunakan!</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-1">
+                {deferredPrompt && installOsTab === 'android' && (
+                  <button
+                    type="button"
+                    onClick={handleInstallClick}
+                    className="w-full py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Klik di Sini untuk Instal Otomatis</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setIsInstallModalOpen(false)}
+                  className="w-full py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-xs transition-all"
+                >
+                  Saya Mengerti, Lanjut Masuk ke Akun →
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       )}

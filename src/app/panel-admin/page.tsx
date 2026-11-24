@@ -2099,48 +2099,59 @@ export default function PanelAdminPage() {
                       </div>
                     </div>
 
-                    {/* Panduan Konfigurasi Tautan Akses Lynk.id (Pembeli Baru vs Upgrade) */}
+                    {/* Panduan Konfigurasi Tautan Akses Lynk.id (Solusi Universal Cerdas: 1 Link untuk Semua Paket) */}
                     <div className="p-5 rounded-2xl bg-white dark:bg-emerald-950/60 border border-stone-200 dark:border-emerald-800 space-y-3 text-stone-900 dark:text-stone-100">
                       <div className="flex items-center gap-2">
                         <Smartphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                          Panduan Alur Redirect Produk di Dashboard Lynk.id (Solusi Pembeli Baru vs Upgrade)
+                          Panduan Tautan Akses Produk Lynk.id (Solusi Cerdas: 1 Link Universal untuk Semua Paket)
                         </h4>
                       </div>
                       <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                        Agar alur pembelian tidak salah arah, atur <b>Tautan Akses Konten / Link Produk</b> pada masing-masing paket di Dashboard Lynk.id sebagai berikut:
+                        Anda tidak perlu repot membedakan link! Cukup gunakan <b>1 Tautan Universal</b> ini pada SEMUA paket di Lynk.id (Paket Starter, Full Bundling, maupun VIP):
                       </p>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3.5 rounded-xl bg-stone-50 dark:bg-emerald-900/30 border border-stone-200 dark:border-emerald-800 space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-emerald-800 dark:text-emerald-300">1. Paket Starter (Pembeli Baru)</span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-900">Belum Punya PWA</span>
-                          </div>
-                          <p className="text-[11px] text-stone-500">
-                            Masukkan URL ini pada kolom <b>Tautan Akses Konten</b> paket Starter di Lynk.id:
-                          </p>
-                          <div className="p-2 rounded-lg bg-black/5 dark:bg-black/40 font-mono text-[11px] text-emerald-700 dark:text-emerald-300 break-all select-all font-bold">
-                            https://jalur-langit-app.vercel.app/download
-                          </div>
-                          <p className="text-[10px] text-stone-400 italic">
-                            *Pembeli baru akan diarahkan untuk memasang ikon aplikasi PWA ke layar utama HP.
+                      {/* Universal Link Box */}
+                      <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/30 border-2 border-emerald-500/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs text-emerald-900 dark:text-emerald-200">
+                            🌟 Tautan Akses Universal (Tempelkan pada Semua 3 Paket di Lynk.id):
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white uppercase">
+                            Universal Cerdas
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-black/10 dark:bg-black/60 font-mono text-xs text-emerald-800 dark:text-emerald-300 break-all select-all font-bold">
+                          https://jalur-langit-app.vercel.app/login
+                        </div>
+                      </div>
+
+                      {/* Penjelasan Cara Kerja Cerdas Sistem */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+                        <div className="p-3 rounded-xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 space-y-1">
+                          <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                            👤 1. Pembeli Baru Pertama Kali
+                          </span>
+                          <p className="text-[11px] text-stone-500 leading-relaxed">
+                            Membeli Starter/Bundling/VIP ➔ Buka link ➔ Muncul banner <b>&quot;Pasang ke Layar HP&quot;</b> + form login. Bisa langsung pasang PWA dan login.
                           </p>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-amber-900 dark:text-amber-200">2. Paket Bundling / VIP (Upgrade)</span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-900">Sudah Punya PWA</span>
-                          </div>
-                          <p className="text-[11px] text-stone-500">
-                            Masukkan URL ini pada kolom <b>Tautan Akses Konten</b> paket Bundling/VIP di Lynk.id:
+                        <div className="p-3 rounded-xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 space-y-1">
+                          <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                            🚀 2. Pengguna yang Mau Upgrade
+                          </span>
+                          <p className="text-[11px] text-stone-500 leading-relaxed">
+                            Sudah login di HP ➔ Beli upgrade di Lynk.id ➔ Link otomatis langsung meluncur ke <b>Dashboard</b> &amp; membuka fitur baru tanpa download ulang!
                           </p>
-                          <div className="p-2 rounded-lg bg-black/5 dark:bg-black/40 font-mono text-[11px] text-amber-700 dark:text-amber-300 break-all select-all font-bold">
-                            https://jalur-langit-app.vercel.app/dashboard?upgrade=success
-                          </div>
-                          <p className="text-[10px] text-stone-400 italic">
-                            *Pembeli upgrade langsung kembali ke aplikasi dan fiturnya seketika terbuka tanpa disuruh download lagi!
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-stone-50 dark:bg-emerald-900/20 border border-stone-200 dark:border-emerald-800 space-y-1">
+                          <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                            📱 3. Dibuka dari Ikon Layar HP
+                          </span>
+                          <p className="text-[11px] text-stone-500 leading-relaxed">
+                            Mode PWA Standalone otomatis mendeteksi aplikasi sudah terpasang. Banner install <b>otomatis tersembunyi</b> secara bersih.
                           </p>
                         </div>
                       </div>
