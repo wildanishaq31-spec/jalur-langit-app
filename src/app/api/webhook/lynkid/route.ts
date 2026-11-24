@@ -53,6 +53,20 @@ export async function POST(request: Request) {
     const payload = await request.json().catch(() => ({}));
     console.log('[Lynk.id Webhook Incoming Payload]:', JSON.stringify(payload));
 
+    // 0. Handle Lynk.id "Test URL" button / Ping
+    if (
+      payload.event === 'test' || 
+      payload.event === 'ping' || 
+      payload.type === 'test' ||
+      payload.is_test === true ||
+      payload.action === 'test'
+    ) {
+      return NextResponse.json({
+        success: true,
+        message: 'Lynk.id Webhook Test Ping berhasil diterima dengan baik (HTTP 200 OK).'
+      });
+    }
+
     // 1. Ekstraksi Email Pembeli (Mendukung format standar Lynk.id data.message_data, dll)
     const rawEmail = 
       payload.data?.message_data?.customer?.email ||
@@ -69,6 +83,14 @@ export async function POST(request: Request) {
     const email = String(rawEmail).trim().toLowerCase();
 
     if (!email || !email.includes('@')) {
+      // Fallback ramah jika Lynk.id tombol "Test URL" mengirim payload tanpa email
+      if (!payload.event || payload.event.includes('test') || payload.event.includes('ping')) {
+        return NextResponse.json({
+          success: true,
+          message: 'Webhook URL terverifikasi aktif dan siap menerima data transaksi Lynk.id.'
+        });
+      }
+
       return NextResponse.json(
         { 
           success: false, 
