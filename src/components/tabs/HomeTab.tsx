@@ -53,10 +53,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     setIsDrawerOpen,
     setDrawerActiveTab,
     roadmapFeatures,
-    featureVotes
+    featureVotes,
+    syncRoadmapFromServer
   } = useJalurLangitStore();
 
   const handleOpenRoadmap = () => {
+    syncRoadmapFromServer();
     setDrawerActiveTab('lab');
     setIsDrawerOpen(true);
   };

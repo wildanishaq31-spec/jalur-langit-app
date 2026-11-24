@@ -22,7 +22,7 @@ let isAppHydrated = false;
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { appTheme, syncToTodayIfOutdated } = useJalurLangitStore();
+  const { appTheme, syncToTodayIfOutdated, syncRoadmapFromServer } = useJalurLangitStore();
   const { 
     isAuthenticated, 
     isTransitioning, 
@@ -36,7 +36,32 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [mounted, setMounted] = useState(() => isAppHydrated);
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
 
-  // 1. Sinkronisasi lisensi otomatis saat AppShell pertama kali dibuka / dimuat
+  // 1. Sinkronisasi data roadmap global & deteksi pembaruan versi aplikasi dari server
+  useEffect(() => {
+    syncRoadmapFromServer();
+
+    const checkAppVersion = async () => {
+      try {
+        const res = await fetch('/api/version', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.version) {
+            const savedVersion = localStorage.getItem('jalur_langit_app_version');
+            if (savedVersion && savedVersion !== data.version) {
+              localStorage.setItem('jalur_langit_app_version', data.version);
+              syncRoadmapFromServer();
+            } else if (!savedVersion) {
+              localStorage.setItem('jalur_langit_app_version', data.version);
+            }
+          }
+        }
+      } catch {}
+    };
+
+    checkAppVersion();
+  }, [syncRoadmapFromServer]);
+
+  // 2. Sinkronisasi lisensi otomatis saat AppShell pertama kali dibuka / dimuat
   useEffect(() => {
     if (isAuthenticated && currentUser?.email) {
       syncLicenseWithServer().then((res) => {
@@ -96,6 +121,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         syncToTodayIfOutdated();
       } else if (document.visibilityState === 'visible') {
         syncToTodayIfOutdated();
+        syncRoadmapFromServer();
         if (isAuthenticated && currentUser?.email) {
           syncLicenseWithServer().then((res) => {
             if (res.upgraded && res.newTier) {

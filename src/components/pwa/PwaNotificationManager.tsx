@@ -73,17 +73,39 @@ export const PwaNotificationManager: React.FC = () => {
 
   const isSyncingRef = useRef(false);
 
-  // 1. Registrasi PWA Service Worker
+  // 1. Registrasi PWA Service Worker dengan Deteksi Pembaruan Otomatis
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
         .then((registration) => {
-          console.log('[PWA] Service Worker terdaftar dengan scope:', registration.scope);
+          // Periksa update sw.js setiap kali aplikasi dibuka
+          registration.update().catch(() => {});
+
+          // Dengarkan jika ada service worker baru yang sedang terpasang
+          registration.addEventListener('updatefound', () => {
+            const installingWorker = registration.installing;
+            if (installingWorker) {
+              installingWorker.addEventListener('statechange', () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] Versi baru aplikasi berhasil diunduh di latar belakang.');
+                }
+              });
+            }
+          });
         })
         .catch((err) => {
           console.warn('[PWA] Registrasi Service Worker gagal:', err);
         });
+
+      // Reload halus jika service worker baru aktif mengambil alih kontrol
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
   }, []);
 

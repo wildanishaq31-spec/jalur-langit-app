@@ -2988,3 +2988,39 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+
+## 📌 Sesi 24 November 2026 (20:17 WIB) - Pemisahan Arsitektur: Data Aktivitas Lokal Abadi vs Fitur Global Real-Time Server-Controlled
+
+### 1. Masalah & Evaluasi
+1. **Penyebab Tertahannya Update di HP Pengguna**:
+   - Data roadmap dan fitur baru sebelumnya tersimpan di storage lokal masing-masing peranti tanpa mekanisme *auto-pull* dari server saat aplikasi dimuat.
+   - Akibatnya, saat admin menambahkan fitur baru di Panel Admin atau developer merilis perbaikan tampilan di Vercel, HP pengguna tetap menampilkan data dan tampilan lama dari memori cache browser.
+2. **Kebutuhan Pengguna**:
+   - Seluruh data aktivitas ibadah personal (amalan, hajat doa, sedekah, tasbih, quran, air minum) **wajib tetap tersimpan aman di storage HP lokal dan TIDAK BOLEH hilang**.
+   - Setiap ada update sistem, perbaikan visual, atau fitur baru yang dikontrol admin **wajib otomatis muncul di HP pengguna secara langsung tanpa pengguna harus install ulang atau kehilangan data**.
+
+---
+
+### 2. Solusi Rekayasa yang Diterapkan
+1. **Disk Persistence & No-Cache pada API Roadmap Server (`src/app/api/roadmap/route.ts`)**:
+   - Menyimpan daftar fitur roadmap ke file sementara sistem (`os.tmpdir()`) dan cache memori global agar perubahan oleh Admin di Panel Admin tersimpan kuat antar-invoce serverless.
+   - Menyertakan header HTTP `Cache-Control: no-store, no-cache, must-revalidate` agar browser tidak menyimpan cache usang.
+2. **Auto-Sync Roadmap di Background (`src/components/layout/AppShell.tsx` & `src/components/tabs/HomeTab.tsx`)**:
+   - `AppShell` kini memanggil `syncRoadmapFromServer()` secara otomatis setiap kali aplikasi dibuka (*mount*) dan setiap kali pengguna kembali ke tab aplikasi (`visibilitychange` / `window.focus`).
+   - Fitur baru yang ditambahkan Admin langsung ditarik dari server dan diperbarui di antarmuka pengguna tanpa mengusik data amalan.
+3. **Endpoint Deteksi Versi Aplikasi (`src/app/api/version/route.ts`)**:
+   - Menghadirkan endpoint ringkas `/api/version` dengan versi build aplikasi.
+   - `AppShell` memeriksa versi server secara halus di latar belakang. Jika terdeteksi build baru, data fitur global langsung disegarkan secara otomatis.
+4. **Konfigurasi HTTP Headers & Service Worker Auto-Update (`next.config.ts` & `src/components/pwa/PwaNotificationManager.tsx`)**:
+   - Di [next.config.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/next.config.ts): Menambahkan header khusus agar `/sw.js` dan seluruh rute `/api/*` tidak pernah disimpan permanen oleh cache browser (`no-cache, no-store`).
+   - Di [PwaNotificationManager.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/pwa/PwaNotificationManager.tsx): Menambahkan listener `registration.update()` dan `controllerchange` agar saat service worker baru aktif, peranti menyegarkan aset secara halus (*seamless cache invalidation*).
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% tanpa error.
+- **Production Build**: `npm run build` sukses 100% (21/21 halaman statis & dinamis terkompilasi).
+- **Dual Git Push**: Di-push serentak ke remote repository (`origin master` & `origin master:main`).
+
+---
