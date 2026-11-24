@@ -3024,3 +3024,37 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke remote repository (`origin master` & `origin master:main`).
 
 ---
+
+
+## 📌 Sesi 25 November 2026 (04:29 WIB) - Redesain Bottom Menu Bar "Center FAB Action Focused" dengan Curved Notch & Hover Animasi
+
+### 1. Permintaan Pengguna
+- Memperbaiki tampilan icon menu bar bawah agar lebih bagus, **bold, dan kreatif**, dengan mempertahankan palet warna khas Jalur Langit (Putih/Emerald & Amber).
+- Memberikan **efek hover dan transisi aktif** yang terasa hidup saat berpindah menu.
+- Memastikan icon **Tasbih berada tepat di tengah secara presisi** dengan gaya **Center FAB Action Focused** dan lekukan cekung melengkung (*curved notch*) di belakang tombol tengah seperti referensi UI.
+
+---
+
+### 2. Implementasi Solusi (`src/components/Navigation.tsx`)
+1. **Floating Rounded Dock + Curved Concave Notch SVG**:
+   - Mengubah bar navigasi bawah menjadi *floating dock* melengkung (`rounded-3xl`) dengan **SVG Curved Notch** tepat di titik tengah 50% yang mengapit tombol Center FAB Tasbih.
+   - Menggunakan warna latar putih bersih (`bg-white/95`) pada Light Mode dan hijau emerald gelap (`dark:bg-emerald-950/95`) pada Dark Mode.
+2. **Presisi Tengah Mutlak (`grid-cols-7`)**:
+   - Mengganti `flex justify-between` (yang sebelumnya membuat posisi tengah bergeser tergantung lebar teks label) menjadi `grid grid-cols-7 items-end` sehingga ke-7 menu memiliki lebar identik dan **Tasbih berada tepat di kolom ke-4 (100% center)**.
+3. **Efek Hover & Active Pill yang Bold & Creative**:
+   - **Menu Reguler (Beranda, Amalan, Self-Care, Vision, Hajat, Quran)**:
+     - Saat *hover*: ikon terangkat halus (`-translate-y-1`), membesar (`scale-110`), dan muncul latar kapsul emerald lembut (`bg-emerald-50`).
+     - Saat *aktif*: ikon masuk ke dalam kapsul emerald solid yang menonjol (`bg-emerald-700 text-white -translate-y-1.5 scale-110 ring-2`).
+   - **Center FAB Tasbih**:
+     - Ukuran dipertegas (`w-12 h-12 -mt-7 rounded-full`) dengan border menyatu ke warna latar halaman.
+     - Saat *hover*: terangkat, membesar, dan ikon *Sparkles* berputar halus (`group-hover:rotate-12`).
+     - Saat *aktif*: berubah ke gradien emas amber menyala (`from-amber-500 to-yellow-400`) dengan *glow ring*.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Production Build**: `npm run build` sukses 100% (21/21 halaman terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---
