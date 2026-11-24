@@ -2888,3 +2888,33 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main` untuk pemicuan auto-deploy Vercel.
 
 ---
+
+
+## 📌 Sesi 24 November 2026 (19:14 WIB) - Eliminasi Badge Duplikat & Koreksi Icon Checklist Ganda pada Tombol Tilawah
+
+### 1. Masalah & Evaluasi
+1. **Badge Status Ganda**:
+   - Di baris status tanggal terdapat pill badge `✓ Sudah Selesai`, padahal tepat di bawahnya sudah ada tombol utama bertuliskan `Selesai di Checklist Amalan Hari Ini`.
+   - Hal ini membuat informasi tampak berulang.
+2. **Icon Checklist Ganda pada Tombol**:
+   - Di dalam tombol status amalan saat selesai, terdapat ikon Lucide `<CheckCircle2 />` dan juga karakter teks unicode `✓` di dalam string `<span>✓ Selesai di Checklist Amalan Hari Ini</span>`.
+   - Akibatnya, pada tampilan tombol muncul dua buah centang sekaligus: `(✓) ✓ Selesai di Checklist Amalan Hari Ini`.
+
+---
+
+### 2. Implementasi Solusi
+1. **Penghapusan Badge Status Teks Samping (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Menghapus elemen `<span ...>{isTilawahDone ? '✓ Sudah Selesai' : 'Belum Selesai'}</span>` di sisi kanan baris tanggal.
+   - Baris atas kini murni menampilkan dot indikator status dan teks: `Status Checklist Amalan Hari Ini (Tanggal):`.
+2. **Koreksi Icon Tunggal pada Tombol (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Menghapus karakter centang literal `✓` dari teks tombol sehingga menjadi: `<span>Selesai di Checklist Amalan Hari Ini</span>`.
+   - Sekarang hanya ada **1 icon centang resmi** yaitu icon melingkar hijau `<CheckCircle2 className="w-4 h-4 ..." />`.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Next.js Turbopack Build**: `npm run build` sukses 100% (20/20 halaman terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---

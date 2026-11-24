@@ -631,19 +631,10 @@ export const QuranJournalTab: React.FC = () => {
 
             {/* Sync with Checklist Amalan Bar */}
             <div className="pt-3 border-t border-stone-100 dark:border-emerald-900/40 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2.5 h-2.5 rounded-full ${isTilawahDone ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
-                  <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                    Status Checklist Amalan Hari Ini ({formatDateIndonesian(selectedDate)}):
-                  </span>
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  isTilawahDone 
-                    ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300' 
-                    : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'
-                }`}>
-                  {isTilawahDone ? '✓ Sudah Selesai' : 'Belum Selesai'}
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${isTilawahDone ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                  Status Checklist Amalan Hari Ini ({formatDateIndonesian(selectedDate)}):
                 </span>
               </div>
               <button
@@ -665,7 +656,7 @@ export const QuranJournalTab: React.FC = () => {
                 {isTilawahDone ? (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>✓ Selesai di Checklist Amalan Hari Ini</span>
+                    <span>Selesai di Checklist Amalan Hari Ini</span>
                   </>
                 ) : (
                   <>
