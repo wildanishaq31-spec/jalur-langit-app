@@ -229,7 +229,7 @@ export interface JalurLangitBackupData {
   glowUpMap?: Record<string, GlowUpHabits>;
   visionBoardItems?: VisionBoardItem[];
   quranCompletedJuz?: number[];
-  quranBookmark?: QuranBookmark;
+  quranBookmark?: QuranBookmark | null;
   quranPaceMode?: QuranPaceMode;
   dailyCicilSholatMap?: Record<string, { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean }>;
   quranTadabburList?: QuranTadabburItem[];

@@ -248,8 +248,9 @@ interface JalurLangitState {
   // Quran & Kajian
   quranCompletedJuz: number[];
   toggleJuz: (juz: number) => void;
-  quranBookmark: QuranBookmark;
+  quranBookmark: QuranBookmark | null;
   setQuranBookmark: (bookmark: Partial<QuranBookmark>) => void;
+  resetQuranBookmark: () => void;
   quranPaceMode: QuranPaceMode;
   setQuranPaceMode: (mode: QuranPaceMode) => void;
   dailyCicilSholatMap: Record<string, { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean }>;
@@ -845,22 +846,28 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           };
         });
       },
-      quranBookmark: {
-        surahName: 'Al-Fatihah',
-        surahNumber: 1,
-        ayahNumber: 1,
-        pageNumber: 1,
-        juzNumber: 1,
-        updatedAt: getTodayDateString(),
-      },
+      quranBookmark: null,
       setQuranBookmark: (bookmark) => {
-        set((state) => ({
-          quranBookmark: {
-            ...state.quranBookmark,
-            ...bookmark,
+        set((state) => {
+          const prev = state.quranBookmark || {
+            surahName: 'Al-Fatihah',
+            surahNumber: 1,
+            ayahNumber: 1,
+            pageNumber: 1,
+            juzNumber: 1,
             updatedAt: getTodayDateString(),
-          }
-        }));
+          };
+          return {
+            quranBookmark: {
+              ...prev,
+              ...bookmark,
+              updatedAt: getTodayDateString(),
+            }
+          };
+        });
+      },
+      resetQuranBookmark: () => {
+        set({ quranBookmark: null });
       },
       quranPaceMode: 'menengah',
       setQuranPaceMode: (mode) => {
@@ -1534,6 +1541,19 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             }
 
             (state as any).isMockDataResetV2 = true;
+          }
+
+          // 4. Reset quranBookmark jika masih nilai awal Al-Fatihah bawaan mock
+          if (!(state as any).isBookmarkResetV3) {
+            if (
+              state.quranBookmark &&
+              state.quranBookmark.surahNumber === 1 &&
+              state.quranBookmark.ayahNumber === 1 &&
+              state.quranBookmark.pageNumber === 1
+            ) {
+              state.quranBookmark = null;
+            }
+            (state as any).isBookmarkResetV3 = true;
           }
         }
       },

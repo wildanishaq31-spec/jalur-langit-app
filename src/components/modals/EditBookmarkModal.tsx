@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Bookmark, CheckCircle, ChevronDown } from 'lucide-react';
+import { X, Bookmark, CheckCircle, ChevronDown, Trash2 } from 'lucide-react';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { ALL_114_SURAHS } from '@/data/quranSurahCatalog';
 import { getJuzByPage } from '@/data/quranJuzCatalog';
@@ -13,7 +13,7 @@ interface EditBookmarkModalProps {
 }
 
 export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ isOpen, onClose }) => {
-  const { quranBookmark, setQuranBookmark } = useJalurLangitStore();
+  const { quranBookmark, setQuranBookmark, resetQuranBookmark } = useJalurLangitStore();
 
   const [surahNumber, setSurahNumber] = useState<number>(1);
   const [ayahNumber, setAyahNumber] = useState<number>(1);
@@ -170,7 +170,7 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ isOpen, on
             </span>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <button
               type="submit"
               className="w-full py-3 px-4 text-white font-bold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-98 bg-emerald-700 hover:bg-emerald-800 cursor-pointer"
@@ -178,6 +178,20 @@ export const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ isOpen, on
               <CheckCircle className="w-4 h-4" />
               <span>Simpan Pembatas Tilawah</span>
             </button>
+
+            {quranBookmark && (
+              <button
+                type="button"
+                onClick={() => {
+                  resetQuranBookmark();
+                  onClose();
+                }}
+                className="w-full py-2 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus / Kosongkan Pembatas</span>
+              </button>
+            )}
           </div>
         </form>
       </div>

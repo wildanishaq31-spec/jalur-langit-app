@@ -2846,3 +2846,45 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Git & Deployment**: Kode di-commit dan di-push ganda ke remote repository (`origin master` & `origin master:main`) untuk auto-deploy Vercel.
 
 ---
+
+
+## 📌 Sesi 24 November 2026 (19:08 WIB) - Pembersihan Teks Tombol Syukur, Reset Pembatas Tilawah Awal, dan Perapihan Layout Tombol Full-Width
+
+### 1. Masalah & Evaluasi
+1. **Double Text pada Tombol Gratitude**:
+   - Teks tombol sebelumnya: `+ Tambah Poin Rasa Syukur (+ Baris Baru)`. Frasa dalam kurung `(+ Baris Baru)` terkesan ganda (redundant) karena sudah diawali dengan kata `+ Tambah`.
+2. **Pembatas Tilawah Masih Memuat Nilai Bawaan (Al-Fatihah Hal 1 Juz 1)**:
+   - Pada instalasi/pembukaan awal, pembatas bacaan mushaf harus dalam keadaan bersih (`null` / belum terisi).
+   - Pembatas bacaan baru muncul jika pengguna mulai mengaji dan menyimpan pembatasnya.
+3. **Tombol "Tandai Selesai Hari Ini" Terhimpit di Layar HP**:
+   - Tombol diletakkan sejajar horizontal (`justify-between`) dengan teks status checklist amalan harian, menyebabkan tombol terhimpit sempit dan teksnya tertekuk berantakan di layar smartphone.
+4. **Tombol "Perbarui Pembatas" Kurang Lebar**:
+   - Tombol perbarui pembatas sebelumnya berada di header kanan atas kartu sehingga kecil dan sempit. Perlu dipindahkan ke bawah teks posisi bacaan agar tampil panjang, lebar (*full width*), dan ramah sentuhan.
+
+---
+
+### 2. Implementasi Solusi
+1. **Pembersihan Teks Tombol Gratitude (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Mengubah label tombol menjadi: `+ Tambah Poin Rasa Syukur` (menghapus `(+ Baris Baru)`).
+2. **Reset State Pembatas & Migrasi Otomatis (`src/store/useJalurLangitStore.ts` & `src/types/index.ts`)**:
+   - Menjadikan tipe `quranBookmark: QuranBookmark | null` dengan nilai inisial `null`.
+   - Menambahkan fungsi `resetQuranBookmark()`.
+   - Menambahkan migrasi otomatis `isBookmarkResetV3` pada `onRehydrateStorage`: jika peranti pengguna masih menyimpan nilai awal mock (`Al-Fatihah`, Ayat 1, Halaman 1, Juz 1), sistem otomatis meresetnya menjadi `null`.
+   - Di [EditBookmarkModal.tsx](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/components/modals/EditBookmarkModal.tsx), ditambahkan tombol `Hapus / Kosongkan Pembatas`.
+3. **Tata Letak Vertikal Tombol "Tandai Selesai Hari Ini" (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Memisahkan status baris menjadi layout vertikal:
+     - Baris 1: Teks `Status Checklist Amalan Hari Ini (...)` dengan indikator dot dan badge status (`Sudah Selesai` / `Belum Selesai`).
+     - Baris 2: Tombol `[ Tandai Selesai Hari Ini ]` dibuat membentang penuh (*full width* `w-full`) sehingga sangat lega, lebar, dan nyaman diklik.
+4. **Relokasi Tombol "Perbarui Pembatas" ke Bawah Teks Posisi Bacaan (`src/components/tabs/QuranJournalTab.tsx`)**:
+   - Menghapus tombol kecil di sudut kanan atas header kartu.
+   - Bila belum ada bookmark (`!quranBookmark`): Menampilkan pesan bersih *"Belum ada pembatas bacaan"* dan tombol lebar `[ + Pasang Pembatas Tilawah ]`.
+   - Bila sudah ada bookmark: Menampilkan kotak rincian bacaan (Surah, Ayat, Halaman, Juz, Terakhir diperbarui), dan tepat di bawahnya diletakkan tombol lebar `[ ✏️ Perbarui Pembatas Tilawah ]` yang membentang horizontal penuh.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% tanpa error.
+- **Production Build**: `npm run build` berhasil sempurna (20/20 halaman terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main` untuk pemicuan auto-deploy Vercel.
+
+---

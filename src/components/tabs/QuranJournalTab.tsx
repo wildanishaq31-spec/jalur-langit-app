@@ -630,11 +630,20 @@ export const QuranJournalTab: React.FC = () => {
             </div>
 
             {/* Sync with Checklist Amalan Bar */}
-            <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-emerald-900/40">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isTilawahDone ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
-                <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
-                  Status Checklist Amalan Hari Ini ({formatDateIndonesian(selectedDate)}):
+            <div className="pt-3 border-t border-stone-100 dark:border-emerald-900/40 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${isTilawahDone ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                  <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    Status Checklist Amalan Hari Ini ({formatDateIndonesian(selectedDate)}):
+                  </span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isTilawahDone 
+                    ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300' 
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'
+                }`}>
+                  {isTilawahDone ? '✓ Sudah Selesai' : 'Belum Selesai'}
                 </span>
               </div>
               <button
@@ -647,20 +656,20 @@ export const QuranJournalTab: React.FC = () => {
                     confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
                   }
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer ${
+                className={`w-full py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer shadow-xs ${
                   isTilawahDone
-                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                    : 'bg-stone-100 dark:bg-emerald-900/30 hover:bg-emerald-50 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-emerald-800'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-200/60'
+                    : 'bg-stone-100 dark:bg-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/50 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-emerald-800'
                 }`}
               >
                 {isTilawahDone ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>✓ Selesai di Checklist</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>✓ Selesai di Checklist Amalan Hari Ini</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 rounded-full border border-stone-400" />
+                    <span className="w-2.5 h-2.5 rounded-full border border-stone-400" />
                     <span>Tandai Selesai Hari Ini</span>
                   </>
                 )}
@@ -670,61 +679,79 @@ export const QuranJournalTab: React.FC = () => {
 
           {/* 2. Digital Bookmark Card (Pembatas Terakhir Dibaca) */}
           <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-teal-500/10 dark:from-amber-950/30 dark:via-emerald-950/30 dark:to-teal-950/30 border border-amber-300/70 dark:border-amber-700/50 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-2xl bg-amber-500 text-white shadow-xs">
-                  <Bookmark className="w-4 h-4 fill-white" />
-                </div>
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>Pembatas Terakhir Dibaca</span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-[9px] font-black">
-                      Bookmark
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-2xl bg-amber-500 text-white shadow-xs shrink-0">
+                <Bookmark className="w-4 h-4 fill-white" />
+              </div>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>Pembatas Terakhir Dibaca</span>
+                  <span className="px-1.5 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 text-[9px] font-black">
+                    Bookmark
+                  </span>
+                </h3>
+                <p className="text-[11px] text-amber-800/80 dark:text-amber-300/70">
+                  Posisi bacaan mushaf terakhir agar langsung lanjut tanpa lupa.
+                </p>
+              </div>
+            </div>
+
+            {!quranBookmark ? (
+              /* State Kosong (Baru Buka): Muncul saat user mulai mengaji */
+              <div className="p-3.5 bg-white/90 dark:bg-emerald-950/70 rounded-2xl border border-dashed border-amber-300/80 dark:border-amber-800/60 text-center space-y-2.5">
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  Belum ada pembatas bacaan. Klik tombol di bawah saat mulai membaca mushaf.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsBookmarkModalOpen(true)}
+                  className="w-full py-2.5 px-4 bg-white dark:bg-emerald-900 hover:bg-amber-50 dark:hover:bg-emerald-800 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-bold rounded-xl border border-amber-300 dark:border-amber-700 shadow-xs flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Pasang Pembatas Tilawah</span>
+                </button>
+              </div>
+            ) : (
+              /* State Terisi: Kotak posisi bacaan dengan tombol perbarui panjang dan lebar di bawah teks */
+              <div className="p-3.5 bg-white/90 dark:bg-emerald-950/70 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <div className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                      <span>{quranBookmark.surahName}</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                        Ayat {quranBookmark.ayahNumber}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-stone-600 dark:text-stone-400 font-medium">
+                      <span className="flex items-center gap-1">
+                        📖 Halaman: <strong className="text-amber-700 dark:text-amber-400">{quranBookmark.pageNumber}</strong> / 604
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        ✨ Juz: <strong className="text-teal-700 dark:text-teal-400">{quranBookmark.juzNumber}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] text-stone-400 block">Terakhir diperbarui:</span>
+                    <span className="text-[11px] font-semibold text-stone-600 dark:text-stone-300">
+                      {formatDateIndonesian(quranBookmark.updatedAt ? quranBookmark.updatedAt.slice(0, 10) : selectedDate)}
                     </span>
-                  </h3>
-                  <p className="text-[11px] text-amber-800/80 dark:text-amber-300/70">
-                    Posisi bacaan mushaf terakhir agar langsung lanjut tanpa lupa.
-                  </p>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() => setIsBookmarkModalOpen(true)}
-                className="px-3 py-1.5 bg-white dark:bg-emerald-900 hover:bg-amber-50 dark:hover:bg-emerald-800 text-amber-900 dark:text-amber-200 text-xs font-bold rounded-xl border border-amber-200 dark:border-amber-700 shadow-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-              >
-                <Pencil className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                <span>Perbarui Pembatas</span>
-              </button>
-            </div>
-
-            {/* Bookmark Info Box */}
-            <div className="p-3.5 bg-white/90 dark:bg-emerald-950/70 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="text-sm sm:text-base font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                  <span>{quranBookmark.surahName}</span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-                    Ayat {quranBookmark.ayahNumber}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-stone-600 dark:text-stone-400 font-medium">
-                  <span className="flex items-center gap-1">
-                    📖 Halaman: <strong className="text-amber-700 dark:text-amber-400">{quranBookmark.pageNumber}</strong> / 604
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    ✨ Juz: <strong className="text-teal-700 dark:text-teal-400">{quranBookmark.juzNumber}</strong>
-                  </span>
-                </div>
+                {/* Tombol Perbarui Pembatas yang panjang & lebar di bawah teks posisi bacaan */}
+                <button
+                  type="button"
+                  onClick={() => setIsBookmarkModalOpen(true)}
+                  className="w-full py-2.5 px-4 bg-amber-50/80 dark:bg-emerald-900/80 hover:bg-amber-100 dark:hover:bg-emerald-800 text-amber-900 dark:text-amber-200 text-xs sm:text-sm font-bold rounded-xl border border-amber-300/80 dark:border-amber-700 shadow-xs flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Perbarui Pembatas Tilawah</span>
+                </button>
               </div>
-
-              <div className="text-right">
-                <span className="text-[10px] text-stone-400 block">Terakhir diperbarui:</span>
-                <span className="text-[11px] font-semibold text-stone-600 dark:text-stone-300">
-                  {formatDateIndonesian(quranBookmark.updatedAt ? quranBookmark.updatedAt.slice(0, 10) : selectedDate)}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* 3. Level Target Selector (Pemula, Menengah, Pejuang) */}
@@ -1230,7 +1257,7 @@ export const QuranJournalTab: React.FC = () => {
               className="w-full py-2.5 px-4 rounded-2xl border-2 border-dashed border-emerald-300 dark:border-emerald-700/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-98"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Tambah Poin Rasa Syukur (+ Baris Baru)</span>
+              <span>Tambah Poin Rasa Syukur</span>
             </button>
 
             {/* BUTTON SIMPAN */}
