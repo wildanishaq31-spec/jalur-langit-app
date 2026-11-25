@@ -3143,3 +3143,34 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+
+## 📌 Sesi 25 November 2026 (11:25 WIB) - Perbaikan Bug Reset Mode Draf Roadmap & Dukungan Cloud Storage Permanen (Upstash Redis / Vercel KV & Supabase)
+
+### 1. Akar Masalah yang Ditemukan
+1. **Penimpaan Draf Admin oleh Cold-Start Fallback Server**:
+   - Saat server Vercel memasuki kondisi *cold-start* setelah beberapa menit tidak aktif, container baru mereset RAM & `/tmp` sehingga `GET /api/roadmap` mengembalikan data default statis (`isDraft: false`).
+   - Sebelumnya `syncRoadmapFromServer()` langsung menimpa `roadmapFeatures` lokal Admin dengan fallback default tersebut, sehingga status **Mode Draf** di Panel Admin ikut terhapus dan fitur tampil kembali ke pengguna.
+2. **Belum Terhubungnya Cloud Key-Value Database pada Endpoint Roadmap & Pembeli**:
+   - Pada arsitektur serverless Vercel, penyimpanan `/tmp` hanya bersifat sementara per container (±5–15 menit) bila belum disambungkan ke penyimpanan cloud persisten (*Upstash Redis / Vercel KV* atau *Supabase*).
+
+---
+
+### 2. Implementasi Solusi
+1. **Proteksi Anti-Timpa & Re-Sync Otomatis Admin (`src/store/useJalurLangitStore.ts` & `src/app/panel-admin/page.tsx`)**:
+   - Menambahkan pelacak `roadmapUpdatedAt` dan penanda server `source: 'persisted' | 'default'`.
+   - Jika server merespons dengan `source: 'default'` (*cold-start*) sementara Admin sudah memiliki perubahan/draf lokal (`roadmapUpdatedAt > 0`), sistem **menolak menimpa** data Admin dan saat berada di Panel Admin (`isAdminContext: true`) **langsung mengirim ulang (*auto re-push*) status Draf terbaru ke server**.
+2. **Helper Cloud Storage Universal (`src/lib/cloudStorage.ts`)**:
+   - Mendukung penyimpanan cloud permanen otomatis tanpa dependensi tambahan menggunakan **Upstash Redis / Vercel KV** (`KV_REST_API_URL` / `UPSTASH_REDIS_REST_URL`) maupun **Supabase** (`NEXT_PUBLIC_SUPABASE_URL`), serta fallback ke `/tmp`.
+   - Diintegrasikan ke [src/app/api/roadmap/route.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/app/api/roadmap/route.ts) dan [src/lib/serverBuyerStore.ts](file:///e:/APLIKASI/aplikasi%20jalur%20langit/src/lib/serverBuyerStore.ts).
+3. **Indikator Status Storage di Panel Admin (`src/app/panel-admin/page.tsx`)**:
+   - Menampilkan status langsung di tab *Roadmap & Lab Fitur*: apakah server sudah memakai **Cloud Database Permanen** (`kv` / `supabase`) atau masih menggunakan **Memori Sementara Vercel (`ephemeral`)** beserta panduan ringkas menghubungkan Upstash Redis gratis di Vercel Storage.
+
+---
+
+### 3. Verifikasi & Deployment
+- **TypeScript**: `npx tsc --noEmit` lulus 100% (0 error).
+- **Production Build**: `npm run build` sukses 100% (22/22 halaman & API terkompilasi).
+- **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
+
+---

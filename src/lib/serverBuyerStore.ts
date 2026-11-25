@@ -2,9 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { AuthUser, UserTier, TIER_CONFIG } from '@/types/auth';
+import { readCloudJson, writeCloudJson } from '@/lib/cloudStorage';
 
+const BUYERS_CLOUD_KEY = 'jalur_langit_buyers_v1';
+const BUYERS_TEMP_FILE_NAME = 'jalur_langit_server_buyers_v1.json';
 // File temporary lokal untuk menyimpan data pembeli antar serverless invocations
-const TEMP_BUYERS_FILE = path.join(os.tmpdir(), 'jalur_langit_server_buyers_v1.json');
+const TEMP_BUYERS_FILE = path.join(os.tmpdir(), BUYERS_TEMP_FILE_NAME);
 
 function loadBuyersFromDisk(): AuthUser[] | null {
   try {
@@ -19,14 +22,6 @@ function loadBuyersFromDisk(): AuthUser[] | null {
     console.warn('Gagal membaca temporary buyers file:', err);
   }
   return null;
-}
-
-function saveBuyersToDisk(buyers: AuthUser[]) {
-  try {
-    fs.writeFileSync(TEMP_BUYERS_FILE, JSON.stringify(buyers, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('Gagal menyimpan temporary buyers file:', err);
-  }
 }
 
 // Initial default buyers (Owner Superuser + Akun Pembeli Terverifikasi)
@@ -89,6 +84,13 @@ export async function getAllBuyers(): Promise<AuthUser[]> {
     }
   }
 
+  // Fallback Cloud Storage (Upstash Redis / Vercel KV atau disk /tmp)
+  const cloudRes = await readCloudJson<AuthUser[]>(BUYERS_CLOUD_KEY, BUYERS_TEMP_FILE_NAME);
+  if (cloudRes.data && Array.isArray(cloudRes.data) && cloudRes.data.length > 0) {
+    globalThis.__globalBuyersList = cloudRes.data;
+    return cloudRes.data;
+  }
+
   return globalThis.__globalBuyersList || DEFAULT_BUYERS;
 }
 
@@ -107,7 +109,7 @@ export async function findBuyerByEmail(email: string): Promise<AuthUser | null> 
  */
 export async function addOrUpdateBuyer(buyer: AuthUser): Promise<AuthUser> {
   const normalizedEmail = buyer.email.trim().toLowerCase();
-  const currentList = globalThis.__globalBuyersList || loadBuyersFromDisk() || [...DEFAULT_BUYERS];
+  const currentList = await getAllBuyers();
   const existing = currentList.find((b) => b.email.toLowerCase() === normalizedEmail);
 
   const updatedBuyer: AuthUser = {
@@ -139,11 +141,11 @@ export async function addOrUpdateBuyer(buyer: AuthUser): Promise<AuthUser> {
     }
   }
 
-  // Also update in-memory global cache and disk cache
+  // Also update in-memory global cache, Cloud KV (jika tersedia), dan disk cache
   const filtered = currentList.filter((b) => b.email.toLowerCase() !== normalizedEmail);
   const finalList = [updatedBuyer, ...filtered];
   globalThis.__globalBuyersList = finalList;
-  saveBuyersToDisk(finalList);
+  await writeCloudJson(BUYERS_CLOUD_KEY, BUYERS_TEMP_FILE_NAME, finalList);
 
   return updatedBuyer;
 }
@@ -171,10 +173,10 @@ export async function removeBuyer(email: string): Promise<boolean> {
     }
   }
 
-  const currentList = globalThis.__globalBuyersList || loadBuyersFromDisk() || [...DEFAULT_BUYERS];
+  const currentList = await getAllBuyers();
   const filtered = currentList.filter((b) => b.email.toLowerCase() !== normalizedEmail);
   globalThis.__globalBuyersList = filtered;
-  saveBuyersToDisk(filtered);
+  await writeCloudJson(BUYERS_CLOUD_KEY, BUYERS_TEMP_FILE_NAME, filtered);
 
   return true;
 }

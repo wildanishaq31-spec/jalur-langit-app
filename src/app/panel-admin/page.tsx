@@ -169,6 +169,7 @@ export default function PanelAdminPage() {
   // Dynamic Roadmap & Lab Fitur Store
   const {
     roadmapFeatures,
+    roadmapStorageMode,
     addRoadmapFeature,
     updateRoadmapFeature,
     deleteRoadmapFeature,
@@ -225,8 +226,8 @@ export default function PanelAdminPage() {
         }
       }
 
-      // 2. Sinkronkan Roadmap Fitur dari Server
-      await syncRoadmapFromServer();
+      // 2. Sinkronkan Roadmap Fitur dari Server (mode Admin menjaga agar draf lokal tidak tertimpa cold-start server)
+      await syncRoadmapFromServer({ isAdminContext: true });
 
       const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       setLastSyncTime(timeStr);
@@ -2391,6 +2392,28 @@ export default function PanelAdminPage() {
                           Fitur bertanda <b>🟢 Tampil di Dashboard</b> langsung muncul di Beranda PWA &amp; halaman /roadmap. Fitur bertanda <b>📁 Mode Draf</b> tersimpan aman di panel admin tanpa terlihat oleh pengguna.
                         </span>
                       </div>
+
+                      {/* Indikator Status Cloud Persistence Server */}
+                      {roadmapStorageMode === 'kv' || roadmapStorageMode === 'supabase' ? (
+                        <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/70 flex items-center gap-2 text-[11px] text-emerald-800 dark:text-emerald-200 font-semibold">
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>
+                            Cloud Database Permanen Aktif ({roadmapStorageMode === 'kv' ? 'Upstash Redis / Vercel KV' : 'Supabase'}). Perubahan Mode Draf &amp; Fitur tersimpan abadi ke seluruh pengguna.
+                          </span>
+                        </div>
+                      ) : roadmapStorageMode === 'ephemeral' ? (
+                        <div className="px-3.5 py-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300/80 dark:border-amber-800/60 flex items-start gap-2.5 text-[11px] text-amber-900 dark:text-amber-200">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <p className="font-bold">
+                              Server masih memakai Memori Sementara Vercel (Cold-Start ±5-15 menit)
+                            </p>
+                            <p className="text-[10.5px] text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
+                              Di Panel Admin ini draf Anda tetap terjaga, namun agar Mode Draf &amp; Pembeli Lynk.id permanen selamanya di HP user saat server Vercel restart, hubungkan <b>Upstash Redis / Vercel KV (Gratis Rp 0)</b> di Vercel Dashboard → Storage.
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
 
                       {/* Grid Kartu Inovasi */}
                       {(() => {

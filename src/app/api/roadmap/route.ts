@@ -1,67 +1,102 @@
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
 import { NextResponse } from 'next/server';
 import { ROADMAP_FEATURES } from '@/data/roadmapData';
 import { RoadmapFeatureItem } from '@/types';
+import { readCloudJson, writeCloudJson, detectStorageMode } from '@/lib/cloudStorage';
 
-// File temporary lokal untuk menyimpan data roadmap antar serverless invocations
-const TEMP_ROADMAP_FILE = path.join(os.tmpdir(), 'jalur_langit_roadmap_features_v1.json');
+const ROADMAP_CLOUD_KEY = 'jalur_langit_roadmap_v1';
+const ROADMAP_TEMP_FILE = 'jalur_langit_roadmap_features_v2.json';
 
-function loadRoadmapFromDisk(): RoadmapFeatureItem[] | null {
-  try {
-    if (fs.existsSync(TEMP_ROADMAP_FILE)) {
-      const raw = fs.readFileSync(TEMP_ROADMAP_FILE, 'utf-8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.warn('Gagal membaca temporary roadmap file:', err);
-  }
-  return null;
+interface RoadmapServerRecord {
+  features: RoadmapFeatureItem[];
+  updatedAt: number;
+  source: 'persisted';
 }
 
-function saveRoadmapToDisk(features: RoadmapFeatureItem[]) {
-  try {
-    fs.writeFileSync(TEMP_ROADMAP_FILE, JSON.stringify(features, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('Gagal menyimpan temporary roadmap file:', err);
-  }
-}
-
-// Global cache in-memory across serverless invocations
 declare global {
-  var __globalRoadmapFeatures: RoadmapFeatureItem[] | undefined;
-}
-
-if (!globalThis.__globalRoadmapFeatures) {
-  const fromDisk = loadRoadmapFromDisk();
-  globalThis.__globalRoadmapFeatures = fromDisk || [...ROADMAP_FEATURES];
+  var __globalRoadmapRecord: RoadmapServerRecord | undefined;
 }
 
 export async function GET() {
-  if (!globalThis.__globalRoadmapFeatures) {
-    const fromDisk = loadRoadmapFromDisk();
-    globalThis.__globalRoadmapFeatures = fromDisk || [...ROADMAP_FEATURES];
+  const storageMode = detectStorageMode();
+
+  // 1. Jika ada di cloud storage (Redis / Supabase) atau disk container, baca terlebih dahulu
+  const cloudRes = await readCloudJson<RoadmapServerRecord | RoadmapFeatureItem[]>(
+    ROADMAP_CLOUD_KEY,
+    ROADMAP_TEMP_FILE
+  );
+
+  if (cloudRes.data) {
+    // Mendukung format baru { features, updatedAt } maupun format array lama
+    const record: RoadmapServerRecord = Array.isArray(cloudRes.data)
+      ? { features: cloudRes.data, updatedAt: Date.now(), source: 'persisted' }
+      : {
+          features: Array.isArray(cloudRes.data.features) ? cloudRes.data.features : ROADMAP_FEATURES,
+          updatedAt: cloudRes.data.updatedAt || Date.now(),
+          source: 'persisted',
+        };
+
+    globalThis.__globalRoadmapRecord = record;
+
+    return NextResponse.json(
+      {
+        success: true,
+        features: record.features,
+        total: record.features.length,
+        source: 'persisted',
+        updatedAt: record.updatedAt,
+        storageMode: cloudRes.mode,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   }
 
-  const features = globalThis.__globalRoadmapFeatures || ROADMAP_FEATURES;
+  // 2. Gunakan cache memory warm container jika sudah pernah di-POST pada sesi container ini
+  if (globalThis.__globalRoadmapRecord) {
+    const rec = globalThis.__globalRoadmapRecord;
+    return NextResponse.json(
+      {
+        success: true,
+        features: rec.features,
+        total: rec.features.length,
+        source: 'persisted',
+        updatedAt: rec.updatedAt,
+        storageMode,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
+  }
 
+  // 3. Fallback default statis (ketika container cold-start tanpa cloud DB)
   return NextResponse.json(
     {
       success: true,
-      features,
-      total: features.length,
-      timestamp: new Date().toISOString()
+      features: ROADMAP_FEATURES,
+      total: ROADMAP_FEATURES.length,
+      source: 'default',
+      updatedAt: 0,
+      storageMode,
+      timestamp: new Date().toISOString(),
     },
     {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
         'Pragma': 'no-cache',
         'Expires': '0',
-      }
+      },
     }
   );
 }
@@ -69,22 +104,36 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    if (Array.isArray(body.features) && body.features.length > 0) {
-      globalThis.__globalRoadmapFeatures = body.features;
-      saveRoadmapToDisk(body.features);
+    if (Array.isArray(body.features)) {
+      const updatedAt = typeof body.updatedAt === 'number' ? body.updatedAt : Date.now();
+      const record: RoadmapServerRecord = {
+        features: body.features,
+        updatedAt,
+        source: 'persisted',
+      };
+
+      globalThis.__globalRoadmapRecord = record;
+      const writeRes = await writeCloudJson(ROADMAP_CLOUD_KEY, ROADMAP_TEMP_FILE, record);
+
       return NextResponse.json(
         {
           success: true,
-          message: 'Roadmap berhasil diperbarui di server',
+          message: writeRes.savedToCloud
+            ? 'Roadmap & Mode Draf tersimpan permanen di Cloud Server.'
+            : 'Roadmap & Mode Draf tersimpan di memori sementara server.',
           count: body.features.length,
-          timestamp: new Date().toISOString()
+          source: 'persisted',
+          updatedAt,
+          savedToCloud: writeRes.savedToCloud,
+          storageMode: writeRes.mode,
+          timestamp: new Date().toISOString(),
         },
         {
           headers: {
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0',
-          }
+          },
         }
       );
     }

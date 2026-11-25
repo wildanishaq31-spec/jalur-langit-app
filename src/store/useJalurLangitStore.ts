@@ -172,6 +172,8 @@ interface JalurLangitState {
 
   // Dynamic Roadmap & Inovasi Lab Management
   roadmapFeatures: RoadmapFeatureItem[];
+  roadmapUpdatedAt: number;
+  roadmapStorageMode: 'kv' | 'supabase' | 'ephemeral' | 'unknown';
   addRoadmapFeature: (feature: Omit<RoadmapFeatureItem, 'id'> & { id?: string }) => void;
   updateRoadmapFeature: (id: string, updates: Partial<RoadmapFeatureItem>) => void;
   deleteRoadmapFeature: (id: string) => void;
@@ -297,8 +299,14 @@ interface JalurLangitState {
   resetToFreshUser: () => void;
 
   // Cloud Roadmap Synchronization
-  syncRoadmapFromServer: () => Promise<void>;
-  broadcastRoadmapToServer: (customFeatures?: RoadmapFeatureItem[]) => Promise<void>;
+  syncRoadmapFromServer: (options?: { isAdminContext?: boolean }) => Promise<{
+    storageMode: 'kv' | 'supabase' | 'ephemeral' | 'unknown';
+    source: string;
+  }>;
+  broadcastRoadmapToServer: (
+    customFeatures?: RoadmapFeatureItem[],
+    updatedAt?: number
+  ) => Promise<{ savedToCloud: boolean; storageMode: string }>;
 
   // Backup & Restore System (Offline-first data security)
   exportBackupData: () => JalurLangitBackupData;
@@ -402,6 +410,8 @@ export const useJalurLangitStore = create<JalurLangitState>()(
 
       // Roadmap & Inovasi Fitur Lab Store (Dengan Sistem Milestone)
       roadmapFeatures: ROADMAP_FEATURES,
+      roadmapUpdatedAt: 0,
+      roadmapStorageMode: 'unknown',
       addRoadmapFeature: (feature) => set((state) => {
         const newId = feature.id || `feat-${Date.now()}`;
         const finalMilestones = feature.milestones && feature.milestones.length > 0
@@ -420,14 +430,16 @@ export const useJalurLangitStore = create<JalurLangitState>()(
           badgeColor: feature.badgeColor || milestoneCalc.badgeColor,
           createdAt: new Date().toISOString()
         };
+        const now = Date.now();
         const res = {
           roadmapFeatures: [newFeature, ...state.roadmapFeatures],
+          roadmapUpdatedAt: now,
           featureVotes: {
             ...state.featureVotes,
             [newId]: state.featureVotes[newId] || 0
           }
         };
-        setTimeout(() => get().broadcastRoadmapToServer(res.roadmapFeatures), 100);
+        get().broadcastRoadmapToServer(res.roadmapFeatures, now);
         return res;
       }),
       updateRoadmapFeature: (id, updates) => {
@@ -444,20 +456,23 @@ export const useJalurLangitStore = create<JalurLangitState>()(
             }
             return merged;
           });
-          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
-          return { roadmapFeatures: updated };
+          const now = Date.now();
+          get().broadcastRoadmapToServer(updated, now);
+          return { roadmapFeatures: updated, roadmapUpdatedAt: now };
         });
       },
       deleteRoadmapFeature: (id) => {
         set((state) => {
           const updated = state.roadmapFeatures.filter((f) => f.id !== id);
-          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
-          return { roadmapFeatures: updated };
+          const now = Date.now();
+          get().broadcastRoadmapToServer(updated, now);
+          return { roadmapFeatures: updated, roadmapUpdatedAt: now };
         });
       },
       resetRoadmapFeatures: () => {
-        set({ roadmapFeatures: ROADMAP_FEATURES });
-        setTimeout(() => get().broadcastRoadmapToServer(ROADMAP_FEATURES), 100);
+        const now = Date.now();
+        set({ roadmapFeatures: ROADMAP_FEATURES, roadmapUpdatedAt: now });
+        get().broadcastRoadmapToServer(ROADMAP_FEATURES, now);
       },
       toggleRoadmapMilestone: (featureId, milestoneId) => {
         set((state) => {
@@ -490,8 +505,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
               badgeColor: calc.badgeColor
             };
           });
-          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
-          return { roadmapFeatures: updated };
+          const now = Date.now();
+          get().broadcastRoadmapToServer(updated, now);
+          return { roadmapFeatures: updated, roadmapUpdatedAt: now };
         });
       },
       toggleRoadmapFeatureDraft: (id) => {
@@ -503,8 +519,9 @@ export const useJalurLangitStore = create<JalurLangitState>()(
               isDraft: !f.isDraft
             };
           });
-          setTimeout(() => get().broadcastRoadmapToServer(updated), 100);
-          return { roadmapFeatures: updated };
+          const now = Date.now();
+          get().broadcastRoadmapToServer(updated, now);
+          return { roadmapFeatures: updated, roadmapUpdatedAt: now };
         });
       },
 
@@ -1140,33 +1157,70 @@ export const useJalurLangitStore = create<JalurLangitState>()(
       },
 
       // Cloud Roadmap Synchronization
-      syncRoadmapFromServer: async () => {
+      syncRoadmapFromServer: async (options) => {
         try {
           const res = await fetch('/api/roadmap', { cache: 'no-store' });
           if (res.ok) {
             const data = await res.json();
-            if (data.success && Array.isArray(data.features) && data.features.length > 0) {
-              set({ roadmapFeatures: data.features });
+            const storageMode = (data.storageMode || 'ephemeral') as 'kv' | 'supabase' | 'ephemeral' | 'unknown';
+            const source = data.source || 'default';
+            const serverUpdatedAt = typeof data.updatedAt === 'number' ? data.updatedAt : 0;
+            const localUpdatedAt = get().roadmapUpdatedAt || 0;
+
+            set({ roadmapStorageMode: storageMode });
+
+            if (data.success && Array.isArray(data.features)) {
+              // Jika server cold-start ('default') namun browser ini memiliki editan/draf lokal, jangan timpa
+              if (source === 'default' && localUpdatedAt > 0) {
+                if (options?.isAdminContext) {
+                  await get().broadcastRoadmapToServer(get().roadmapFeatures, localUpdatedAt);
+                }
+                return { storageMode, source };
+              }
+
+              // Jika di Panel Admin dan editan lokal lebih baru daripada server, dorong ke server
+              if (options?.isAdminContext && localUpdatedAt > serverUpdatedAt) {
+                await get().broadcastRoadmapToServer(get().roadmapFeatures, localUpdatedAt);
+                return { storageMode, source };
+              }
+
+              set({
+                roadmapFeatures: data.features,
+                roadmapUpdatedAt: serverUpdatedAt || localUpdatedAt,
+              });
             }
+            return { storageMode, source };
           }
         } catch (err) {
           console.warn('Gagal mengambil roadmap dari server:', err);
         }
+        return { storageMode: get().roadmapStorageMode || 'unknown', source: 'error' };
       },
 
-      broadcastRoadmapToServer: async (customFeatures?: RoadmapFeatureItem[]) => {
+      broadcastRoadmapToServer: async (customFeatures?: RoadmapFeatureItem[], updatedAt?: number) => {
         try {
           const features = customFeatures || get().roadmapFeatures;
-          if (Array.isArray(features) && features.length > 0) {
-            await fetch('/api/roadmap', {
+          const ts = updatedAt || get().roadmapUpdatedAt || Date.now();
+          if (Array.isArray(features)) {
+            const res = await fetch('/api/roadmap', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ features })
+              body: JSON.stringify({ features, updatedAt: ts }),
             });
+            if (res.ok) {
+              const data = await res.json().catch(() => ({}));
+              const mode = (data.storageMode || 'ephemeral') as 'kv' | 'supabase' | 'ephemeral' | 'unknown';
+              set({ roadmapStorageMode: mode });
+              return {
+                savedToCloud: Boolean(data.savedToCloud),
+                storageMode: mode,
+              };
+            }
           }
         } catch (err) {
           console.warn('Gagal broadcast roadmap ke server:', err);
         }
+        return { savedToCloud: false, storageMode: get().roadmapStorageMode || 'ephemeral' };
       },
 
       // Backup & Restore Implementation
