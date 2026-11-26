@@ -49,13 +49,17 @@ import {
   FileText,
   Calculator,
   Headphones,
-  Smartphone
+  Smartphone,
+  BookOpen,
+  Star,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useJalurLangitStore } from '@/store/useJalurLangitStore';
 import { decryptPassword } from '@/utils/cryptoUtils';
 import { UserTier, TIER_CONFIG, AuthUser } from '@/types/auth';
-import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest, RoadmapMilestone } from '@/types';
+import { RoadmapFeatureItem, FeatureStatus, FeatureUserRequest, RoadmapMilestone, InspirationalQuoteItem, QuoteCategory } from '@/types';
 import { DEFAULT_ROADMAP_MILESTONES, calculateMilestoneProgress } from '@/data/roadmapData';
 import { 
   getRandomAIInnovation, 
@@ -75,6 +79,7 @@ type CMSMenuId =
   | 'roadmap' 
   | 'admin-auth'
   | 'settings'
+  | 'quotes'
   | 'all';
 
 function formatLastActive(isoString?: string, baseTime = 0): { label: string; status: 'online' | 'today' | 'offline' } {
@@ -181,8 +186,26 @@ export default function PanelAdminPage() {
     featureVotes,
     resetFeatureVotes,
     userFeatureRequests,
-    deleteFeatureRequest
+    deleteFeatureRequest,
+    inspirationalQuotes,
+    addQuote,
+    updateQuote,
+    deleteQuote,
+    toggleQuoteActive,
+    broadcastQuotesToServer,
+    syncQuotesFromServer,
   } = useJalurLangitStore();
+
+  // Quote Manager State
+  const [quoteFilterCat, setQuoteFilterCat] = useState<QuoteCategory | 'all'>('all');
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+  const [quoteText, setQuoteText] = useState('');
+  const [quoteAuthor, setQuoteAuthor] = useState('');
+  const [quoteCategory, setQuoteCategory] = useState<QuoteCategory>('nasehat');
+  const [quoteIsActive, setQuoteIsActive] = useState(true);
+  const [quoteSaveLoading, setQuoteSaveLoading] = useState(false);
+  const [quoteSaveSuccess, setQuoteSaveSuccess] = useState<string | null>(null);
 
   // Roadmap Form & Modal State
   const [isRoadmapModalOpen, setIsRoadmapModalOpen] = useState(false);
@@ -1076,6 +1099,14 @@ export default function PanelAdminPage() {
       group: 'SISTEM & EKSPANSI' 
     },
     { 
+      id: 'quotes', 
+      label: 'Nasehat, Doa & Motivasi', 
+      icon: BookOpen, 
+      badge: `${inspirationalQuotes ? inspirationalQuotes.filter(q => q.isActive).length : 0} Aktif`, 
+      badgeColor: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30 font-bold',
+      group: 'SISTEM & EKSPANSI' 
+    },
+    { 
       id: 'admin-auth', 
       label: 'Pengaturan Login Admin', 
       icon: KeyRound, 
@@ -1544,6 +1575,7 @@ export default function PanelAdminPage() {
                     {activeMenu === 'webhook' && 'Integrasi Webhook & Simulator Lynk.id'}
                     {activeMenu === 'add-buyer' && 'Tambah Akses Pembeli Cadangan'}
                     {activeMenu === 'roadmap' && 'Roadmap Fitur & Pengembangan Lab'}
+                     {activeMenu === 'quotes' && 'Manajemen Nasehat, Doa & Kata Motivasi'}
                     {activeMenu === 'admin-auth' && 'Pengaturan Kredensial Login Admin (Email, Password & PIN)'}
                     {activeMenu === 'settings' && 'Pengaturan Keamanan & Backup Data'}
                     {activeMenu === 'all' && 'Semua Modul CMS Panel Admin'}
@@ -3041,6 +3073,278 @@ export default function PanelAdminPage() {
                 </section>
               )}
 
+
+              {/* ================= SECTION: QUOTES MANAGEMENT ================= */}
+              {(activeMenu === 'quotes' || activeMenu === 'all') && (
+                <section className="space-y-4 animate-fade-in">
+                  <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-emerald-950/40 border border-stone-200/90 dark:border-emerald-800/70 shadow-sm space-y-5">
+                    {/* Header */}
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Nasehat, Doa & Kata Motivasi
+                        </h3>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                          {inspirationalQuotes?.filter(q => q.isActive).length ?? 0} Aktif / {inspirationalQuotes?.length ?? 0} Total
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => syncQuotesFromServer()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 transition-all"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Sync
+                        </button>
+                        <button
+                          onClick={async () => {
+                            setQuoteSaveLoading(true);
+                            const result = await broadcastQuotesToServer(inspirationalQuotes || []);
+                            setQuoteSaveLoading(false);
+                            setQuoteSaveSuccess(result.success ? 'Berhasil disimpan ke cloud ☁️' : 'Gagal menyimpan');
+                            setTimeout(() => setQuoteSaveSuccess(null), 3000);
+                          }}
+                          disabled={quoteSaveLoading}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all disabled:opacity-50"
+                        >
+                          {quoteSaveLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                          Simpan ke Cloud
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingQuoteId(null);
+                            setQuoteText('');
+                            setQuoteAuthor('Nasehat Ulama');
+                            setQuoteCategory('nasehat');
+                            setQuoteIsActive(true);
+                            setIsQuoteModalOpen(true);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-all"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Tambah Nasehat
+                        </button>
+                      </div>
+                    </div>
+
+                    {quoteSaveSuccess && (
+                      <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-2">
+                        {quoteSaveSuccess}
+                      </div>
+                    )}
+
+                    {/* Filter tabs */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(['all', 'nasehat', 'doa', 'motivasi', 'penyemangat'] as const).map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setQuoteFilterCat(cat)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
+                            quoteFilterCat === cat
+                              ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
+                              : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:border-amber-300'
+                          }`}
+                        >
+                          {cat === 'all' ? 'Semua' : cat === 'nasehat' ? '📖 Nasehat Ulama' : cat === 'doa' ? '🤲 Doa' : cat === 'motivasi' ? '⭐ Motivasi' : '⚡ Penyemangat'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Quotes list */}
+                    <div className="space-y-3">
+                      {(inspirationalQuotes || [])
+                        .filter(q => quoteFilterCat === 'all' || q.category === quoteFilterCat)
+                        .map((quote) => (
+                          <div
+                            key={quote.id}
+                            className={`p-4 rounded-2xl border transition-all ${
+                              quote.isActive
+                                ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200/60 dark:border-amber-800/40'
+                                : 'bg-stone-50 dark:bg-stone-900/30 border-stone-200 dark:border-stone-800 opacity-60'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${
+                                    quote.category === 'nasehat' ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' :
+                                    quote.category === 'doa' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' :
+                                    quote.category === 'motivasi' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800' :
+                                    'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800'
+                                  }`}>
+                                    {quote.category === 'nasehat' ? '📖 Nasehat' : quote.category === 'doa' ? '🤲 Doa' : quote.category === 'motivasi' ? '⭐ Motivasi' : '⚡ Penyemangat'}
+                                  </span>
+                                  {!quote.isActive && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-200 dark:bg-stone-700 text-stone-500 dark:text-stone-400 border border-stone-300 dark:border-stone-600">
+                                      Nonaktif
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-stone-700 dark:text-stone-200 italic leading-relaxed line-clamp-3 whitespace-pre-line">
+                                  "{quote.text}"
+                                </p>
+                                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-1">
+                                  — {quote.author}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {/* Toggle active */}
+                                <button
+                                  onClick={() => toggleQuoteActive(quote.id)}
+                                  className={`p-1.5 rounded-lg transition-all ${
+                                    quote.isActive
+                                      ? 'text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                                      : 'text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                                  }`}
+                                  title={quote.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                                >
+                                  {quote.isActive
+                                    ? <ToggleRight className="w-4 h-4" />
+                                    : <ToggleLeft className="w-4 h-4" />}
+                                </button>
+                                {/* Edit */}
+                                <button
+                                  onClick={() => {
+                                    setEditingQuoteId(quote.id);
+                                    setQuoteText(quote.text);
+                                    setQuoteAuthor(quote.author);
+                                    setQuoteCategory(quote.category);
+                                    setQuoteIsActive(quote.isActive);
+                                    setIsQuoteModalOpen(true);
+                                  }}
+                                  className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                {/* Delete */}
+                                <button
+                                  onClick={() => {
+                                    if (confirm('Hapus kutipan ini?')) deleteQuote(quote.id);
+                                  }}
+                                  className="p-1.5 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
+                                  title="Hapus"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      {(inspirationalQuotes || []).filter(q => quoteFilterCat === 'all' || q.category === quoteFilterCat).length === 0 && (
+                        <div className="text-center py-8 text-stone-400 dark:text-stone-500 text-sm">
+                          Belum ada kutipan di kategori ini. Klik <strong>Tambah Nasehat</strong> untuk menambahkan.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Add/Edit Quote Modal */}
+                  {isQuoteModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                      <div className="w-full max-w-lg bg-white dark:bg-[#0f1f14] rounded-3xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-base text-stone-900 dark:text-stone-100">
+                            {editingQuoteId ? 'Edit Kutipan' : 'Tambah Kutipan Baru'}
+                          </h3>
+                          <button onClick={() => setIsQuoteModalOpen(false)} className="p-1.5 rounded-xl text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        {/* Category */}
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1.5">Kategori</label>
+                          <div className="flex flex-wrap gap-2">
+                            {(['nasehat', 'doa', 'motivasi', 'penyemangat'] as QuoteCategory[]).map(cat => (
+                              <button
+                                key={cat}
+                                onClick={() => setQuoteCategory(cat)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                                  quoteCategory === cat
+                                    ? 'bg-amber-500 text-white border-amber-500'
+                                    : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                                }`}
+                              >
+                                {cat === 'nasehat' ? '📖 Nasehat Ulama' : cat === 'doa' ? '🤲 Doa' : cat === 'motivasi' ? '⭐ Motivasi' : '⚡ Penyemangat'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Text */}
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1.5">Teks Kutipan *</label>
+                          <textarea
+                            value={quoteText}
+                            onChange={e => setQuoteText(e.target.value)}
+                            rows={4}
+                            placeholder="Tulis kutipan nasehat, doa, atau motivasi..."
+                            className="w-full text-sm bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2.5 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 resize-none"
+                          />
+                        </div>
+
+                        {/* Author */}
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1.5">Sumber / Penulis *</label>
+                          <input
+                            value={quoteAuthor}
+                            onChange={e => setQuoteAuthor(e.target.value)}
+                            placeholder="Contoh: Nasehat Ulama, QS. Al-Baqarah: 201, Ibnu Qayyim..."
+                            className="w-full text-sm bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2.5 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400"
+                          />
+                        </div>
+
+                        {/* Active toggle */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setQuoteIsActive(!quoteIsActive)}
+                            className={`relative w-10 h-5 rounded-full transition-colors ${quoteIsActive ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-stone-600'}`}
+                          >
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${quoteIsActive ? 'translate-x-5' : 'translate-x-0'}`} />
+                          </button>
+                          <span className="text-xs text-stone-600 dark:text-stone-400">{quoteIsActive ? 'Aktif (tampil di dashboard)' : 'Nonaktif (tersimpan tapi tidak tampil)'}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => setIsQuoteModalOpen(false)}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            disabled={!quoteText.trim() || !quoteAuthor.trim()}
+                            onClick={() => {
+                              if (editingQuoteId) {
+                                updateQuote(editingQuoteId, {
+                                  text: quoteText.trim(),
+                                  author: quoteAuthor.trim(),
+                                  category: quoteCategory,
+                                  isActive: quoteIsActive,
+                                });
+                              } else {
+                                addQuote({
+                                  text: quoteText.trim(),
+                                  author: quoteAuthor.trim(),
+                                  category: quoteCategory,
+                                  isActive: quoteIsActive,
+                                });
+                              }
+                              setIsQuoteModalOpen(false);
+                            }}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {editingQuoteId ? 'Simpan Perubahan' : 'Tambah Kutipan'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
               {/* ================= SECTION: SETTINGS (PENGATURAN & KEAMANAN) ================= */}
               {(activeMenu === 'settings' || activeMenu === 'all') && (
                 <section className="space-y-4 animate-fade-in">

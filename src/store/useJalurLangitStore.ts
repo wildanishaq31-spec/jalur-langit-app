@@ -19,9 +19,10 @@ import {
   FeatureUserRequest,
   RoadmapFeatureItem,
   JalurLangitBackupData,
-  JalurLangitBackupMeta
+  JalurLangitBackupMeta,
+  InspirationalQuoteItem,
 } from '@/types';
-import { TASBIH_PRESETS } from '@/data/amalanData';
+import { TASBIH_PRESETS, DEFAULT_INSPIRATIONAL_QUOTES } from '@/data/amalanData';
 import { ROADMAP_FEATURES, DEFAULT_ROADMAP_MILESTONES, calculateMilestoneProgress } from '@/data/roadmapData';
 import { getTodayDateString, createDateString } from '@/utils/dateUtils';
 import { QuranBookmark, QuranPaceMode } from '@/data/quranJuzCatalog';
@@ -307,6 +308,16 @@ interface JalurLangitState {
     customFeatures?: RoadmapFeatureItem[],
     updatedAt?: number
   ) => Promise<{ savedToCloud: boolean; storageMode: string }>;
+
+  // Inspirational Quotes (dynamic, managed by admin)
+  inspirationalQuotes: InspirationalQuoteItem[];
+  quotesLastSyncedAt: number;
+  syncQuotesFromServer: () => Promise<void>;
+  broadcastQuotesToServer: (quotes: InspirationalQuoteItem[]) => Promise<{ success: boolean }>;
+  addQuote: (quote: Omit<InspirationalQuoteItem, 'id' | 'createdAt'>) => void;
+  updateQuote: (id: string, updates: Partial<InspirationalQuoteItem>) => void;
+  deleteQuote: (id: string) => void;
+  toggleQuoteActive: (id: string) => void;
 
   // Backup & Restore System (Offline-first data security)
   exportBackupData: () => JalurLangitBackupData;
@@ -1428,9 +1439,78 @@ export const useJalurLangitStore = create<JalurLangitState>()(
         };
       },
 
+      // Inspirational Quotes (dynamic, managed by admin)
+      inspirationalQuotes: DEFAULT_INSPIRATIONAL_QUOTES,
+      quotesLastSyncedAt: 0,
+
+      syncQuotesFromServer: async () => {
+        try {
+          const res = await fetch('/api/admin/quotes', { cache: 'no-store' });
+          if (!res.ok) return;
+          const json = await res.json();
+          if (json.success && Array.isArray(json.quotes) && json.quotes.length > 0) {
+            set({ inspirationalQuotes: json.quotes, quotesLastSyncedAt: Date.now() });
+          }
+        } catch (err) {
+          console.error('[syncQuotesFromServer]', err);
+        }
+      },
+
+      broadcastQuotesToServer: async (quotes) => {
+        try {
+          const res = await fetch('/api/admin/quotes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quotes }),
+          });
+          const json = await res.json();
+          if (json.success) {
+            set({ inspirationalQuotes: json.quotes, quotesLastSyncedAt: Date.now() });
+          }
+          return { success: json.success };
+        } catch (err) {
+          console.error('[broadcastQuotesToServer]', err);
+          return { success: false };
+        }
+      },
+
+      addQuote: (quoteData) => {
+        const newQuote: InspirationalQuoteItem = {
+          ...quoteData,
+          id: `q-custom-${Date.now()}`,
+          isActive: quoteData.isActive !== false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          inspirationalQuotes: [...state.inspirationalQuotes, newQuote],
+        }));
+      },
+
+      updateQuote: (id, updates) => {
+        set((state) => ({
+          inspirationalQuotes: state.inspirationalQuotes.map((q) =>
+            q.id === id ? { ...q, ...updates, updatedAt: new Date().toISOString() } : q
+          ),
+        }));
+      },
+
+      deleteQuote: (id) => {
+        set((state) => ({
+          inspirationalQuotes: state.inspirationalQuotes.filter((q) => q.id !== id),
+        }));
+      },
+
+      toggleQuoteActive: (id) => {
+        set((state) => ({
+          inspirationalQuotes: state.inspirationalQuotes.map((q) =>
+            q.id === id ? { ...q, isActive: !q.isActive, updatedAt: new Date().toISOString() } : q
+          ),
+        }));
+      },
+
       // GPS Location & Prayer Times Schedule
-      userLocation: DEFAULT_USER_LOCATION,
-      isLocationLoading: false,
+      userLocation: DEFAULT_USER_LOCATION,      isLocationLoading: false,
       isAlarmModalOpen: false,
       setIsAlarmModalOpen: (open) => set({ isAlarmModalOpen: open }),
       setUserLocation: (location) => set({ userLocation: location }),

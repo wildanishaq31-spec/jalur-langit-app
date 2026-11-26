@@ -30,6 +30,7 @@ import { DEFAULT_AMALAN_LIST, INSPIRATIONAL_QUOTES, TASBIH_PRESETS } from '@/dat
 import { ActiveTab } from '@/components/Navigation';
 import { CalendarMonthView } from '@/components/CalendarMonthView';
 import { formatDateIndonesian } from '@/utils/dateUtils';
+import { QuoteSliderCard } from '@/components/dashboard/QuoteSliderCard';
 
 interface HomeTabProps {
   onNavigateToTab: (tabId: ActiveTab) => void;
@@ -54,7 +55,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
     setDrawerActiveTab,
     roadmapFeatures,
     featureVotes,
-    syncRoadmapFromServer
+    syncRoadmapFromServer,
+    inspirationalQuotes,
   } = useJalurLangitStore();
 
   const handleOpenRoadmap = () => {
@@ -106,8 +108,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
 
   // Sedekah on selectedDate
   const sedekahToday = sedekahLogs.find(s => s.date === selectedDate);
-
-  const currentQuote = INSPIRATIONAL_QUOTES[0];
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
@@ -481,20 +481,17 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
         }}
       />
 
-      {/* 4. INSPIRATIONAL QUOTE CARD */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-emerald-950/40 border border-amber-200/70 dark:border-amber-900/40">
-        <div className="flex gap-4">
-          <div className="text-amber-500 text-3xl font-serif">“</div>
-          <div className="space-y-2">
-            <p className="text-sm italic font-serif text-stone-800 dark:text-stone-200 leading-relaxed">
-              {currentQuote.quote}
-            </p>
-            <div className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-              — {currentQuote.author}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 4. INSPIRATIONAL QUOTE SLIDER */}
+      <QuoteSliderCard
+        quotes={inspirationalQuotes && inspirationalQuotes.length > 0 ? inspirationalQuotes : INSPIRATIONAL_QUOTES.map((q, i) => ({
+          id: `fallback-${i}`,
+          text: q.quote,
+          author: q.author,
+          category: 'nasehat' as const,
+          isActive: true,
+        }))}
+        autoPlayInterval={8000}
+      />
     </div>
   );
 };

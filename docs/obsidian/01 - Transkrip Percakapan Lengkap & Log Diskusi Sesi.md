@@ -3174,3 +3174,16 @@ pm run build: 18/18 halaman berhasil terkompilasi optimal dengan Next.js 16 (Tur
 - **Dual Git Push**: Di-push serentak ke `origin master` dan `origin master:main`.
 
 ---
+
+### Pembaruan: Fitur Dynamic Slide Nasehat, Doa & Motivasi (Dashboard & Admin Panel)
+- **Komponen Dashboard (QuoteSliderCard.tsx)**:
+  - Slider otomatis dengan auto-play setiap 8 detik, dilengkapi progress bar indikator halus di bagian atas.
+  - Kategori lengkap dengan badge estetik: 📖 Nasehat Ulama, 🤲 Doa, ⭐ Motivasi, dan ⚡ Penyemangat.
+  - Navigasi interaktif: tombol panah kiri-kanan, indikator dot dinamis, swipe gesture pada layar sentuh/hp, dan pause otomatis saat disentuh/hover.
+  - Tombol aksi: Salin teks kutipan langsung ke clipboard.
+- **Server API Endpoint (/api/admin/quotes)**:
+  - Endpoint GET dan POST yang tersinkronisasi dengan persistent Cloud Storage (Upstash Redis / Vercel KV / Supabase) dengan fallback lokal.
+- **Zustand Store (useJalurLangitStore.ts)**:
+  - State inspirationalQuotes dengan fungsi sync (syncQuotesFromServer), broadcast (roadcastQuotesToServer), tambah, edit, hapus, dan switch aktif/nonaktif.
+- **Panel Admin CMS (/panel-admin)**:
+  - Tab baru **Nasehat, Doa & Motivasi** dengan filter kategori, counter aktif/total, tombol Tambah Kutipan, Edit modal, Hapus, Saklar ON/OFF live, dan tombol Simpan ke Cloud.

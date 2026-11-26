@@ -215,6 +215,19 @@ export interface QuranBookmark {
 
 export type QuranPaceMode = 'pemula' | 'menengah' | 'pejuang';
 
+export type QuoteCategory = 'nasehat' | 'doa' | 'motivasi' | 'penyemangat';
+
+export interface InspirationalQuoteItem {
+  id: string;
+  text: string;
+  author: string;
+  category: QuoteCategory;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  order?: number;
+}
+
 export interface JalurLangitBackupData {
   app: string;
   schemaVersion: number;

@@ -45,7 +45,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       lastRouteIndex = currentRouteIndex;
     }
   }, [currentRouteIndex]);
-  const { appTheme, syncToTodayIfOutdated, syncRoadmapFromServer } = useJalurLangitStore();
+  const { appTheme, syncToTodayIfOutdated, syncRoadmapFromServer, syncQuotesFromServer } = useJalurLangitStore();
   const { 
     isAuthenticated, 
     isTransitioning, 
@@ -59,9 +59,10 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [mounted, setMounted] = useState(() => isAppHydrated);
   const [upgradeToast, setUpgradeToast] = useState<string | null>(null);
 
-  // 1. Sinkronisasi data roadmap global & deteksi pembaruan versi aplikasi dari server
+  // 1. Sinkronisasi data roadmap global & quotes & deteksi pembaruan versi aplikasi dari server
   useEffect(() => {
     syncRoadmapFromServer();
+    syncQuotesFromServer();
 
     const checkAppVersion = async () => {
       try {
@@ -82,7 +83,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     };
 
     checkAppVersion();
-  }, [syncRoadmapFromServer]);
+  }, [syncRoadmapFromServer, syncQuotesFromServer]);
 
   // 2. Sinkronisasi lisensi otomatis saat AppShell pertama kali dibuka / dimuat
   useEffect(() => {
