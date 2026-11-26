@@ -490,7 +490,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({ onNavigateToTab }) => {
           category: 'nasehat' as const,
           isActive: true,
         }))}
-        autoPlayInterval={8000}
+        autoPlayInterval={5000}
       />
     </div>
   );

@@ -6,7 +6,7 @@ import { InspirationalQuoteItem, QuoteCategory } from '@/types';
 
 interface QuoteSliderCardProps {
   quotes: InspirationalQuoteItem[];
-  autoPlayInterval?: number; // ms, default 8000
+  autoPlayInterval?: number; // ms, default 5000 (5 detik)
   className?: string;
 }
 
@@ -43,70 +43,64 @@ const CATEGORY_CONFIG: Record<QuoteCategory, { label: string; icon: React.ReactN
 
 export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
   quotes,
-  autoPlayInterval = 8000,
+  autoPlayInterval = 5000,
   className = '',
 }) => {
   const activeQuotes = quotes.filter((q) => q.isActive);
+  const total = activeQuotes.length;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
-  const [isPaused, setIsPaused] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const progressRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Pause ref: temporary pause on manual user interaction (resume automatically after 4s)
+  const pauseUntilRef = useRef<number>(0);
   const touchStartX = useRef<number | null>(null);
 
-  const safeIndex = activeQuotes.length > 0 ? currentIndex % activeQuotes.length : 0;
+  const safeIndex = total > 0 ? currentIndex % total : 0;
   const currentQuote = activeQuotes[safeIndex];
 
-  const goToSlide = useCallback(
-    (newIndex: number, dir: 'left' | 'right') => {
-      if (isAnimating || activeQuotes.length <= 1) return;
-      setDirection(dir);
-      setIsAnimating(true);
-      setProgress(0);
-      setTimeout(() => {
-        setCurrentIndex(newIndex);
-        setIsAnimating(false);
-      }, 320);
-    },
-    [isAnimating, activeQuotes.length]
-  );
+  // Manual slide transition helper
+  const changeSlide = useCallback((newIndex: number, dir: 'left' | 'right', pauseDurationMs = 4000) => {
+    if (total <= 1) return;
+    pauseUntilRef.current = Date.now() + pauseDurationMs;
+    setDirection(dir);
+    setIsAnimating(true);
+    setTimeout(() => {
+      setCurrentIndex(newIndex);
+      setIsAnimating(false);
+    }, 280);
+  }, [total]);
 
   const goNext = useCallback(() => {
-    const next = (safeIndex + 1) % activeQuotes.length;
-    goToSlide(next, 'right');
-  }, [safeIndex, activeQuotes.length, goToSlide]);
+    changeSlide((safeIndex + 1) % total, 'right');
+  }, [changeSlide, safeIndex, total]);
 
   const goPrev = useCallback(() => {
-    const prev = (safeIndex - 1 + activeQuotes.length) % activeQuotes.length;
-    goToSlide(prev, 'left');
-  }, [safeIndex, activeQuotes.length, goToSlide]);
+    changeSlide((safeIndex - 1 + total) % total, 'left');
+  }, [changeSlide, safeIndex, total]);
 
-  // Auto-play timer
+  // Bulletproof auto-play interval
   useEffect(() => {
-    if (isPaused || activeQuotes.length <= 1) return;
+    if (total <= 1) return;
 
-    setProgress(0);
-    const startTime = Date.now();
+    const intervalId = setInterval(() => {
+      // If user recently interacted (clicked or swiped), temporarily skip auto-advance
+      if (Date.now() < pauseUntilRef.current) return;
 
-    progressRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      setProgress(Math.min((elapsed / autoPlayInterval) * 100, 100));
-    }, 50);
-
-    timerRef.current = setTimeout(() => {
-      goNext();
+      setDirection('right');
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % total);
+        setIsAnimating(false);
+      }, 280);
     }, autoPlayInterval);
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (progressRef.current) clearInterval(progressRef.current);
-    };
-  }, [currentIndex, isPaused, activeQuotes.length, autoPlayInterval, goNext]);
+    return () => clearInterval(intervalId);
+  }, [total, autoPlayInterval]);
 
-  // Touch gestures
+  // Touch gesture support (swipe on mobile)
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -114,9 +108,12 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) goNext();
-      else goPrev();
+    if (Math.abs(diff) > 35) {
+      if (diff > 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
     }
     touchStartX.current = null;
   };
@@ -128,27 +125,31 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      pauseUntilRef.current = Date.now() + 2000;
     } catch {}
   };
 
-  if (!currentQuote || activeQuotes.length === 0) return null;
+  if (!currentQuote || total === 0) return null;
 
   const catConfig = CATEGORY_CONFIG[currentQuote.category] || CATEGORY_CONFIG.nasehat;
 
   return (
     <div
       className={`relative overflow-hidden rounded-3xl border ${catConfig.border} bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/30 dark:via-emerald-950/40 dark:to-teal-950/30 shadow-sm transition-all duration-500 ${className}`}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Progress bar */}
-      {activeQuotes.length > 1 && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+      {/* 1. Hardware-Accelerated Continuous Progress Bar */}
+      {total > 1 && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-black/5 dark:bg-white/5 overflow-hidden">
           <div
-            className="h-full bg-amber-400/60 dark:bg-amber-500/50 transition-none rounded-full"
-            style={{ width: `${progress}%` }}
+            key={currentIndex}
+            style={{
+              width: '100%',
+              transformOrigin: 'left',
+              animation: `quoteSlideProgress ${autoPlayInterval}ms linear forwards`,
+            }}
+            className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
           />
         </div>
       )}
@@ -163,11 +164,15 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
             {catConfig.label}
           </span>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-medium text-stone-400 dark:text-stone-500">
+              {safeIndex + 1}/{total}
+            </span>
+
             {/* Copy button */}
             <button
               onClick={handleCopy}
-              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200"
+              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200 cursor-pointer"
               title="Salin kutipan"
             >
               {copied ? (
@@ -179,7 +184,7 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
           </div>
         </div>
 
-        {/* Quote content with slide animation */}
+        {/* Quote content with slide & fade animation */}
         <div
           className={`transition-all duration-300 ease-in-out ${
             isAnimating
@@ -205,13 +210,14 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
         </div>
 
         {/* Navigation dots + prev/next */}
-        {activeQuotes.length > 1 && (
+        {total > 1 && (
           <div className="flex items-center justify-between mt-4 pt-3 border-t border-black/5 dark:border-white/5">
             {/* Prev */}
             <button
               onClick={goPrev}
-              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200 disabled:opacity-30"
+              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200 disabled:opacity-30 cursor-pointer"
               disabled={isAnimating}
+              title="Sebelumnya"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -221,12 +227,13 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
               {activeQuotes.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => goToSlide(i, i > safeIndex ? 'right' : 'left')}
-                  className={`rounded-full transition-all duration-300 ${
+                  onClick={() => changeSlide(i, i > safeIndex ? 'right' : 'left')}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
                     i === safeIndex
                       ? `w-5 h-1.5 ${catConfig.bg} border ${catConfig.border}`
                       : 'w-1.5 h-1.5 bg-stone-300 dark:bg-stone-600 hover:bg-stone-400 dark:hover:bg-stone-500'
                   }`}
+                  title={`Slide ${i + 1}`}
                 />
               ))}
             </div>
@@ -234,8 +241,9 @@ export const QuoteSliderCard: React.FC<QuoteSliderCardProps> = ({
             {/* Next */}
             <button
               onClick={goNext}
-              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200 disabled:opacity-30"
+              className="p-1.5 rounded-xl text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-all duration-200 disabled:opacity-30 cursor-pointer"
               disabled={isAnimating}
+              title="Selanjutnya"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -111,3 +111,13 @@ body {
 .animate-page-enter-up {
   animation: pageEnterUp 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes quoteSlideProgress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
